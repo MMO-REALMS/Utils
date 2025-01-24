@@ -168,4 +168,6 @@ public record FileManager(@NotNull ReturnLambdaExecutor<Gson> gsonProvider, @Not
         return new File(System.getProperty("user.dir") + path);
     }
 
+
+
 }
