@@ -52,6 +52,14 @@ public class Logger {
         log(Level.DEBUG, object, color, 1);
     }
 
+    public static void goodOrWarn(Object object, boolean goodCheck) {
+        if(goodCheck){
+            good(object);
+        } else {
+            warn(object);
+        }
+    }
+
     public static void good(Object object) {
         log(Level.INFO, object, ConsoleColor.GREEN, 1);
     }
