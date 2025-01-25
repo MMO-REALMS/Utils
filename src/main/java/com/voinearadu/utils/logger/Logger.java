@@ -44,7 +44,7 @@ public class Logger {
     }
 
     public static void debug(Object object) {
-        log(Level.DEBUG, object, ConsoleColor.WHITE, 1);
+        log(Level.DEBUG, object, ConsoleColor.BRIGHT_BLACK, 1);
     }
 
     @SuppressWarnings("unused")
@@ -53,7 +53,7 @@ public class Logger {
     }
 
     public static void goodOrWarn(Object object, boolean goodCheck) {
-        if(goodCheck){
+        if (goodCheck) {
             good(object);
         } else {
             warn(object);
@@ -61,19 +61,27 @@ public class Logger {
     }
 
     public static void good(Object object) {
-        log(Level.INFO, object, ConsoleColor.GREEN, 1);
+        log(Level.INFO, object, ConsoleColor.DARK_GREEN, 1);
+    }
+
+    public static void log() {
+        log(Level.INFO, "", 1);
     }
 
     public static void log(Object object) {
         log(Level.INFO, object, 1);
     }
 
+    public static void info(Object object) {
+        log(Level.INFO, object, ConsoleColor.DARK_WHITE, 1);
+    }
+
     public static void warn(Object object) {
-        log(Level.WARN, object, ConsoleColor.YELLOW, 1);
+        log(Level.WARN, object, ConsoleColor.DARK_YELLOW, 1);
     }
 
     public static void error(Object object) {
-        log(Level.ERROR, object, ConsoleColor.RED, 1);
+        log(Level.ERROR, object, ConsoleColor.DARK_RED, 1);
     }
 
     @SuppressWarnings("SameParameterValue")
@@ -93,13 +101,15 @@ public class Logger {
             id = caller.getSimpleName() + ".java";
         }
 
-        String log = color + switch (object) {
+        String log = switch (object) {
             case null -> "null";
             case MessageBuilder messageBuilder -> messageBuilder.parse();
             case Throwable throwable -> StackTraceUtils.toString(throwable);
             case StackTraceElement[] stackTraceElements -> StackTraceUtils.toString(stackTraceElements);
             default -> object.toString();
         };
+
+        log = String.join("\n" + color, log.split("\n"));
 
         LOG_HANDLER.log(log, id);
     }
