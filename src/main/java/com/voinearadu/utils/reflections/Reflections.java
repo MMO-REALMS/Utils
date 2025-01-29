@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -146,6 +145,30 @@ public class Reflections {
         return this;
     }
 
+    private void processFile(String fileName) {
+        if (!fileName.endsWith(".class")) {
+            return;
+        }
+
+        fileName = fileName.replace("/", ".");
+        fileName = fileName.replace("\\", ".");
+        fileName = fileName.replace(".class", "");
+
+        String simpleClassName = fileName.substring(fileName.lastIndexOf('.') + 1);
+
+        // Skip Mixin classes
+        if (simpleClassName.contains("Mixin") || simpleClassName.contains("module-info")) {
+            return;
+        }
+
+        try {
+            this.classes.add(classLoader.loadClass(fileName));
+        } catch (Throwable throwable) {
+            // Logger.error("Failed to load class " + fileName);
+            // Logger.error(throwable);
+        }
+    }
+
     public static @Nullable Field getField(@NotNull Class<?> clazz, String fieldName) {
         Field field = null;
 
@@ -215,30 +238,6 @@ public class Reflections {
         }
 
         return null;
-    }
-
-    private void processFile(String fileName) {
-        if (!fileName.endsWith(".class")) {
-            return;
-        }
-
-        fileName = fileName.replace("/", ".");
-        fileName = fileName.replace("\\", ".");
-        fileName = fileName.replace(".class", "");
-
-        String simpleClassName = fileName.substring(fileName.lastIndexOf('.') + 1);
-
-        // Skip Mixin classes
-        if (simpleClassName.contains("Mixin") || simpleClassName.contains("module-info")) {
-            return;
-        }
-
-        try {
-            this.classes.add(classLoader.loadClass(fileName));
-        } catch (Throwable throwable) {
-            // Logger.error("Failed to load class " + fileName);
-            // Logger.error(throwable);
-        }
     }
 
     @Getter
