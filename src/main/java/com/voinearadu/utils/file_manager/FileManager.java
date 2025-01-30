@@ -29,8 +29,8 @@ public record FileManager(@NotNull ReturnLambdaExecutor<Gson> gsonProvider, @Not
                 //noinspection ResultOfMethodCallIgnored
                 file.createNewFile();
             } catch (IOException error) {
+                Logger.error("Could not create file " + fileName + " in directory " + Paths.get(getDataFolder().getPath(), directory));
                 Logger.error(error);
-                Logger.error("Could not create file " + fileName + " in directory " + directory);
                 return "";
             }
         }

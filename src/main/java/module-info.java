@@ -17,4 +17,5 @@ module com.voinearadu.utils {
     requires static redis.clients.jedis;
     requires static org.apache.commons.pool2;
     requires java.sql;
+    requires java.desktop;
 }

@@ -109,7 +109,7 @@ public class Logger {
             default -> object.toString();
         };
 
-        log = String.join("\n" + color, log.split("\n"));
+        log = color + String.join("\n" + color, log.split("\n")) + ConsoleColor.RESET;
 
         LOG_HANDLER.log(log, id);
     }
