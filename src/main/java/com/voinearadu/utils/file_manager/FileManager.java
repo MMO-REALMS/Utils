@@ -3,7 +3,7 @@ package com.voinearadu.utils.file_manager;
 import com.google.gson.Gson;
 import com.voinearadu.utils.file_manager.utils.DateUtils;
 import com.voinearadu.utils.file_manager.utils.PathUtils;
-import com.voinearadu.utils.lambda.lambda.ReturnLambdaExecutor;
+import com.voinearadu.utils.generic.dto.Holder;
 import com.voinearadu.utils.logger.Logger;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public record FileManager(@NotNull ReturnLambdaExecutor<Gson> gsonProvider, @NotNull String basePath) {
+public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String basePath) {
 
     public synchronized @NotNull String readFile(@NotNull String directory, @NotNull String fileName) {
         Path path = Paths.get(getDataFolder().getPath(), directory, fileName);
@@ -118,7 +118,7 @@ public record FileManager(@NotNull ReturnLambdaExecutor<Gson> gsonProvider, @Not
 
     @SneakyThrows
     public synchronized void save(@NotNull Object object, @NotNull String directory, @NotNull String fileName) {
-        String json = gsonProvider.execute().toJson(object);
+        String json = gsonHolder.value().toJson(object);
 
         if (!fileName.endsWith(".json")) {
             fileName += ".json";
@@ -149,10 +149,10 @@ public record FileManager(@NotNull ReturnLambdaExecutor<Gson> gsonProvider, @Not
             Logger.log("The file " + fileName + " in directory '" + directory + "' is empty. Creating a new instance...");
             output = clazz.getDeclaredConstructor().newInstance();
         } else {
-            output = gsonProvider.execute().fromJson(oldJson, clazz);
+            output = gsonHolder.value().fromJson(oldJson, clazz);
         }
 
-        String newJson = gsonProvider.execute().toJson(output);
+        String newJson = gsonHolder.value().toJson(output);
 
         writeFileAndBackup(directory, fileName, newJson);
 

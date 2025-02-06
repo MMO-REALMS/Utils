@@ -10,13 +10,13 @@ import com.voinearadu.utils.event_manager.EventManager;
 import com.voinearadu.utils.file_manager.dto.gson.SerializableListGsonTypeAdapter;
 import com.voinearadu.utils.file_manager.dto.gson.SerializableMapGsonTypeAdapter;
 import com.voinearadu.utils.file_manager.dto.gson.SerializableObjectTypeAdapter;
+import com.voinearadu.utils.generic.dto.Holder;
 import com.voinearadu.utils.message_builder.MessageBuilderManager;
 import com.voinearadu.utils.redis_manager.dto.RedisConfig;
 import com.voinearadu.utils.redis_manager.dto.RedisResponse;
 import com.voinearadu.utils.redis_manager.dto.gson.RedisRequestGsonTypeAdapter;
 import com.voinearadu.utils.redis_manager.event.RedisRequest;
 import com.voinearadu.utils.redis_manager.manager.RedisManager;
-import lombok.Getter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +28,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class RedisTest {
 
     private static RedisManager redisManager;
-    private static @Getter Gson gson;
+    private static final Holder<Gson> gsonHolder =  Holder.empty();
+
 
     @BeforeAll
     public static void init() {
@@ -36,7 +37,7 @@ public class RedisTest {
 
         ClassLoader classLoader = RedisTest.class.getClassLoader();
 
-        redisManager = new RedisManager(RedisTest::getGson, new RedisConfig(), classLoader, new EventManager(), true, true);
+        redisManager = new RedisManager(gsonHolder, new RedisConfig(), classLoader, new EventManager(), true, true);
 
         RedisRequestGsonTypeAdapter redisRequestTypeAdapter = new RedisRequestGsonTypeAdapter(classLoader, redisManager);
         SerializableListGsonTypeAdapter serializableListGsonTypeAdapter = new SerializableListGsonTypeAdapter(classLoader);
@@ -50,7 +51,8 @@ public class RedisTest {
                 .registerTypeAdapter(serializableMapGsonTypeAdapter.getSerializedClass(), serializableMapGsonTypeAdapter)
                 .registerTypeAdapter(serializableObjectTypeAdapter.getSerializedClass(), serializableObjectTypeAdapter);
 
-        gson = gsonBuilder.create();
+        Gson gson = gsonBuilder.create();
+        gsonHolder.set(gson);
 
         redisManager.getEventManager().register(TestListener.class);
     }
@@ -95,7 +97,7 @@ public class RedisTest {
         event.setId(100);
         event.setOriginator("test_env");
 
-        String json = redisManager.getGson().execute().toJson(event);
+        String json = redisManager.getGsonHolder().value().toJson(event);
 
         RedisRequest<?> event2 = RedisRequest.deserialize(redisManager, json);
 
@@ -112,7 +114,7 @@ public class RedisTest {
         event.setId(100);
         event.setOriginator("test_env");
 
-        String json = redisManager.getGson().execute().toJson(event);
+        String json = redisManager.getGsonHolder().value().toJson(event);
 
         RedisRequest<?> event2 = RedisRequest.deserialize(redisManager, json);
 

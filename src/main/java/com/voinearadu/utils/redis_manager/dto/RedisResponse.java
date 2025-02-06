@@ -58,7 +58,7 @@ public class RedisResponse<T> {
         }
 
         //noinspection unchecked
-        T object = (T) redisManager.getGson().execute().fromJson(response.getResponse(), response.getResponseClass());
+        T object = (T) redisManager.getGsonHolder().value().fromJson(response.getResponse(), response.getResponseClass());
         respond(object, response.getResponseClassName());
     }
 
@@ -75,7 +75,7 @@ public class RedisResponse<T> {
 
     @Override
     public String toString() {
-        return redisManager.getGson().execute().toJson(this);
+        return redisManager.getGsonHolder().value().toJson(this);
     }
 
 }

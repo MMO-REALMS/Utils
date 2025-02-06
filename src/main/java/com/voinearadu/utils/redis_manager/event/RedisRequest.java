@@ -36,7 +36,7 @@ public class RedisRequest<Response> implements IEvent {
     }
 
     public static @Nullable RedisRequest<?> deserialize(RedisManager redisManager, String data) {
-        RedisRequest<?> event = redisManager.getGson().execute().fromJson(data, RedisRequest.class);
+        RedisRequest<?> event = redisManager.getGsonHolder().value().fromJson(data, RedisRequest.class);
 
         if (event == null) {
             return null;
@@ -69,7 +69,7 @@ public class RedisRequest<Response> implements IEvent {
 
     @Override
     public String toString() {
-        return redisManager.getGson().execute().toJson(this);
+        return redisManager.getGsonHolder().value().toJson(this);
     }
 
     public void respond(Response response) {

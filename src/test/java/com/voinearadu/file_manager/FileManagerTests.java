@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.voinearadu.file_manager.dto.files.FileObject;
 import com.voinearadu.utils.file_manager.FileManager;
+import com.voinearadu.utils.generic.dto.Holder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -17,11 +18,13 @@ public class FileManagerTests {
     private static final String TEST_1 = "test1";
 
     private static FileManager fileManager;
+    private static Holder<Gson> gsonHolder;
 
     @BeforeAll
     public static void init() {
         Gson gson = new GsonBuilder().create();
-        fileManager = new FileManager(() -> gson, "tmp");
+        gsonHolder = Holder.of(gson);
+        fileManager = new FileManager(gsonHolder, "tmp");
     }
 
     @AfterAll

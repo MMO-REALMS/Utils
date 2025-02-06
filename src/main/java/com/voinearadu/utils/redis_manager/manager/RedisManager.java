@@ -2,10 +2,10 @@ package com.voinearadu.utils.redis_manager.manager;
 
 import com.google.gson.Gson;
 import com.voinearadu.utils.event_manager.EventManager;
+import com.voinearadu.utils.generic.dto.Holder;
 import com.voinearadu.utils.lambda.ScheduleUtils;
 import com.voinearadu.utils.lambda.lambda.ArgLambdaExecutor;
 import com.voinearadu.utils.lambda.lambda.ReturnArgLambdaExecutor;
-import com.voinearadu.utils.lambda.lambda.ReturnLambdaExecutor;
 import com.voinearadu.utils.logger.Logger;
 import com.voinearadu.utils.redis_manager.dto.RedisConfig;
 import com.voinearadu.utils.redis_manager.dto.RedisResponse;
@@ -31,7 +31,7 @@ public class RedisManager {
     private final @Getter RedisConfig redisConfig;
     private final @Getter ClassLoader classLoader;
     private final @Getter boolean localOnly;
-    private final @Getter ReturnLambdaExecutor<Gson> gson;
+    private final @Getter Holder<Gson> gsonHolder;
     protected @Getter JedisPubSub subscriberJedisPubSub;
     private @Getter Thread redisTread;
     private @Getter long id;
@@ -67,18 +67,18 @@ public class RedisManager {
         }
     }
 
-    public RedisManager(ReturnLambdaExecutor<Gson> gsonProvider, RedisConfig redisConfig, ClassLoader classLoader, EventManager eventManager) {
+    public RedisManager(Holder<Gson> gsonProvider, RedisConfig redisConfig, ClassLoader classLoader, EventManager eventManager) {
         this(gsonProvider, redisConfig, classLoader, eventManager, false);
     }
 
-    public RedisManager(ReturnLambdaExecutor<Gson> gsonProvider, RedisConfig redisConfig, ClassLoader classLoader, EventManager eventManager, boolean debug) {
+    public RedisManager(Holder<Gson> gsonProvider, RedisConfig redisConfig, ClassLoader classLoader, EventManager eventManager, boolean debug) {
         this(gsonProvider, redisConfig, classLoader, eventManager, debug, false);
     }
 
-    public RedisManager(ReturnLambdaExecutor<Gson> gsonProvider, RedisConfig redisConfig, ClassLoader classLoader, EventManager eventManager, boolean debug, boolean localOnly) {
+    public RedisManager(Holder<Gson> gsonHolder, RedisConfig redisConfig, ClassLoader classLoader, EventManager eventManager, boolean debug, boolean localOnly) {
         instance = this;
 
-        this.gson = gsonProvider;
+        this.gsonHolder = gsonHolder;
         this.redisConfig = redisConfig;
         this.localOnly = localOnly;
         this.classLoader = classLoader;
@@ -104,7 +104,7 @@ public class RedisManager {
 
         if (event instanceof ResponseEvent) {
             if (event.getTarget().equals(event.getOriginator())) {
-                debugger.sendResponse("LOCAL", gson.execute().toJson(event));
+                debugger.sendResponse("LOCAL", gsonHolder.value().toJson(event));
                 eventManager.fire(event);
 
                 ResponseEvent responseEvent = (ResponseEvent) event;
@@ -118,10 +118,10 @@ public class RedisManager {
                 return null;
             }
 
-            debugger.sendResponse(event.getTarget(), gson.execute().toJson(event));
+            debugger.sendResponse(event.getTarget(), gsonHolder.value().toJson(event));
 
             executeOnJedisAndForget(jedis ->
-                    jedis.publish(event.getTarget(), gson.execute().toJson(event))
+                    jedis.publish(event.getTarget(), gsonHolder.value().toJson(event))
             );
 
             return null;
@@ -134,16 +134,16 @@ public class RedisManager {
         awaitingResponses.add(redisResponse);
 
         if (event.getTarget().equals(event.getOriginator())) {
-            debugger.send("LOCAL", gson.execute().toJson(event));
+            debugger.send("LOCAL", gsonHolder.value().toJson(event));
             eventManager.fire(event);
 
             return redisResponse;
         }
 
-        debugger.send(event.getTarget(), gson.execute().toJson(event));
+        debugger.send(event.getTarget(), gsonHolder.value().toJson(event));
 
         executeOnJedisAndForget(jedis ->
-                jedis.publish(event.getTarget(), gson.execute().toJson(event))
+                jedis.publish(event.getTarget(), gsonHolder.value().toJson(event))
         );
 
         return redisResponse;

@@ -28,7 +28,7 @@ public class ResponseEvent extends RedisRequest<Object> {
             return;
         }
 
-        this.response = redisManager.getGson().execute().toJson(response);
+        this.response = redisManager.getGsonHolder().value().toJson(response);
         this.responseClassName = response.getClass().getName();
 
         if (response.getClass().isAssignableFrom(List.class)) {
@@ -54,10 +54,10 @@ public class ResponseEvent extends RedisRequest<Object> {
 
             Class<?> aditionalClass = redisManager.getClassLoader().loadClass(additionalData);
 
-            return redisManager.getGson().execute().fromJson(response, TypeToken.getParameterized(List.class, aditionalClass));
+            return redisManager.getGsonHolder().value().fromJson(response, TypeToken.getParameterized(List.class, aditionalClass));
         }
 
-        return redisManager.getGson().execute().fromJson(response, clazz);
+        return redisManager.getGsonHolder().value().fromJson(response, clazz);
     }
 
     @SneakyThrows(value = {ClassNotFoundException.class})

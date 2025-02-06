@@ -2,6 +2,7 @@ package com.voinearadu.utils.redis_manager.manager;
 
 import com.google.gson.Gson;
 import com.voinearadu.utils.event_manager.EventManager;
+import com.voinearadu.utils.generic.dto.Holder;
 import com.voinearadu.utils.lambda.lambda.ReturnLambdaExecutor;
 import com.voinearadu.utils.logger.Logger;
 import com.voinearadu.utils.redis_manager.dto.RedisConfig;
@@ -17,7 +18,7 @@ public class DebugRedisManager extends RedisManager {
 
     private final List<String> channels;
 
-    public DebugRedisManager(ReturnLambdaExecutor<Gson> gsonProvider, RedisConfig redisConfig, ClassLoader classLoader, EventManager eventManager, boolean debug, boolean localOnly, List<String> channels) {
+    public DebugRedisManager(Holder<Gson> gsonProvider, RedisConfig redisConfig, ClassLoader classLoader, EventManager eventManager, boolean debug, boolean localOnly, List<String> channels) {
         super(gsonProvider, redisConfig, classLoader, eventManager, debug, localOnly);
         this.channels = channels;
     }
