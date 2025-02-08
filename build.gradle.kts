@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
     // Dependencies
-    api(libs.gson)
+    api(libs.google.gson)
     compileOnly(libs.jedis)
     testImplementation(libs.jedis)
 
