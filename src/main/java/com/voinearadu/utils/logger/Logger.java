@@ -43,6 +43,10 @@ public class Logger {
         return clazz;
     }
 
+    public static void debug() {
+        log(Level.DEBUG, "", ConsoleColor.BRIGHT_BLACK, 1);
+    }
+
     public static void debug(Object object) {
         log(Level.DEBUG, object, ConsoleColor.BRIGHT_BLACK, 1);
     }

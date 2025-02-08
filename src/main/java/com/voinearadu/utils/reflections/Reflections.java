@@ -10,6 +10,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -91,7 +92,7 @@ public class Reflections {
 
     @SuppressWarnings("UnusedReturnValue")
     public Reflections registerDirectory(File directory) {
-        if(!directory.isDirectory()){
+        if (!directory.isDirectory()) {
             return this;
         }
 
@@ -103,7 +104,7 @@ public class Reflections {
 
         Queue<File> toExplore = new LinkedList<>(Arrays.asList(files));
 
-        while(!toExplore.isEmpty()){
+        while (!toExplore.isEmpty()) {
             File file = toExplore.poll();
 
             if (file.isDirectory()) {
@@ -116,7 +117,7 @@ public class Reflections {
                 continue;
             }
 
-            if(!file.getName().endsWith(".class")){
+            if (!file.getName().endsWith(".class")) {
                 continue;
             }
 
@@ -261,10 +262,15 @@ public class Reflections {
             }
         }
 
-        public @NotNull Set<Class<?>> getClasses() {
+        public @NotNull Set<Class<?>> getClasses(boolean includeNonConcreteTypes) {
             Set<Class<?>> classes = new HashSet<>();
 
             for (Class<?> clazz : reflections.getClasses()) {
+
+                if (!includeNonConcreteTypes && (clazz.isInterface() || clazz.isAnnotation() || clazz.isEnum() || Modifier.isAbstract(clazz.getModifiers()))) {
+                    continue;
+                }
+
                 for (String domain : searchDomain) {
                     String packageName = clazz.getPackageName();
 
@@ -279,9 +285,13 @@ public class Reflections {
         }
 
         public @NotNull Set<Class<?>> getTypesAnnotatedWith(@NotNull Class<? extends Annotation> annotation) {
+            return getTypesAnnotatedWith(annotation, true);
+        }
+
+        public @NotNull Set<Class<?>> getTypesAnnotatedWith(@NotNull Class<? extends Annotation> annotation, boolean includeNonConcreteTypes) {
             Set<Class<?>> classes = new HashSet<>();
 
-            for (Class<?> clazz : getClasses()) {
+            for (Class<?> clazz : getClasses(includeNonConcreteTypes)) {
                 if (clazz.getDeclaredAnnotation(annotation) != null) {
                     classes.add(clazz);
                 }
@@ -291,9 +301,14 @@ public class Reflections {
         }
 
         public @NotNull Set<Method> getMethodsAnnotatedWith(@NotNull Class<? extends Annotation> annotation) {
+            return getMethodsAnnotatedWith(annotation, true);
+        }
+
+
+        public @NotNull Set<Method> getMethodsAnnotatedWith(@NotNull Class<? extends Annotation> annotation, boolean includeNonConcreteTypes) {
             Set<Method> methods = new HashSet<>();
 
-            for (Class<?> clazz : getClasses()) {
+            for (Class<?> clazz : getClasses(includeNonConcreteTypes)) {
                 for (Method method : clazz.getDeclaredMethods()) {
                     if (method.getDeclaredAnnotation(annotation) != null) {
                         methods.add(method);
@@ -305,12 +320,20 @@ public class Reflections {
         }
 
         public @NotNull <T> Set<Class<? extends T>> getOfType(@NotNull Class<T> typeClass) {
+            return getOfType(typeClass, true);
+        }
+
+        public @NotNull <T> Set<Class<? extends T>> getOfType(@NotNull Class<T> typeClass, boolean includeNonConcreteTypes) {
             Set<Class<? extends T>> classes = new HashSet<>();
 
-            for (Class<?> aClass : getClasses()) {
-                if (typeClass.isAssignableFrom(aClass)) {
+            for (Class<?> clazz : getClasses(includeNonConcreteTypes)) {
+                if (typeClass.isAssignableFrom(clazz)) {
+                    if (!includeNonConcreteTypes && (clazz.isInterface() || clazz.isAnnotation() || clazz.isEnum() || clazz.isSynthetic())) {
+                        continue;
+                    }
+
                     //noinspection unchecked
-                    classes.add((Class<? extends T>) aClass);
+                    classes.add((Class<? extends T>) clazz);
                 }
             }
 
