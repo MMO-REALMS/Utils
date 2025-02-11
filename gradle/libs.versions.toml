@@ -18,5 +18,6 @@ apache_commons_compress = { module = "org.apache.commons:commons-compress", vers
 apache_commons_lang3 = { module = "org.apache.commons:commons-lang3", version = "3.17.0" }
 apache_commons_pool2 = { module = "org.apache.commons:commons-pool2", version = "2.12.0" }
 apache_commons_io = { module = "commons-io:commons-io", version = "2.18.0" }
-
+google_guice = { module = "com.google.inject:guice", version = "7.0.0" }
+google_guice_assistedinject = { module = "com.google.inject.extensions:guice-assistedinject", version = "7.0.0" }
 

@@ -1,9 +1,8 @@
 package com.voinearadu.utils.redis_manager.dto;
 
+import com.voinearadu.utils.redis_manager.utils.NetworkUtils;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -15,7 +14,7 @@ public class RedisConfig {
     private String channelBase = "channel";
 
     // Advanced settings
-    private String redisID = UUID.randomUUID().toString();
+    private String redisID = NetworkUtils.getHostname();
     private int timeout = 2000; // 2s
     private int waitBeforeIteration = 50; // 50ms
 

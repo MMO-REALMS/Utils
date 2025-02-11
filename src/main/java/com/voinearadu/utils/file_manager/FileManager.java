@@ -21,7 +21,6 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 
     public synchronized @NotNull String readFile(@NotNull String directory, @NotNull String fileName) {
         Path path = Paths.get(getDataFolder().getPath(), directory, fileName);
-        StringBuilder json = new StringBuilder();
         File file = path.toFile();
 
         if (!file.exists()) {
@@ -34,8 +33,19 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
                 return "";
             }
         }
+        try {
+            return readFile(file);
+        } catch (Exception error) {
+            Logger.error(error);
+            Logger.warn("Could not read file " + fileName + " in directory " + directory);
+            return "";
+        }
+    }
 
-        try (BufferedReader reader = Files.newBufferedReader(path)) {
+    public static String readFile(File file) throws IOException {
+        StringBuilder json = new StringBuilder();
+
+        try (BufferedReader reader = Files.newBufferedReader(file.toPath())) {
             String curLine = reader.readLine();
             while (curLine != null) {
                 json.append(curLine).append('\n');
@@ -43,10 +53,6 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
             }
 
             return json.toString().strip();
-        } catch (Exception error) {
-            Logger.error(error);
-            Logger.warn("Could not read file " + fileName + " in directory " + directory);
-            return "";
         }
     }
 
@@ -167,7 +173,6 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 
         return new File(System.getProperty("user.dir") + path);
     }
-
 
 
 }

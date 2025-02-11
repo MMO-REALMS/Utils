@@ -23,6 +23,8 @@ dependencies {
     api(libs.gson)
     compileOnly(libs.jedis)
     testImplementation(libs.jedis)
+    api(libs.google.guice)
+    api(libs.google.guice.assistedinject)
 
     // Annotations
     compileOnly(libs.lombok)

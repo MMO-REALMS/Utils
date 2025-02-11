@@ -1,10 +1,13 @@
 package com.voinearadu.utils.event_manager;
 
+import com.google.inject.Injector;
 import com.voinearadu.utils.event_manager.annotation.EventHandler;
 import com.voinearadu.utils.event_manager.dto.EventMethod;
 import com.voinearadu.utils.event_manager.dto.IEvent;
+import com.voinearadu.utils.generic.dto.Holder;
 import com.voinearadu.utils.logger.Logger;
-import lombok.NoArgsConstructor;
+import com.voinearadu.utils.message_builder.MessageBuilder;
+import com.voinearadu.utils.reflections.Reflections;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Constructor;
@@ -14,21 +17,32 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-@NoArgsConstructor
 public class EventManager {
 
     private final HashMap<Class<?>, List<EventMethod>> methods = new HashMap<>();
+    private final Holder<Injector> injectorHolder;
+
     private ExternalRegistrar externalRegistrar = new ExternalRegistrar() {
         @Override
         public boolean register(Object object, Method method, Class<?> eventClass) {
+            Logger.warn("No external registrar found");
             return false;
         }
 
         @Override
         public boolean unregister(Method method, Class<?> eventClass) {
+            Logger.warn("No external registrar found");
             return false;
         }
     };
+
+    public EventManager() {
+        this(Holder.empty());
+    }
+
+    public EventManager(Holder<Injector> injectorHolder) {
+        this.injectorHolder = injectorHolder;
+    }
 
     /**
      * Used to register an external registrar, that can catch any event that does not implement {@link IEvent}
@@ -56,6 +70,8 @@ public class EventManager {
      * @param externalRegistrar the external registrar
      */
     public void registerExternalRegistrar(ExternalRegistrar externalRegistrar) {
+        Logger.good("[EventManager] Registered external registrar");
+        Logger.debug(this);
         this.externalRegistrar = externalRegistrar;
     }
 
@@ -84,7 +100,8 @@ public class EventManager {
     }
 
     public void register(@NotNull Object object) {
-        for (Method method : object.getClass().getDeclaredMethods()) {
+        Logger.debug(Reflections.getMethods(object.getClass()));
+        for (Method method : Reflections.getMethods(object.getClass())) {
             register(object, method);
         }
 
@@ -105,10 +122,20 @@ public class EventManager {
         Class<?> eventClass = event.getClass();
 
         if (!methods.containsKey(eventClass)) {
+            Logger.warn(new MessageBuilder("No listeners found for event {event}")
+                    .parse("event", eventClass.getSimpleName())
+            );
             return;
         }
 
         List<EventMethod> eventMethods = methods.get(eventClass);
+
+        if(eventMethods.isEmpty()){
+            Logger.warn(new MessageBuilder("No listeners found for event {event}")
+                    .parse("event", eventClass.getSimpleName())
+            );
+            return;
+        }
 
         for (EventMethod method : eventMethods) {
             method.fire(event, suppressExceptions);
@@ -117,18 +144,29 @@ public class EventManager {
 
     protected Class<?> getEventClass(@NotNull Method method) {
         if (!method.isAnnotationPresent(EventHandler.class)) {
+            Logger.debug(new MessageBuilder("Method {class}#{method} does not have the EventHandler annotation")
+                    .parse("class", method.getDeclaringClass())
+                    .parse("method", method.getName())
+            );
             return null;
         }
 
         EventHandler annotation = method.getAnnotation(EventHandler.class);
 
         if (annotation.ignore()) {
+            Logger.debug(new MessageBuilder("Ignoring method {class}#{method}")
+                    .parse("class", method.getDeclaringClass())
+                    .parse("method", method.getName())
+            );
             return null;
         }
 
         if (method.getParameterCount() != 1) {
-            Logger.error("Method " + method.getName() + " from class " + method.getDeclaringClass() + " has " +
-                    method.getParameterCount() + " parameters, expected 1");
+            Logger.error(new MessageBuilder("Method {method} from class {class} has {count} parameters, expected 1")
+                    .parse("method", method.getName())
+                    .parse("class", method.getDeclaringClass())
+                    .parse("count", method.getParameterCount())
+            );
             return null;
         }
 
@@ -142,12 +180,23 @@ public class EventManager {
             return;
         }
 
+        if (!injectorHolder.isEmpty()) {
+            injectorHolder.value().injectMembers(parentObject);
+        }
+
+        Logger.debug(new MessageBuilder("Registering listener {listener} -> {class}#{method}")
+                .parse("listener", eventClass.getSimpleName())
+                .parse("class", method.getDeclaringClass())
+                .parse("method", method.getName())
+        );
+
         if (!IEvent.class.isAssignableFrom(eventClass)) {
             boolean result = externalRegistrar.register(parentObject, method, eventClass);
 
             if (!result) {
                 Logger.error("Failed to register method " + method.getName() + " from class " +
                         method.getDeclaringClass() + " with event class " + eventClass.getName());
+                Logger.debug(this);
             }
 
             return;

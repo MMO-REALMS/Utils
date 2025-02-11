@@ -26,4 +26,8 @@ public class Holder<T>{
         return this;
     }
 
+    public boolean isEmpty() {
+        return value.get() == null;
+    }
+
 }

@@ -216,6 +216,34 @@ public class Reflections {
         return output;
     }
 
+    public static @NotNull Set<Method> getMethods(@NotNull Class<?> clazz) {
+        Set<Method> output = new HashSet<>();
+
+        Queue<Class<?>> classesToSearch = new LinkedList<>();
+        classesToSearch.add(clazz);
+
+        while (!classesToSearch.isEmpty()) {
+            Class<?> searchClass = classesToSearch.poll();
+
+            if (searchClass == null) {
+                continue;
+            }
+
+            Class<?> superclass = searchClass.getSuperclass();
+
+            if(!superclass.equals(Object.class)){
+                classesToSearch.add(searchClass.getSuperclass());
+            }
+
+            for (Method method : searchClass.getDeclaredMethods()) {
+                method.setAccessible(true);
+                output.add(method);
+            }
+        }
+
+        return output;
+    }
+
     public static Method getCallingMethod(int depth) {
         StackWalker.StackFrame stackFrame = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
                 .walk(stream -> stream
