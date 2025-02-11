@@ -26,6 +26,8 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
         if (!file.exists()) {
             try {
                 //noinspection ResultOfMethodCallIgnored
+                file.getParentFile().mkdirs();
+                //noinspection ResultOfMethodCallIgnored
                 file.createNewFile();
             } catch (IOException error) {
                 Logger.error("Could not create file " + fileName + " in directory " + Paths.get(getDataFolder().getPath(), directory));
