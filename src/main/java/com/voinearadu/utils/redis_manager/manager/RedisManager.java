@@ -9,9 +9,11 @@ import com.voinearadu.utils.lambda.lambda.ReturnArgLambdaExecutor;
 import com.voinearadu.utils.logger.Logger;
 import com.voinearadu.utils.redis_manager.dto.RedisConfig;
 import com.voinearadu.utils.redis_manager.dto.RedisResponse;
+import com.voinearadu.utils.redis_manager.event.RedisBroadcast;
 import com.voinearadu.utils.redis_manager.event.RedisRequest;
 import com.voinearadu.utils.redis_manager.event.impl.ResponseEvent;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -54,7 +56,7 @@ public class RedisManager {
     }
 
     public void executeOnJedisAndForget(ArgLambdaExecutor<Jedis> executor) {
-        executeOnJedisAndForget(executor, error -> {
+        executeOnJedisAndForget(executor, _ -> {
         });
     }
 
@@ -99,55 +101,7 @@ public class RedisManager {
         debugger.setEnabled(debug);
     }
 
-    public <T> RedisResponse<T> send(RedisRequest<T> event) {
-        event.setOriginator(redisConfig.getChannel());
 
-        if (event instanceof ResponseEvent) {
-            if (event.getTarget().equals(event.getOriginator())) {
-                debugger.sendResponse("LOCAL", gsonHolder.value().toJson(event));
-                eventManager.fire(event);
-
-                ResponseEvent responseEvent = (ResponseEvent) event;
-
-                RedisResponse<?> response = getResponse(responseEvent);
-                if (response == null) {
-                    return null;
-                }
-                response.respond(responseEvent);
-
-                return null;
-            }
-
-            debugger.sendResponse(event.getTarget(), gsonHolder.value().toJson(event));
-
-            executeOnJedisAndForget(jedis ->
-                    jedis.publish(event.getTarget(), gsonHolder.value().toJson(event))
-            );
-
-            return null;
-        }
-
-        id++;
-        event.setId(id);
-
-        RedisResponse<T> redisResponse = new RedisResponse<>(this, event.getId());
-        awaitingResponses.add(redisResponse);
-
-        if (event.getTarget().equals(event.getOriginator())) {
-            debugger.send("LOCAL", gsonHolder.value().toJson(event));
-            eventManager.fire(event);
-
-            return redisResponse;
-        }
-
-        debugger.send(event.getTarget(), gsonHolder.value().toJson(event));
-
-        executeOnJedisAndForget(jedis ->
-                jedis.publish(event.getTarget(), gsonHolder.value().toJson(event))
-        );
-
-        return redisResponse;
-    }
 
     private void connectJedis() {
         if (jedisPool != null) {
@@ -200,6 +154,14 @@ public class RedisManager {
 
                 RedisRequest<?> redisEvent = RedisRequest.deserialize(_this, event);
 
+                if(redisEvent instanceof RedisBroadcast) {
+                    if (redisEvent.getTarget().equals(redisEvent.getOriginator())) {
+                        // [!] Do not self file broadcast events // TODO Add to java docs of RedisBroadcast
+                        return;
+                    }
+                    return;
+                }
+
                 if (redisEvent == null) {
                     Logger.warn("Received invalid RedisEvent: " + event);
                     return;
@@ -248,7 +210,7 @@ public class RedisManager {
                 executeOnJedisAndForget(jedis -> {
                     debugger.subscribed(redisConfig.getChannel());
                     jedis.subscribe(subscriberJedisPubSub, getChannels());
-                }, error -> {
+                }, _ -> {
                     Logger.error("Lost connection to redis server. Retrying in 3 seconds...");
                     try {
                         Thread.sleep(3000);
@@ -264,5 +226,55 @@ public class RedisManager {
 
     protected String[] getChannels() {
         return new String[]{redisConfig.getChannel(), redisConfig.getChannelBase() + "#*"};
+    }
+
+    public <T> RedisResponse<T> send(@NotNull RedisRequest<T> event) {
+        event.setOriginator(redisConfig.getChannel());
+
+        if (event instanceof ResponseEvent) {
+            if (event.getTarget().equals(event.getOriginator())) {
+                debugger.sendResponse("LOCAL", gsonHolder.value().toJson(event));
+                eventManager.fire(event);
+
+                ResponseEvent responseEvent = (ResponseEvent) event;
+
+                RedisResponse<?> response = getResponse(responseEvent);
+                if (response == null) {
+                    return null;
+                }
+                response.respond(responseEvent);
+
+                return null;
+            }
+
+            debugger.sendResponse(event.getTarget(), gsonHolder.value().toJson(event));
+
+            executeOnJedisAndForget(jedis ->
+                    jedis.publish(event.getTarget(), gsonHolder.value().toJson(event))
+            );
+
+            return null;
+        }
+
+        id++;
+        event.setId(id);
+
+        RedisResponse<T> redisResponse = new RedisResponse<>(this, event.getId());
+        awaitingResponses.add(redisResponse);
+
+        if (event.getTarget().equals(event.getOriginator())) {
+            debugger.send("LOCAL", gsonHolder.value().toJson(event));
+            eventManager.fire(event);
+
+            return redisResponse;
+        }
+
+        debugger.send(event.getTarget(), gsonHolder.value().toJson(event));
+
+        executeOnJedisAndForget(jedis ->
+                jedis.publish(event.getTarget(), gsonHolder.value().toJson(event))
+        );
+
+        return redisResponse;
     }
 }

@@ -3,12 +3,12 @@ package com.voinearadu.utils.redis_manager.manager;
 import com.google.gson.Gson;
 import com.voinearadu.utils.event_manager.EventManager;
 import com.voinearadu.utils.generic.dto.Holder;
-import com.voinearadu.utils.lambda.lambda.ReturnLambdaExecutor;
 import com.voinearadu.utils.logger.Logger;
 import com.voinearadu.utils.redis_manager.dto.RedisConfig;
 import com.voinearadu.utils.redis_manager.dto.RedisResponse;
 import com.voinearadu.utils.redis_manager.event.RedisRequest;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import redis.clients.jedis.JedisPubSub;
 
 import java.util.List;
@@ -24,7 +24,7 @@ public class DebugRedisManager extends RedisManager {
     }
 
     @Override
-    public <T> RedisResponse<T> send(RedisRequest<T> event) {
+    public <T> RedisResponse<T> send(@NotNull RedisRequest<T> event) {
         Logger.log("Cannot sent events from DebugRedisManager");
         return new RedisResponse<>(this, 0);
     }
