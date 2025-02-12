@@ -231,7 +231,7 @@ public class Reflections {
 
             Class<?> superclass = searchClass.getSuperclass();
 
-            if(!superclass.equals(Object.class)){
+            if (!superclass.equals(Object.class)) {
                 classesToSearch.add(searchClass.getSuperclass());
             }
 

@@ -66,7 +66,7 @@ tasks.register("sourcesJar", Jar::class) {
     from(sourceSets["main"].allSource)
 }
 
-project.afterEvaluate{
+project.afterEvaluate {
     if (project.properties["maven.publish"] == "true") {
         project.tasks["publishMavenPublicationToMedivhSonatypeRepository"].enabled = false
         project.tasks["publishMedivhMavenJavaPublicationToVoineaRaduRepositoryRepository"].enabled = false
@@ -78,7 +78,7 @@ publishing {
         create<MavenPublication>("maven") {
             from(components["java"])
 
-            pom{
+            pom {
                 name.set("Utils Library")
                 description.set("A utility library for various purposes.")
                 url.set("https://github.com/Voinea-Radu/Utils")

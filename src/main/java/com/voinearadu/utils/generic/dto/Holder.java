@@ -2,7 +2,7 @@ package com.voinearadu.utils.generic.dto;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-public class Holder<T>{
+public class Holder<T> {
     private final AtomicReference<T> value;
 
     private Holder(T value) {

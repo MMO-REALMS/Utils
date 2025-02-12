@@ -3,7 +3,6 @@ package com.voinearadu.reflections;
 import com.voinearadu.reflections.annotation.TestAnnotation;
 import com.voinearadu.reflections.dto.TestChild;
 import com.voinearadu.reflections.dto.TestParent;
-import com.voinearadu.utils.logger.Logger;
 import com.voinearadu.utils.reflections.Reflections;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

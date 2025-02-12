@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HolderTests {
 
@@ -33,7 +33,7 @@ public class HolderTests {
 
     @AllArgsConstructor
     @Getter
-    private static class HolderHolder{
+    private static class HolderHolder {
         private final Holder<String> holder;
     }
 

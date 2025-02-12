@@ -102,7 +102,6 @@ public class RedisManager {
     }
 
 
-
     private void connectJedis() {
         if (jedisPool != null) {
             jedisPool.destroy();
@@ -154,7 +153,7 @@ public class RedisManager {
 
                 RedisRequest<?> redisEvent = RedisRequest.deserialize(_this, event);
 
-                if(redisEvent instanceof RedisBroadcast) {
+                if (redisEvent instanceof RedisBroadcast) {
                     if (redisEvent.getTarget().equals(redisEvent.getOriginator())) {
                         // [!] Do not self file broadcast events // TODO Add to java docs of RedisBroadcast
                         return;

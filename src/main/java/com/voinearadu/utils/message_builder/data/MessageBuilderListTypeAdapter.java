@@ -40,7 +40,7 @@ public class MessageBuilderListTypeAdapter extends GsonTypeAdapter<MessageBuilde
             array.add(line);
         }
 
-            return array;
-        }
-
+        return array;
     }
+
+}

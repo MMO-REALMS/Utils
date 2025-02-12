@@ -2,7 +2,7 @@ package com.voinearadu.utils.event_manager.dto;
 
 public interface IEvent {
 
-    default void fire(){
+    default void fire() {
         fire(true);
     }
 

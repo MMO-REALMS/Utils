@@ -130,7 +130,7 @@ public class EventManager {
 
         List<EventMethod> eventMethods = methods.get(eventClass);
 
-        if(eventMethods.isEmpty()){
+        if (eventMethods.isEmpty()) {
             Logger.warn(new MessageBuilder("No listeners found for event {event}")
                     .parse("event", eventClass.getSimpleName())
             );

@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class RedisTest {
 
     private static RedisManager redisManager;
-    private static final Holder<Gson> gsonHolder =  Holder.empty();
+    private static final Holder<Gson> gsonHolder = Holder.empty();
 
 
     @BeforeAll
