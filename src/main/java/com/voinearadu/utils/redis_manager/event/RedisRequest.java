@@ -64,7 +64,7 @@ public class RedisRequest<Response> implements IEvent {
 
     @Override
     public void fire(boolean suppressExceptions) {
-
+        redisManager.getEventManager().fire(this, suppressExceptions);
     }
 
     @Override

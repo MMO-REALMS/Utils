@@ -1,5 +1,6 @@
 package com.voinearadu.utils.lambda;
 
+import com.voinearadu.utils.generic.Time;
 import com.voinearadu.utils.lambda.lambda.LambdaExecutor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -57,6 +58,10 @@ public class ScheduleUtils {
         Thread thread = Thread.ofVirtual().start(() -> runTaskLater(task, delay));
         task.setThread(thread);
         return task;
+    }
+
+    public static @NotNull CancelableTimeTask runTaskTimerAsync(@NotNull LambdaExecutor executor, Time period) {
+        return runTaskTimerAsync(executor, period.toMilliseconds());
     }
 
     @SuppressWarnings("unused")
