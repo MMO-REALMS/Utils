@@ -118,6 +118,14 @@ public class Logger {
         LOG_HANDLER.log(log, id);
     }
 
+    public static void printStackTrace() {
+        try {
+            throw new Exception();
+        } catch (Exception e) {
+            debug(StackTraceUtils.toString(e));
+        }
+    }
+
     public interface Handler {
         @SuppressWarnings("unused")
         default void log(String log, String id) {
