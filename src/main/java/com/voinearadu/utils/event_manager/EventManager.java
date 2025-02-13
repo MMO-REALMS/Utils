@@ -9,6 +9,7 @@ import com.voinearadu.utils.logger.Logger;
 import com.voinearadu.utils.message_builder.MessageBuilder;
 import com.voinearadu.utils.reflections.Reflections;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -75,7 +76,7 @@ public class EventManager {
         this.externalRegistrar = externalRegistrar;
     }
 
-    public void register(Class<?> clazz) {
+    public @Nullable Object createObject(Class<?> clazz){
         try {
             Constructor<?> constructor = null;
 
@@ -87,16 +88,26 @@ public class EventManager {
 
             if (constructor == null) {
                 Logger.error("No constructors found for class " + clazz.getName());
-                return;
+                return null;
             }
 
             constructor.setAccessible(true);
-            register(constructor.newInstance());
+            return constructor.newInstance();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                  NoSuchMethodException error) {
             Logger.error("Failed to register class " + clazz.getName() + ". Was unable to find a no-args constructor");
             Logger.error(error);
         }
+
+        return null;
+    }
+
+    public void register(Class<?> clazz) {
+        Object object = createObject(clazz);
+        if (object == null) {
+            return;
+        }
+        register(object);
     }
 
     public void register(@NotNull Object object) {
