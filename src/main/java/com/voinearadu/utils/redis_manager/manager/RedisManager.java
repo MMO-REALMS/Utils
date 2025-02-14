@@ -56,7 +56,7 @@ public class RedisManager {
     }
 
     public void executeOnJedisAndForget(ArgLambdaExecutor<Jedis> executor) {
-        executeOnJedisAndForget(executor, _ -> {
+        executeOnJedisAndForget(executor, exception -> {
         });
     }
 
@@ -209,7 +209,7 @@ public class RedisManager {
                 executeOnJedisAndForget(jedis -> {
                     debugger.subscribed(redisConfig.getChannel());
                     jedis.subscribe(subscriberJedisPubSub, getChannels());
-                }, _ -> {
+                }, exception -> {
                     Logger.error("Lost connection to redis server. Retrying in 3 seconds...");
                     try {
                         Thread.sleep(3000);
