@@ -9,7 +9,6 @@ import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -19,9 +18,9 @@ import java.nio.file.Paths;
 
 public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String basePath) {
 
-    public synchronized @NotNull String readFile(@NotNull String directory, @NotNull String fileName) {
-        Path path = Paths.get(getDataFolder().getPath(), directory, fileName);
-        File file = path.toFile();
+    private synchronized @NotNull String readFile(@NotNull String directory, @NotNull String fileName) {
+        Path filePath = Paths.get(getDataFolder().getPath(), directory, fileName);
+        File file = filePath.toFile();
 
         if (!file.exists()) {
             try {
@@ -36,7 +35,7 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
             }
         }
         try {
-            return readFile(file);
+            return Files.readString(filePath);
         } catch (Exception error) {
             Logger.error(error);
             Logger.warn("Could not read file " + fileName + " in directory " + directory);
@@ -44,22 +43,8 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
         }
     }
 
-    public static String readFile(File file) throws IOException {
-        StringBuilder json = new StringBuilder();
-
-        try (BufferedReader reader = Files.newBufferedReader(file.toPath())) {
-            String curLine = reader.readLine();
-            while (curLine != null) {
-                json.append(curLine).append('\n');
-                curLine = reader.readLine();
-            }
-
-            return json.toString().strip();
-        }
-    }
-
     @SuppressWarnings("UnusedReturnValue")
-    public synchronized @Nullable Path writeFile(@NotNull String directory, @NotNull String fileName, @NotNull String content) {
+    private synchronized @Nullable Path writeFile(@NotNull String directory, @NotNull String fileName, @NotNull String content) {
         Path path = Paths.get(getDataFolder().getPath(), directory, fileName);
         File file = path.toFile();
         //noinspection ResultOfMethodCallIgnored
@@ -86,7 +71,7 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
         return path;
     }
 
-    public synchronized void writeFileAndBackup(@NotNull String directory, @NotNull String fileName, @NotNull String newContent) {
+    private synchronized void writeFileAndBackup(@NotNull String directory, @NotNull String fileName, @NotNull String newContent) {
         Path path = Paths.get(getDataFolder().getPath(), directory, fileName);
         File file = path.toFile();
         //noinspection ResultOfMethodCallIgnored
@@ -114,18 +99,18 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
         }
     }
 
-    public synchronized void save(Object object) {
+    private synchronized void save(Object object) {
         save(object, "");
     }
 
-    public synchronized void save(@NotNull Object object, String directory) {
+    private synchronized void save(@NotNull Object object, String directory) {
         Class<?> clazz = object.getClass();
 
         save(object, directory, PathUtils.toSnakeCase(clazz.getSimpleName()));
     }
 
     @SneakyThrows
-    public synchronized void save(@NotNull Object object, @NotNull String directory, @NotNull String fileName) {
+    private synchronized void save(@NotNull Object object, @NotNull String directory, @NotNull String fileName) {
         String json = gsonHolder.value().toJson(object);
 
         if (!fileName.endsWith(".json")) {
@@ -175,6 +160,5 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 
         return new File(System.getProperty("user.dir") + path);
     }
-
 
 }
