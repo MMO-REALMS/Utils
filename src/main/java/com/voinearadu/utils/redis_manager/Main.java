@@ -29,7 +29,7 @@ public class Main {
 
         new DebugRedisManager(gsonHolder, config, getClass().getClassLoader(),
                 new EventManager(), true, false, List.of(
-                "kingdoms_core_dev#*"
+                "dev#*"
         )
         );
     }

@@ -76,7 +76,7 @@ public class EventManager {
         this.externalRegistrar = externalRegistrar;
     }
 
-    public @Nullable Object createObject(Class<?> clazz){
+    public @Nullable Object createObject(Class<?> clazz) {
         try {
             Constructor<?> constructor = null;
 

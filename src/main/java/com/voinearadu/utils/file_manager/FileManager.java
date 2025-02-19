@@ -99,11 +99,11 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
         }
     }
 
-    private synchronized void save(Object object) {
+    public synchronized void save(Object object) {
         save(object, "");
     }
 
-    private synchronized void save(@NotNull Object object, String directory) {
+    public synchronized void save(@NotNull Object object, String directory) {
         Class<?> clazz = object.getClass();
 
         save(object, directory, PathUtils.toSnakeCase(clazz.getSimpleName()));
