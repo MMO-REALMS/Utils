@@ -13,11 +13,10 @@ public class NetworkUtils {
         try {
             hostname = ShellUtils.execute("hostname --fqdn");
         } catch (IOException e) {
-            Logger.warn("There was an error while trying to get the hostname. Command `hostname --fqdn` return null or does not exist");
             hostname = System.getenv("HOSTNAME");
 
             if (hostname == null) {
-                Logger.warn("There was an error while trying to get the hostname. Environment variable HOSTNAME does not exist");
+                Logger.error("There was an error while trying to get the hostname. Environment variable HOSTNAME does not exist");
                 throw new RuntimeException("Failed to get hostname");
             }
         }
