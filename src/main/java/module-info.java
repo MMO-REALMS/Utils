@@ -1,15 +1,15 @@
-module com.voinearadu.utils {
-    exports com.voinearadu.utils.event_manager;
-    exports com.voinearadu.utils.file_manager;
-    exports com.voinearadu.utils.lambda;
-    exports com.voinearadu.utils.lambda.lambda;
-    exports com.voinearadu.utils.logger;
-    exports com.voinearadu.utils.logger.dto;
-    exports com.voinearadu.utils.message_builder;
-    exports com.voinearadu.utils.redis_manager;
-    exports com.voinearadu.utils.reflections;
-    exports com.voinearadu.utils.generic;
-    exports com.voinearadu.utils.generic.dto;
+module com.raduvoinea.utils {
+    exports com.raduvoinea.utils.event_manager;
+    exports com.raduvoinea.utils.file_manager;
+    exports com.raduvoinea.utils.lambda;
+    exports com.raduvoinea.utils.lambda.lambda;
+    exports com.raduvoinea.utils.logger;
+    exports com.raduvoinea.utils.logger.dto;
+    exports com.raduvoinea.utils.message_builder;
+    exports com.raduvoinea.utils.redis_manager;
+    exports com.raduvoinea.utils.reflections;
+    exports com.raduvoinea.utils.generic;
+    exports com.raduvoinea.utils.generic.dto;
 
     requires static lombok;
     requires static org.jetbrains.annotations;
@@ -18,5 +18,4 @@ module com.voinearadu.utils {
     requires static org.apache.commons.pool2;
     requires java.sql;
     requires java.desktop;
-    requires com.google.guice;
 }

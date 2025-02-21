@@ -15,7 +15,7 @@ version = libs.versions.version.get()
 
 repositories {
     mavenCentral()
-    maven("https://repository.voinearadu.dev/repository/maven-releases/")
+    maven("https://repo.raduvoinea.com/repository/maven-releases/")
 }
 
 dependencies {
@@ -23,8 +23,6 @@ dependencies {
     api(libs.gson)
     compileOnly(libs.jedis)
     testImplementation(libs.jedis)
-    api(libs.google.guice)
-    api(libs.google.guice.assistedinject)
 
     // Annotations
     compileOnly(libs.lombok)
@@ -69,7 +67,7 @@ tasks.register("sourcesJar", Jar::class) {
 project.afterEvaluate {
     if (project.properties["maven.publish"] == "true") {
         project.tasks["publishMavenPublicationToMedivhSonatypeRepository"].enabled = false
-        project.tasks["publishMedivhMavenJavaPublicationToVoineaRaduRepositoryRepository"].enabled = false
+        project.tasks["publishMedivhMavenJavaPublicationToRaduVoineaRepository"].enabled = false
     }
 }
 
@@ -81,44 +79,44 @@ publishing {
             pom {
                 name.set("Utils Library")
                 description.set("A utility library for various purposes.")
-                url.set("https://github.com/Voinea-Radu/Utils")
+                url.set("https://github.com/Radu-Voinea/Utils")
                 licenses {
                     license {
                         name.set("MIT")
-                        url.set("https://github.com/Voinea-Radu/Utils/blob/master/LICENSE")
+                        url.set("https://github.com/Radu-Voinea/Utils/blob/master/LICENSE")
                         distribution.set("repo")
                     }
                 }
                 developers {
                     developer {
-                        id.set("voinearadu")
+                        id.set("raduvoinea")
                         name.set("Voinea Radu-Mihai")
-                        email.set("contact@voinearadu.com")
+                        email.set("contact@raduvoinea.com")
                     }
                 }
                 scm {
-                    connection.set("scm:git:git://github.com/Voinea-Radu/Utils.git")
-                    developerConnection.set("scm:git:ssh://git@github.com/Voinea-Radu/Utils.git")
-                    url.set("https://github.com/Voinea-Radu/Utils")
+                    connection.set("scm:git:git://github.com/Radu-Voinea/Utils.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/Radu-Voinea/Utils.git")
+                    url.set("https://github.com/Radu-Voinea/Utils")
                 }
             }
         }
     }
 
     repositories {
-        if (project.properties["com.voinearadu.publish"] == "true") {
-            maven(url = (project.findProperty("com.voinearadu.url") ?: "") as String) {
-                name = "VoineaRaduRepository"
+        if (project.properties["com.raduvoinea.publish"] == "true") {
+            maven(url = (project.findProperty("com.raduvoinea.url") ?: "") as String) {
+                name = "RaduVoinea"
                 credentials(PasswordCredentials::class) {
-                    username = (project.findProperty("com.voinearadu.auth.username") ?: "") as String
-                    password = (project.findProperty("com.voinearadu.auth.password") ?: "") as String
+                    username = (project.findProperty("com.raduvoinea.auth.username") ?: "") as String
+                    password = (project.findProperty("com.raduvoinea.auth.password") ?: "") as String
                 }
             }
         }
 
         if (project.properties["generic.publish"] == "true") {
             maven(url = (project.findProperty("generic.url") ?: "") as String) {
-                name = "GenericRepository"
+                name = "Generic"
                 credentials(PasswordCredentials::class) {
                     username = (project.findProperty("generic.auth.username") ?: "") as String
                     password = (project.findProperty("generic.auth.password") ?: "") as String
