@@ -55,7 +55,7 @@ jobs:
         with:
           commit_message: Incremented patch version
           commit_options: '--no-verify --signoff'
-          commit_user_name: Voinea Radu
+          commit_user_name: Radu Voinea
           commit_user_email: contact@raduvoinea.com
 
       # ==================== BUILD ====================

@@ -7,6 +7,7 @@ import com.raduvoinea.utils.lambda.ScheduleUtils;
 import com.raduvoinea.utils.lambda.lambda.ArgLambdaExecutor;
 import com.raduvoinea.utils.lambda.lambda.ReturnArgLambdaExecutor;
 import com.raduvoinea.utils.logger.Logger;
+import com.raduvoinea.utils.message_builder.MessageBuilder;
 import com.raduvoinea.utils.redis_manager.dto.RedisConfig;
 import com.raduvoinea.utils.redis_manager.dto.RedisResponse;
 import com.raduvoinea.utils.redis_manager.event.RedisBroadcast;
@@ -20,6 +21,7 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisPubSub;
 
+import java.util.Arrays;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -86,7 +88,6 @@ public class RedisManager {
         this.classLoader = classLoader;
 
         this.debugger = new RedisDebugger(debug);
-        this.debugger.creatingListener(redisConfig.getChannel());
         this.eventManager = eventManager;
         this.awaitingResponses = new ConcurrentLinkedQueue<>();
 
@@ -132,8 +133,6 @@ public class RedisManager {
     }
 
     protected void subscribe() {
-        Logger.log("[RedisManager] Subscribing to Redis: " + redisConfig.getHost() + ":" + redisConfig.getPort() + " @ " + redisConfig.getChannel());
-
         RedisManager _this = this;
         subscriberJedisPubSub = new JedisPubSub() {
 
@@ -146,42 +145,46 @@ public class RedisManager {
                 }
             }
 
-            public void onMessageReceive(String channel, final String event) {
-                if (event.isEmpty()) {
+            public void onMessageReceive(String channel, final String eventJson) {
+                if (eventJson.isEmpty()) {
                     return;
                 }
 
-                RedisRequest<?> redisEvent = RedisRequest.deserialize(_this, event);
+                RedisRequest<?> event = RedisRequest.deserialize(_this, eventJson);
 
-                if (redisEvent instanceof RedisBroadcast) {
-                    if (redisEvent.getTarget().equals(redisEvent.getOriginator())) {
-                        // [!] Do not self file broadcast events // TODO Add to java docs of RedisBroadcast
-                        return;
+                if (event == null) {
+                    Logger.warn("Received invalid RedisEvent: " + eventJson);
+                    return;
+                }
+
+                event = switch (event) {
+                    case RedisBroadcast broadcast -> {
+                        if (redisConfig.getRedisID().equals(broadcast.getOriginator())) {
+                            // [!] Do not self file broadcast events // TODO Add to java docs of RedisBroadcast
+                            yield null;
+                        }
+                        yield broadcast;
                     }
-                    return;
-                }
-
-                if (redisEvent == null) {
-                    Logger.warn("Received invalid RedisEvent: " + event);
-                    return;
-                }
-
-                if (redisEvent.getClass().equals(ResponseEvent.class)) {
-                    ResponseEvent responseEvent = (ResponseEvent) redisEvent;
-
-                    debugger.receiveResponse(channel, event);
-                    RedisResponse<?> response = getResponse(responseEvent);
-                    if (response == null) {
-                        return;
+                    case ResponseEvent responseEvent -> {
+                        debugger.receiveResponse(channel, eventJson);
+                        RedisResponse<?> response = getResponse(responseEvent);
+                        if (response == null) {
+                            yield null;
+                        }
+                        response.respond(responseEvent);
+                        yield null;
                     }
-                    response.respond(responseEvent);
+                    default -> event;
+                };
 
+                if (event == null) {
                     return;
                 }
 
+                RedisRequest<?> finalEvent = event;
                 ScheduleUtils.runTaskAsync(() -> {
-                    debugger.receive(channel, event);
-                    redisEvent.fire();
+                    debugger.receive(channel, eventJson);
+                    finalEvent.fire();
                 });
             }
 
@@ -205,9 +208,14 @@ public class RedisManager {
             redisTread.interrupt();
         }
 
+        Logger.log(new MessageBuilder("[RedisManager] Starting Redis {host}:{port} thread for channels {channels}")
+                .parse("host", redisConfig.getHost())
+                .parse("port", redisConfig.getPort())
+                .parse("channels", Arrays.toString(getChannels()))
+        );
+
         redisTread = new Thread(() ->
                 executeOnJedisAndForget(jedis -> {
-                    debugger.subscribed(redisConfig.getChannel());
                     jedis.subscribe(subscriberJedisPubSub, getChannels());
                 }, exception -> {
                     Logger.error("Lost connection to redis server. Retrying in 3 seconds...");
@@ -224,11 +232,11 @@ public class RedisManager {
     }
 
     protected String[] getChannels() {
-        return new String[]{redisConfig.getChannel(), redisConfig.getChannelBase() + "#*"};
+        return new String[]{redisConfig.getChannel() + "#" + redisConfig.getRedisID(), redisConfig.getChannel() + "#*"};
     }
 
     public <T> RedisResponse<T> send(@NotNull RedisRequest<T> event) {
-        event.setOriginator(redisConfig.getChannel());
+        event.setOriginator(redisConfig.getRedisID());
 
         if (event instanceof ResponseEvent) {
             if (event.getTarget().equals(event.getOriginator())) {
@@ -246,10 +254,10 @@ public class RedisManager {
                 return null;
             }
 
-            debugger.sendResponse(event.getTarget(), gsonHolder.value().toJson(event));
+            debugger.sendResponse(event.getPublishChannel(), gsonHolder.value().toJson(event));
 
             executeOnJedisAndForget(jedis ->
-                    jedis.publish(event.getTarget(), gsonHolder.value().toJson(event))
+                    jedis.publish(event.getPublishChannel(), gsonHolder.value().toJson(event))
             );
 
             return null;
@@ -268,10 +276,10 @@ public class RedisManager {
             return redisResponse;
         }
 
-        debugger.send(event.getTarget(), gsonHolder.value().toJson(event));
+        debugger.send(event.getPublishChannel(), gsonHolder.value().toJson(event));
 
         executeOnJedisAndForget(jedis ->
-                jedis.publish(event.getTarget(), gsonHolder.value().toJson(event))
+                jedis.publish(event.getPublishChannel(), gsonHolder.value().toJson(event))
         );
 
         return redisResponse;

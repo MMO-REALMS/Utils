@@ -2,6 +2,7 @@ package com.raduvoinea.utils.dependency_injection;
 
 import com.raduvoinea.utils.dependency_injection.annotations.Inject;
 import com.raduvoinea.utils.dependency_injection.exception.InjectionException;
+import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.message_builder.MessageBuilder;
 import com.raduvoinea.utils.reflections.Reflections;
 
@@ -128,6 +129,7 @@ public class Injector {
         }
 
         try {
+            Logger.debug("Injecting dependency: " + field.getType().getName());
             field.set(object, dependencies.get(field.getType()));
         } catch (IllegalAccessException exception) {
             throw new InjectionException(
@@ -141,3 +143,11 @@ public class Injector {
     }
 
 }
+
+/*
+
+
+IBalance balance = IBalance.getByOwner(owner);
+print(balance.getBalance());
+
+ */

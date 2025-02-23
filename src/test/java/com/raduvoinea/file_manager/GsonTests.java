@@ -2,9 +2,9 @@ package com.raduvoinea.file_manager;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.raduvoinea.file_manager.dto.interface_serialization.CustomInterface;
 import com.raduvoinea.file_manager.dto.interface_serialization.CustomObject1;
 import com.raduvoinea.file_manager.dto.interface_serialization.CustomObject2;
-import com.raduvoinea.utils.file_manager.dto.gson.InterfaceGsonTypeAdapter;
 import com.raduvoinea.utils.file_manager.dto.gson.SerializableListGsonTypeAdapter;
 import com.raduvoinea.utils.file_manager.dto.gson.SerializableMapGsonTypeAdapter;
 import com.raduvoinea.utils.file_manager.dto.gson.SerializableObjectTypeAdapter;
@@ -12,9 +12,9 @@ import com.raduvoinea.utils.file_manager.dto.serializable.ISerializable;
 import com.raduvoinea.utils.file_manager.dto.serializable.SerializableList;
 import com.raduvoinea.utils.file_manager.dto.serializable.SerializableMap;
 import com.raduvoinea.utils.file_manager.dto.serializable.SerializableObject;
+import com.raduvoinea.utils.file_manager.dto.serializable.interfaces.InterfaceTypeFactory;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.logger.dto.Level;
-import com.raduvoinea.utils.reflections.Reflections;
 import lombok.Getter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -22,15 +22,14 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GsonTests {
 
     private final static String listJson = "{\"class_name\":\"java.lang.String\",\"values\":[\"test1\",\"test2\",\"test3\"]}";
     private final static String objectJson = "{\"class_name\":\"java.lang.String\",\"data\":\"test\"}";
-    private final static String object1Json = "{\"class_name\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject1\",\"data\":\"test\"}";
-    private final static String object2Json = "{\"class_name\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject2\",\"data\":1000}";
+    private final static String CUSTOM_OBJECT_1_JSON = "{\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject1\",\"data\":\"{\\\"data\\\":\\\"object1\\\"}\"}";
+    private final static String CUSTOM_OBJECT_2_JSON = "{\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject2\",\"data\":\"{\\\"data\\\":\\\"object2\\\",\\\"otherData\\\":\\\"some other data\\\"}\"}";
     private static @Getter Gson gson;
 
     @BeforeAll
@@ -42,22 +41,9 @@ public class GsonTests {
         new SerializableListGsonTypeAdapter(classLoader).register(gsonBuilder);
         new SerializableMapGsonTypeAdapter(classLoader).register(gsonBuilder);
         new SerializableObjectTypeAdapter(classLoader).register(gsonBuilder);
-
-        for (InterfaceGsonTypeAdapter<? extends ISerializable> typeAdapter : InterfaceGsonTypeAdapter.generate(classLoader, CustomObject1.class, CustomObject2.class)) {
-            typeAdapter.register(gsonBuilder);
-        }
+        gsonBuilder.registerTypeAdapterFactory(new InterfaceTypeFactory(classLoader));
 
         gson = gsonBuilder.create();
-    }
-
-    @Test
-    public void testReflectionsIntegration() {
-        Reflections.Crawler reflectionsCrawler = Reflections.simple(GsonTests.class.getClassLoader(), CustomObject1.class, CustomObject2.class);
-        List<InterfaceGsonTypeAdapter<? extends ISerializable>> serializers = InterfaceGsonTypeAdapter.generate(GsonTests.class.getClassLoader(), reflectionsCrawler);
-        for (InterfaceGsonTypeAdapter<? extends ISerializable> serializer : serializers) {
-            Logger.debug(serializer.getSerializedClass());
-        }
-        assertEquals(2, serializers.size());
     }
 
     @Test
@@ -188,24 +174,38 @@ public class GsonTests {
 
     @Test
     public void serializeInterface() {
-        ISerializable customInterface1 = new CustomObject1("test");
-        ISerializable customInterface2 = new CustomObject2(1000);
+        ISerializable customInterface1 = new CustomObject1("object1");
+        ISerializable customInterface2 = new CustomObject2("object2", "some other data");
 
         String json1 = gson.toJson(customInterface1);
         String json2 = gson.toJson(customInterface2);
 
-        assertEquals(object1Json, json1);
-        assertEquals(object2Json, json2);
+        assertEquals(CUSTOM_OBJECT_1_JSON, json1);
+        assertEquals(CUSTOM_OBJECT_2_JSON, json2);
     }
 
     @Test
     public void deserializeInterface() {
+        CustomInterface object1 =  gson.fromJson(CUSTOM_OBJECT_1_JSON, CustomInterface.class);
+        CustomInterface object2 =  gson.fromJson(CUSTOM_OBJECT_2_JSON, CustomInterface.class);
 
+        assertEquals("object1",object1.getData());
+        assertEquals("object2",object2.getData());
     }
 
     @Test
     public void serializeDeserializeInterface() {
+        CustomObject1 class1 = new CustomObject1("object1");
+        CustomObject2 class2 = new CustomObject2("object2", "some other data");
 
+        String json1 = gson.toJson(class1);
+        String json2 = gson.toJson(class2);
+
+        assertTrue(json1.contains("\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject1\""));
+        assertTrue(json2.contains("\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject2\""));
+
+        assertEquals("object1", gson.fromJson(json1, CustomInterface.class).getData());
+        assertEquals("object2", gson.fromJson(json2, CustomInterface.class).getData());
     }
 
 

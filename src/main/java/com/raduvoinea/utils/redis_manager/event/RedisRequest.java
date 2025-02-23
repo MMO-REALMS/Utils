@@ -13,26 +13,28 @@ import lombok.SneakyThrows;
 import org.jetbrains.annotations.Nullable;
 
 @Getter
+@Setter
 public class RedisRequest<Response> implements IEvent {
 
+    protected transient RedisManager redisManager;
+
     private final String className;
-    protected transient @Setter RedisManager redisManager;
-    private @Setter long id = -1;
-    private @Setter String originator = "UNKNOWN";
+    private long id = -1;
+    private String originator = "UNKNOWN";
     private String target;
 
-    public RedisRequest(RedisManager redisManager, String className, long id, String originator, String target) {
-        this.redisManager = redisManager;
+    public RedisRequest(RedisManager redisManager, String className , long id, String originator, String target) {
         this.className = className;
+        this.redisManager = redisManager;
         this.id = id;
         this.originator = originator;
-        setTarget(target);
+        this.target = target;
     }
 
     public RedisRequest(RedisManager redisManager, String target) {
-        this.redisManager = redisManager;
         this.className = getClass().getName();
-        setTarget(target);
+        this.redisManager = redisManager;
+        this.target = target;
     }
 
     public static @Nullable RedisRequest<?> deserialize(RedisManager redisManager, String data) {
@@ -44,14 +46,6 @@ public class RedisRequest<Response> implements IEvent {
 
         event.setRedisManager(redisManager);
         return event;
-    }
-
-    public void setTarget(String target) {
-        if (target.contains("#")) {
-            this.target = target;
-        } else {
-            this.target = redisManager.getRedisConfig().getChannelBase() + "#" + target;
-        }
     }
 
     /**
@@ -102,13 +96,11 @@ public class RedisRequest<Response> implements IEvent {
         return response.getResponse();
     }
 
-    @SuppressWarnings("unused")
     public @Nullable Response sendAndGet() {
         return sendAndGet(() -> {
         });
     }
 
-    @SuppressWarnings("unused")
     public void sendAndExecute(ArgLambdaExecutor<Response> success) {
         sendAndExecute(success, () -> {
         });
@@ -141,16 +133,8 @@ public class RedisRequest<Response> implements IEvent {
         return response;
     }
 
-    @SuppressWarnings("unused")
-    public String getRedisTargetID() {
-        String[] split = target.split("#");
-        return split[split.length - 1];
-    }
-
-    @SuppressWarnings("unused")
-    public String getOriginatorID() {
-        String[] split = originator.split("#");
-        return split[split.length - 1];
+    public String getPublishChannel() {
+        return redisManager.getRedisConfig().getChannel() + "#" + this.target;
     }
 
 }

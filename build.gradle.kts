@@ -90,7 +90,7 @@ publishing {
                 developers {
                     developer {
                         id.set("raduvoinea")
-                        name.set("Voinea Radu-Mihai")
+                        name.set("Radu Voinea")
                         email.set("contact@raduvoinea.com")
                     }
                 }

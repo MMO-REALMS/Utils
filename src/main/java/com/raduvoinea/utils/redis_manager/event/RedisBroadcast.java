@@ -8,12 +8,10 @@ import org.jetbrains.annotations.Nullable;
 
 public class RedisBroadcast extends RedisEvent {
 
-    @SuppressWarnings("unused")
-    public RedisBroadcast(RedisManager redisManager, String className, long id, String originator, String target) {
-        super(redisManager, className, id, originator, target);
+    public RedisBroadcast(String className, RedisManager redisManager , long id, String originator, String target) {
+        super(className, redisManager, id, originator, target);
     }
 
-    @SuppressWarnings("unused")
     public RedisBroadcast(RedisManager redisManager) {
         super(redisManager, "*");
     }
