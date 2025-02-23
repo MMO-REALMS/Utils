@@ -3,7 +3,6 @@ package com.raduvoinea.lambda;
 import com.raduvoinea.utils.lambda.CancelableTimeTask;
 import com.raduvoinea.utils.lambda.ScheduleUtils;
 import com.raduvoinea.utils.lambda.lambda.*;
-import com.raduvoinea.utils.lambda.lambda.*;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 

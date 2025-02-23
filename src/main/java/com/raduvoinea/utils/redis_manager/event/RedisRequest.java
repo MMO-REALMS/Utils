@@ -23,7 +23,7 @@ public class RedisRequest<Response> implements IEvent {
     private String originator = "UNKNOWN";
     private String target;
 
-    public RedisRequest(RedisManager redisManager, String className , long id, String originator, String target) {
+    public RedisRequest(RedisManager redisManager, String className, long id, String originator, String target) {
         this.className = className;
         this.redisManager = redisManager;
         this.id = id;

@@ -186,11 +186,11 @@ public class GsonTests {
 
     @Test
     public void deserializeInterface() {
-        CustomInterface object1 =  gson.fromJson(CUSTOM_OBJECT_1_JSON, CustomInterface.class);
-        CustomInterface object2 =  gson.fromJson(CUSTOM_OBJECT_2_JSON, CustomInterface.class);
+        CustomInterface object1 = gson.fromJson(CUSTOM_OBJECT_1_JSON, CustomInterface.class);
+        CustomInterface object2 = gson.fromJson(CUSTOM_OBJECT_2_JSON, CustomInterface.class);
 
-        assertEquals("object1",object1.getData());
-        assertEquals("object2",object2.getData());
+        assertEquals("object1", object1.getData());
+        assertEquals("object2", object2.getData());
     }
 
     @Test

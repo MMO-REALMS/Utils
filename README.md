@@ -18,7 +18,7 @@ repositories {
 
 dependencies {
     implementation("com.raduvoinea:utils:VERSION")
-    
+
     // To use the redis_manager
     implementation("redis.clients:jedis:<JEDIS_VERSION>")
 }

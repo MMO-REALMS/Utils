@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class RedisBroadcast extends RedisEvent {
 
-    public RedisBroadcast(String className, RedisManager redisManager , long id, String originator, String target) {
+    public RedisBroadcast(String className, RedisManager redisManager, long id, String originator, String target) {
         super(className, redisManager, id, originator, target);
     }
 
