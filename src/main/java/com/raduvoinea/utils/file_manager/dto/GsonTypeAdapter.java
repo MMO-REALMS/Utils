@@ -23,10 +23,10 @@ public abstract class GsonTypeAdapter<T> implements JsonSerializer<T>, JsonDeser
     }
 
     @Override
-    public abstract T deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException;
+    public abstract JsonElement serialize(T object, Type type, JsonSerializationContext context);
 
     @Override
-    public abstract JsonElement serialize(T object, Type type, JsonSerializationContext context);
+    public abstract T deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException;
 
     protected <ListType> List<ListType> deserializeList(JsonArray jsonArray, Class<ListType> clazz, JsonDeserializationContext context) {
         List<ListType> list = new ArrayList<>();
