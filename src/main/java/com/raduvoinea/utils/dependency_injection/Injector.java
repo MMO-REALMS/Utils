@@ -6,6 +6,7 @@ import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.message_builder.MessageBuilder;
 import com.raduvoinea.utils.reflections.Reflections;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -111,6 +112,13 @@ public class Injector {
         Inject inject = field.getAnnotation(Inject.class);
 
         if (inject == null) {
+            for (Annotation annotation : field.getAnnotations()) {
+                if (annotation.getClass().getName().equals("com.google.inject.Inject")) {
+                    Logger.warn("Google Guice annotation found. You might want to check if the field is being injected properly.");
+                    return;
+                }
+            }
+
             return;
         }
 
