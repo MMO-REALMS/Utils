@@ -45,6 +45,7 @@ public class ExpirableList<Data> {
     }
 
     public boolean contains(Data data) {
+        clearExpired();
         return datas.stream().anyMatch(expirableData -> expirableData.data.equals(data));
     }
 
