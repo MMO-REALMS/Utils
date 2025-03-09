@@ -127,9 +127,10 @@ public class Injector {
         if (value == null) {
             throw new InjectionException(
                     new MessageBuilder("""
-                            Failed to inject dependency into field {field}
+                            Failed to inject dependency into field {field} from class {class}
                             Missing dependency: {dependency}
                             """)
+                            .parse("class", object.getClass().getName())
                             .parse("field", field.getName())
                             .parse("dependency", field.getType().getName())
                             .parse()

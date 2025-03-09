@@ -6,7 +6,6 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.raduvoinea.utils.file_manager.dto.serializable.ISerializable;
-import com.raduvoinea.utils.logger.Logger;
 import lombok.SneakyThrows;
 
 public class InterfaceTypeAdapter<T extends ISerializable> extends TypeAdapter<T> {
@@ -26,7 +25,6 @@ public class InterfaceTypeAdapter<T extends ISerializable> extends TypeAdapter<T
     @Override
     public void write(JsonWriter out, T value) {
         SerializableInterface heldInterface = new SerializableInterface(value.getClass().getName(), delegate.toJson(value));
-        Logger.debug("Writing interface: " + heldInterface);
         gson.toJson(heldInterface, SerializableInterface.class, out);
     }
 
@@ -34,7 +32,6 @@ public class InterfaceTypeAdapter<T extends ISerializable> extends TypeAdapter<T
     @Override
     public T read(JsonReader in) {
         SerializableInterface heldInterface = gson.fromJson(in, SerializableInterface.class);
-        Logger.debug("Reading interface: " + heldInterface);
 
         if (heldInterface.className() == null || heldInterface.data() == null) {
             return null;
