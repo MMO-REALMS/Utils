@@ -10,7 +10,6 @@ import java.util.Timer;
 @Getter
 public class ScheduleUtils {
 
-    @SuppressWarnings("UnusedReturnValue")
     public static CancelableTimeTask runTaskLater(@NotNull LambdaExecutor executor, long delay) {
         CancelableTimeTask task = new CancelableTimeTask() {
             @Override
@@ -29,7 +28,7 @@ public class ScheduleUtils {
         return task;
     }
 
-    @SuppressWarnings("unused")
+    @Deprecated(forRemoval = true)
     public static @NotNull CancelableTimeTask runTaskTimer(@NotNull LambdaExecutor executor, long period) {
         return runTaskTimer(new CancelableTimeTask() {
             @Override
@@ -39,6 +38,7 @@ public class ScheduleUtils {
         }, period);
     }
 
+    @Deprecated(forRemoval = true)
     public static @NotNull CancelableTimeTask runTaskTimer(@NotNull CancelableTimeTask task, long period) {
         Timer timer = new Timer();
         timer.schedule(task, 0, period);
@@ -46,7 +46,6 @@ public class ScheduleUtils {
         return task;
     }
 
-    @SuppressWarnings("unused")
     public static @NotNull CancelableTimeTask runTaskLaterAsync(@NotNull LambdaExecutor executor, long delay) {
         CancelableTimeTask task = new CancelableTimeTask() {
             @Override
@@ -64,7 +63,6 @@ public class ScheduleUtils {
         return runTaskTimerAsync(executor, period.toMilliseconds());
     }
 
-    @SuppressWarnings("unused")
     public static @NotNull CancelableTimeTask runTaskTimerAsync(@NotNull LambdaExecutor executor, long period) {
         CancelableTimeTask task = new CancelableTimeTask() {
             @Override
@@ -78,7 +76,6 @@ public class ScheduleUtils {
         return task;
     }
 
-    @SuppressWarnings("UnusedReturnValue")
     public static @NotNull CancelableTimeTask runTaskAsync(@NotNull LambdaExecutor executor) {
         CancelableTimeTask task = new CancelableTimeTask() {
             @Override
