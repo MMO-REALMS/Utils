@@ -23,9 +23,9 @@ public class Logger {
     }
 
     public static void reset() {
-        logLevel = Level.TRACE;
-        packageParser = packageName -> null;
-        logHandler = Handler.defaultHandler();
+        Logger.logLevel = Level.TRACE;
+        Logger.packageParser = packageName -> null;
+        Logger.logHandler = Handler.defaultHandler();
     }
 
     private static @NotNull Class<?> getCallerClass() {
@@ -94,7 +94,6 @@ public class Logger {
         }
 
         id = "[" + id + "] ";
-
 
         String log = switch (object) {
             case null -> "null";
