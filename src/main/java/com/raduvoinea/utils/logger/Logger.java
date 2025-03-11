@@ -1,39 +1,38 @@
 package com.raduvoinea.utils.logger;
 
+import com.raduvoinea.utils.lambda.lambda.ArgLambdaExecutor;
 import com.raduvoinea.utils.lambda.lambda.ReturnArgLambdaExecutor;
 import com.raduvoinea.utils.logger.dto.ConsoleColor;
 import com.raduvoinea.utils.logger.dto.Level;
 import com.raduvoinea.utils.logger.utils.StackTraceUtils;
 import com.raduvoinea.utils.message_builder.MessageBuilder;
+import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class Logger {
 
     private static final StackWalker STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
-    private static Level LOG_LEVEl = Level.TRACE;
-    private static ReturnArgLambdaExecutor<String, String> PACKAGE_PARSER = packageName -> null;
-    private static Handler LOG_HANDLER = System.out::println;
+    private static @Setter Level logLevel;
+    private static @Setter ReturnArgLambdaExecutor<String, String> packageParser;
+    private static @Setter @Getter Handler logHandler;
 
-    public static void setLogLevel(Level logLevel) {
-        Logger.LOG_LEVEl = logLevel;
+    static {
+        reset();
     }
 
-    @SuppressWarnings("unused")
-    public static void setPackageParser(@NotNull ReturnArgLambdaExecutor<String, String> packageParser) {
-        Logger.PACKAGE_PARSER = packageParser;
+    public static void reset() {
+        logLevel = Level.TRACE;
+        packageParser = packageName -> null;
+        logHandler = Handler.defaultHandler();
     }
 
-    public static void setLogHandler(@NotNull Handler logHandler) {
-        Logger.LOG_HANDLER = logHandler;
-    }
-
-    private static @Nullable String parsePackage(String packageName) {
-        return PACKAGE_PARSER.execute(packageName);
-    }
-
-    private static @NotNull Class<?> getCallerClass(int steps) {
-        Class<?> clazz = STACK_WALKER.walk(stack -> stack.map(StackWalker.StackFrame::getDeclaringClass).skip(steps).findFirst()).orElse(null);
+    private static @NotNull Class<?> getCallerClass() {
+        Class<?> clazz = STACK_WALKER.walk(stack -> stack.map(StackWalker.StackFrame::getDeclaringClass)
+                .filter(c -> !c.equals(Logger.class))
+                .findFirst()
+        ).orElse(null);
 
         if (clazz == null) {
             System.out.println("<!> Failed to get caller class <!>");
@@ -43,17 +42,28 @@ public class Logger {
         return clazz;
     }
 
-    public static void debug() {
-        log(Level.DEBUG, "", ConsoleColor.BRIGHT_BLACK, 1);
+    public static void debug(@NotNull Object object) {
+        log(Level.DEBUG, object, ConsoleColor.BRIGHT_BLACK, logHandler::debug);
     }
 
-    public static void debug(Object object) {
-        log(Level.DEBUG, object, ConsoleColor.BRIGHT_BLACK, 1);
+    public static void log(@Nullable Object object) {
+        info(object);
     }
 
-    @SuppressWarnings("unused")
-    public static void debug(Object object, ConsoleColor color) {
-        log(Level.DEBUG, object, color, 1);
+    public static void info(@Nullable Object object) {
+        log(Level.INFO, object, ConsoleColor.RESET, logHandler::info);
+    }
+
+    public static void good(@Nullable Object object) {
+        log(Level.INFO, object, ConsoleColor.DARK_GREEN, logHandler::info);
+    }
+
+    public static void warn(@NotNull Object object) {
+        log(Level.WARN, object, ConsoleColor.DARK_YELLOW, logHandler::warn);
+    }
+
+    public static void error(@NotNull Object object) {
+        log(Level.ERROR, object, ConsoleColor.DARK_RED, logHandler::error);
     }
 
     public static void goodOrWarn(Object object, boolean goodCheck) {
@@ -64,46 +74,27 @@ public class Logger {
         }
     }
 
-    public static void good(Object object) {
-        log(Level.INFO, object, ConsoleColor.DARK_GREEN, 1);
+
+    private static void genericHandle(@Nullable String log, ArgLambdaExecutor<String> logger) {
+        if (log != null) {
+            logger.execute(log);
+        }
     }
 
-    public static void log() {
-        log(Level.INFO, "", 1);
-    }
-
-    public static void log(Object object) {
-        log(Level.INFO, object, 1);
-    }
-
-    public static void info(Object object) {
-        log(Level.INFO, object, ConsoleColor.DARK_WHITE, 1);
-    }
-
-    public static void warn(Object object) {
-        log(Level.WARN, object, ConsoleColor.DARK_YELLOW, 1);
-    }
-
-    public static void error(Object object) {
-        log(Level.ERROR, object, ConsoleColor.DARK_RED, 1);
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private static void log(Level level, Object object, int depth) {
-        log(level, object, ConsoleColor.RESET, depth + 1);
-    }
-
-    private static void log(Level level, Object object, @NotNull ConsoleColor color, int depth) {
-        if (level.getLevel() < LOG_LEVEl.getLevel()) {
+    private static @Nullable void log(@NotNull Level level, @Nullable Object object, @NotNull ConsoleColor color, ArgLambdaExecutor<String> logger) {
+        if (level.getLevel() < logLevel.getLevel()) {
             return;
         }
 
-        Class<?> caller = getCallerClass(depth + 2);
-        String id = parsePackage(caller.getPackageName());
+        Class<?> caller = getCallerClass();
+        String id = packageParser.execute(caller.getPackageName());
 
         if (id == null || id.isEmpty()) {
-            id = caller.getSimpleName() + ".java";
+            id = caller.getSimpleName();
         }
+
+        id = "[" + id + "] ";
+
 
         String log = switch (object) {
             case null -> "null";
@@ -113,9 +104,8 @@ public class Logger {
             default -> object.toString();
         };
 
-        log = color + String.join("\n" + color, log.split("\n")) + ConsoleColor.RESET;
-
-        LOG_HANDLER.log(log, id);
+        log = color + id + String.join("\n" + color, log.split("\n")) + ConsoleColor.RESET;
+        logger.execute(log);
     }
 
     public static void printStackTrace() {
@@ -127,11 +117,36 @@ public class Logger {
     }
 
     public interface Handler {
-        @SuppressWarnings("unused")
-        default void log(String log, String id) {
-            log(log);
-        }
+        void info(@NotNull String log);
 
-        void log(String log);
+        void error(@NotNull String log);
+
+        void warn(@NotNull String log);
+
+        void debug(@NotNull String log);
+
+        static Handler defaultHandler() {
+            return new Handler() {
+                @Override
+                public void info(@NotNull String log) {
+                    System.out.println(log);
+                }
+
+                @Override
+                public void error(@NotNull String log) {
+                    System.err.println(log);
+                }
+
+                @Override
+                public void warn(@NotNull String log) {
+                    System.out.println(log);
+                }
+
+                @Override
+                public void debug(@NotNull String log) {
+                    System.out.println(log);
+                }
+            };
+        }
     }
 }

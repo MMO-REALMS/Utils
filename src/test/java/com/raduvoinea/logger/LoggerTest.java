@@ -1,26 +1,23 @@
 package com.raduvoinea.logger;
 
+import com.raduvoinea.logger.dto.TestLoggerHandler;
 import com.raduvoinea.utils.logger.Logger;
+import com.raduvoinea.utils.logger.dto.ConsoleColor;
 import com.raduvoinea.utils.logger.dto.Level;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class LoggerTest {
 
-    @SneakyThrows
     @Test
     public void testDebugLogger() {
-        List<String> printed = new ArrayList<>();
+        Logger.reset();
         Logger.setLogLevel(Level.DEBUG);
-        Logger.setLogHandler(printed::add);
+        Logger.setLogHandler(new TestLoggerHandler());
 
         Logger.debug("testDebugLogger#debug");
         Logger.log("testDebugLogger#log");
@@ -28,15 +25,14 @@ public class LoggerTest {
         Logger.warn("testDebugLogger#warn");
         Logger.error("testDebugLogger#error");
 
-        assertEquals(5, printed.size());
+        assertEquals(5, ((TestLoggerHandler) Logger.getLogHandler()).getBuffer().size());
     }
 
-    @SneakyThrows
     @Test
     public void testInfoLogger() {
-        List<String> printed = new ArrayList<>();
+        Logger.reset();
         Logger.setLogLevel(Level.INFO);
-        Logger.setLogHandler(printed::add);
+        Logger.setLogHandler(new TestLoggerHandler());
 
         Logger.debug("testInfoLogger#debug");
         Logger.log("testInfoLogger#log");
@@ -44,15 +40,14 @@ public class LoggerTest {
         Logger.warn("testInfoLogger#warn");
         Logger.error("testInfoLogger#error");
 
-        assertEquals(4, printed.size());
+        assertEquals(4, ((TestLoggerHandler) Logger.getLogHandler()).getBuffer().size());
     }
 
-    @SneakyThrows
     @Test
     public void testWarnLogger() {
-        List<String> printed = new ArrayList<>();
+        Logger.reset();
         Logger.setLogLevel(Level.WARN);
-        Logger.setLogHandler(printed::add);
+        Logger.setLogHandler(new TestLoggerHandler());
 
         Logger.debug("testWarnLogger#debug");
         Logger.log("testWarnLogger#log");
@@ -60,15 +55,14 @@ public class LoggerTest {
         Logger.warn("testWarnLogger#warn");
         Logger.error("testWarnLogger#error");
 
-        assertEquals(2, printed.size());
+        assertEquals(2, ((TestLoggerHandler) Logger.getLogHandler()).getBuffer().size());
     }
 
-    @SneakyThrows
     @Test
     public void testErrorLogger() {
-        List<String> printed = new ArrayList<>();
+        Logger.reset();
         Logger.setLogLevel(Level.ERROR);
-        Logger.setLogHandler(printed::add);
+        Logger.setLogHandler(new TestLoggerHandler());
 
         Logger.debug("testErrorLogger#debug");
         Logger.log("testErrorLogger#log");
@@ -76,8 +70,30 @@ public class LoggerTest {
         Logger.warn("testErrorLogger#warn");
         Logger.error("testErrorLogger#error");
 
-        assertEquals(1, printed.size());
+        assertEquals(1, ((TestLoggerHandler) Logger.getLogHandler()).getBuffer().size());
     }
 
+    @Test
+    public void testFormatClass() {
+        Logger.reset();
+        Logger.setLogHandler(new TestLoggerHandler());
+
+        Logger.log("testErrorLogger#log");
+
+        assertEquals(1, ((TestLoggerHandler) Logger.getLogHandler()).getBuffer().size());
+        assertEquals(ConsoleColor.RESET + "[LoggerTest] testErrorLogger#log" + ConsoleColor.RESET, ((TestLoggerHandler) Logger.getLogHandler()).getBuffer().getFirst());
+    }
+
+    @Test
+    public void testFormatPackage() {
+        Logger.reset();
+        Logger.setLogHandler(new TestLoggerHandler());
+        Logger.setPackageParser((packageName) -> "LoggerTestPackage");
+
+        Logger.log("testErrorLogger#log");
+
+        assertEquals(1, ((TestLoggerHandler) Logger.getLogHandler()).getBuffer().size());
+        assertEquals(ConsoleColor.RESET + "[LoggerTestPackage] testErrorLogger#log" + ConsoleColor.RESET, ((TestLoggerHandler) Logger.getLogHandler()).getBuffer().getFirst());
+    }
 
 }
