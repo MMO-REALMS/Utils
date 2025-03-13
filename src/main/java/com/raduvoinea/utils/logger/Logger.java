@@ -42,7 +42,7 @@ public class Logger {
         return clazz;
     }
 
-    public static void debug(@NotNull Object object) {
+    public static void debug(@Nullable Object object) {
         log(Level.DEBUG, object, ConsoleColor.BRIGHT_BLACK, logHandler::debug);
     }
 
@@ -58,11 +58,11 @@ public class Logger {
         log(Level.INFO, object, ConsoleColor.DARK_GREEN, logHandler::info);
     }
 
-    public static void warn(@NotNull Object object) {
+    public static void warn(@Nullable Object object) {
         log(Level.WARN, object, ConsoleColor.DARK_YELLOW, logHandler::warn);
     }
 
-    public static void error(@NotNull Object object) {
+    public static void error(@Nullable Object object) {
         log(Level.ERROR, object, ConsoleColor.DARK_RED, logHandler::error);
     }
 
@@ -81,7 +81,7 @@ public class Logger {
         }
     }
 
-    private static @Nullable void log(@NotNull Level level, @Nullable Object object, @NotNull ConsoleColor color, ArgLambdaExecutor<String> logger) {
+    private static void log(@NotNull Level level, @Nullable Object object, @NotNull ConsoleColor color, ArgLambdaExecutor<String> logger) {
         if (level.getLevel() < logLevel.getLevel()) {
             return;
         }
