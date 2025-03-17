@@ -52,6 +52,11 @@ public class Time {
         return millisecondsToString(toMilliseconds());
     }
 
+    @Override
+    public String toString() {
+        return toPrettyString();
+    }
+
     public enum Unit {
         MILLISECONDS(1, "milliseconds", "ms"),
         SECONDS(1000 * MILLISECONDS.ms, "seconds", "s"),
