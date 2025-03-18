@@ -96,7 +96,13 @@ public class Time {
             }
         }
 
-        long amount = Long.parseLong(timeString.substring(0, timeString.length() - 1));
+        long amount;
+
+        try {
+            amount = Long.parseLong(timeString.substring(0, timeString.length() - 1));
+        } catch (NumberFormatException e) {
+            return null;
+        }
 
         for (Unit value : Unit.values()) {
             if (timeString.endsWith(value.shortName) || timeString.endsWith(value.name)) {
