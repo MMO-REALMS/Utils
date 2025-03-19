@@ -46,6 +46,10 @@ public class Logger {
         log(Level.DEBUG, object, ConsoleColor.BRIGHT_BLACK, logHandler::debug);
     }
 
+    public static void debug(@Nullable Object object, ConsoleColor color) {
+        log(Level.DEBUG, object, color, logHandler::debug);
+    }
+
     public static void log(@Nullable Object object) {
         info(object);
     }
