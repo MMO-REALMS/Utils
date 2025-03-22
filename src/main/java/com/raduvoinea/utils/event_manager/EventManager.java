@@ -112,6 +112,10 @@ public class EventManager {
     }
 
     public void register(@NotNull Object object) {
+        Logger.debug(new MessageBuilder("Registering object {object}")
+                .parse("object", object.getClass().getSimpleName())
+        );
+
         if (!injectorHolder.isEmpty()) {
             try {
                 injectorHolder.value().inject(object);

@@ -39,7 +39,7 @@ public class RedisManager {
     protected @Getter JedisPubSub subscriberJedisPubSub;
     private @Getter Thread redisTread;
     private @Getter long id;
-    private JedisPool jedisPool;
+    private @Getter JedisPool jedisPool;
 
     @SuppressWarnings("unused")
     public <T> T executeOnJedisAndGet(ReturnArgLambdaExecutor<T, Jedis> executor) {
