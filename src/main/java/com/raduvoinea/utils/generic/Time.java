@@ -48,13 +48,9 @@ public class Time {
         return Unit.YEARS.of(amount);
     }
 
-    public String toPrettyString() {
-        return millisecondsToString(toMilliseconds());
-    }
-
     @Override
     public String toString() {
-        return toPrettyString();
+        return millisecondsToString(toMilliseconds());
     }
 
     public enum Unit {
