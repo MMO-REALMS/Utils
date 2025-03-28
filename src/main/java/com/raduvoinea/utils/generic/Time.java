@@ -2,15 +2,17 @@ package com.raduvoinea.utils.generic;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @AllArgsConstructor
 @Getter
+@NoArgsConstructor
 public class Time {
 
-    public long amount;
-    public Unit unit;
+    private long amount;
+    private Unit unit;
 
     public long toMilliseconds() {
         return amount * unit.toMilliseconds();
