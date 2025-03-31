@@ -18,6 +18,10 @@ public class Time {
         return amount * unit.toMilliseconds();
     }
 
+    public long toSeconds() {
+        return toMilliseconds() / Unit.SECONDS.toMilliseconds();
+    }
+
     public static Time milliseconds(long amount) {
         return new Time(amount, Unit.MILLISECONDS);
     }
