@@ -6,8 +6,8 @@ import com.raduvoinea.utils.redis_manager.manager.RedisManager;
 @SuppressWarnings("unused")
 public class PingEvent extends RedisRequest<Boolean> {
 
-    public PingEvent(RedisManager redisManager, String target) {
-        super(redisManager, target);
-    }
+	public PingEvent(RedisManager redisManager, String target) {
+		super(redisManager, target);
+	}
 
 }

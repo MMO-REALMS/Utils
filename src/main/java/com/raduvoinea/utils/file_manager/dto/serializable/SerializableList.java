@@ -8,15 +8,15 @@ import java.util.Collection;
 @Getter
 public class SerializableList<Value> extends ArrayList<Value> {
 
-    private final Class<Value> valueClass;
+	private final Class<Value> valueClass;
 
-    public SerializableList(Class<Value> valueClass, Collection<Value> list) {
-        super(list);
-        this.valueClass = valueClass;
-    }
+	public SerializableList(Class<Value> valueClass, Collection<Value> list) {
+		super(list);
+		this.valueClass = valueClass;
+	}
 
-    @SuppressWarnings("unused")
-    public SerializableList(Class<Value> clazz) {
-        this(clazz, new ArrayList<>());
-    }
+	@SuppressWarnings("unused")
+	public SerializableList(Class<Value> clazz) {
+		this(clazz, new ArrayList<>());
+	}
 }

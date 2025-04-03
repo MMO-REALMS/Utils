@@ -9,15 +9,15 @@ import lombok.NoArgsConstructor;
 @Getter
 public class Range {
 
-    private int min;
-    private int max;
+	private int min;
+	private int max;
 
-    public static Range exact(int n) {
-        return new Range(n, n);
-    }
+	public static Range exact(int n) {
+		return new Range(n, n);
+	}
 
-    public static Range of(int min, int max) {
-        return new Range(min, max);
-    }
+	public static Range of(int min, int max) {
+		return new Range(min, max);
+	}
 
 }

@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 public class CustomObject2 implements CustomInterface {
 
-    public String data;
-    public String otherData;
+	public String data;
+	public String otherData;
 
 }

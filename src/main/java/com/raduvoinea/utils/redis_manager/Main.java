@@ -13,25 +13,25 @@ import java.util.List;
 
 public class Main {
 
-    public Main() {
-        Holder<Gson> gsonHolder = Holder.empty();
-        Gson gson = new GsonBuilder()
-                .setPrettyPrinting()
-                .disableHtmlEscaping()
-                .create();
+	public Main() {
+		Holder<Gson> gsonHolder = Holder.empty();
+		Gson gson = new GsonBuilder()
+				.setPrettyPrinting()
+				.disableHtmlEscaping()
+				.create();
 
-        gsonHolder.set(gson);
+		gsonHolder.set(gson);
 
-        FileManager fileManager = new FileManager(gsonHolder, "config");
-        MessageBuilderManager.init(true);
+		FileManager fileManager = new FileManager(gsonHolder, "config");
+		MessageBuilderManager.init(true);
 
-        RedisConfig config = fileManager.load(RedisConfig.class, "");
+		RedisConfig config = fileManager.load(RedisConfig.class, "");
 
-        new DebugRedisManager(gsonHolder, config, getClass().getClassLoader(),
-                new EventManager(), true, false, List.of(
-                "dev#*"
-        )
-        );
-    }
+		new DebugRedisManager(gsonHolder, config, getClass().getClassLoader(),
+				new EventManager(), true, false, List.of(
+				"dev#*"
+		)
+		);
+	}
 
 }

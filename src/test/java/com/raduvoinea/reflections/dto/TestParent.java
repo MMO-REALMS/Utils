@@ -6,13 +6,13 @@ import com.raduvoinea.reflections.annotation.TestAnnotation;
 @TestAnnotation
 public class TestParent {
 
-    public int publicParentField;
-    protected int protectedParentField;
-    private int privateParentField;
+	public int publicParentField;
+	protected int protectedParentField;
+	private int privateParentField;
 
-    @TestAnnotation
-    public void testMethod() {
+	@TestAnnotation
+	public void testMethod() {
 
-    }
+	}
 
 }

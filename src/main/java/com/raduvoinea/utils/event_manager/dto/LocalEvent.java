@@ -8,14 +8,14 @@ import lombok.Setter;
 @Setter
 public abstract class LocalEvent implements IEvent {
 
-    private EventManager eventManager;
+	private EventManager eventManager;
 
-    public LocalEvent(EventManager eventManager) {
-        this.eventManager = eventManager;
-    }
+	public LocalEvent(EventManager eventManager) {
+		this.eventManager = eventManager;
+	}
 
-    @Override
-    public void fire(boolean suppressExceptions) {
-        eventManager.fire(this, suppressExceptions);
-    }
+	@Override
+	public void fire(boolean suppressExceptions) {
+		eventManager.fire(this, suppressExceptions);
+	}
 }

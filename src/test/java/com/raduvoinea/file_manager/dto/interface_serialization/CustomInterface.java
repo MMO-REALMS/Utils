@@ -4,6 +4,6 @@ import com.raduvoinea.utils.file_manager.dto.serializable.ISerializable;
 
 public interface CustomInterface extends ISerializable {
 
-    String getData();
+	String getData();
 
 }

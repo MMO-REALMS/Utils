@@ -9,15 +9,15 @@ import java.util.HashSet;
 @Getter
 public class SerializableSet<Value> extends HashSet<Value> {
 
-    private final Class<Value> valueClass;
+	private final Class<Value> valueClass;
 
-    public SerializableSet(Class<Value> valueClass, Collection<Value> list) {
-        super(list);
-        this.valueClass = valueClass;
-    }
+	public SerializableSet(Class<Value> valueClass, Collection<Value> list) {
+		super(list);
+		this.valueClass = valueClass;
+	}
 
-    @SuppressWarnings("unused")
-    public SerializableSet(Class<Value> clazz) {
-        this(clazz, new ArrayList<>());
-    }
+	@SuppressWarnings("unused")
+	public SerializableSet(Class<Value> clazz) {
+		this(clazz, new ArrayList<>());
+	}
 }

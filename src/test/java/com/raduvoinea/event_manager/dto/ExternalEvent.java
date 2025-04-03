@@ -9,24 +9,24 @@ import lombok.Setter;
 @Setter
 public class ExternalEvent {
 
-    private int number1;
-    private int number2;
-    private int result;
+	private int number1;
+	private int number2;
+	private int result;
 
-    public ExternalEvent(int number1, int number2) {
-        this.number1 = number1;
-        this.number2 = number2;
-        this.result = number1 + number2;
-    }
+	public ExternalEvent(int number1, int number2) {
+		this.number1 = number1;
+		this.number2 = number2;
+		this.result = number1 + number2;
+	}
 
-    @Getter
-    public static class Wrapper extends LocalEvent {
-        private ExternalEvent event;
+	@Getter
+	public static class Wrapper extends LocalEvent {
+		private ExternalEvent event;
 
-        public Wrapper(ExternalEvent event) {
-            super(EventManagerTests.getEventManager());
-            this.event = event;
-        }
-    }
+		public Wrapper(ExternalEvent event) {
+			super(EventManagerTests.getEventManager());
+			this.event = event;
+		}
+	}
 
 }

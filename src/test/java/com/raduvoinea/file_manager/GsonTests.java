@@ -26,187 +26,187 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class GsonTests {
 
-    private final static String listJson = "{\"class_name\":\"java.lang.String\",\"values\":[\"test1\",\"test2\",\"test3\"]}";
-    private final static String objectJson = "{\"class_name\":\"java.lang.String\",\"data\":\"test\"}";
-    private final static String CUSTOM_OBJECT_1_JSON = "{\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject1\",\"data\":\"{\\\"data\\\":\\\"object1\\\"}\"}";
-    private final static String CUSTOM_OBJECT_2_JSON = "{\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject2\",\"data\":\"{\\\"data\\\":\\\"object2\\\",\\\"otherData\\\":\\\"some other data\\\"}\"}";
-    private static @Getter Gson gson;
+	private final static String listJson = "{\"class_name\":\"java.lang.String\",\"values\":[\"test1\",\"test2\",\"test3\"]}";
+	private final static String objectJson = "{\"class_name\":\"java.lang.String\",\"data\":\"test\"}";
+	private final static String CUSTOM_OBJECT_1_JSON = "{\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject1\",\"data\":\"{\\\"data\\\":\\\"object1\\\"}\"}";
+	private final static String CUSTOM_OBJECT_2_JSON = "{\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject2\",\"data\":\"{\\\"data\\\":\\\"object2\\\",\\\"otherData\\\":\\\"some other data\\\"}\"}";
+	private static @Getter Gson gson;
 
-    @BeforeAll
-    public static void init() {
-        ClassLoader classLoader = GsonTests.class.getClassLoader();
-        Logger.setLogLevel(Level.TRACE);
+	@BeforeAll
+	public static void init() {
+		ClassLoader classLoader = GsonTests.class.getClassLoader();
+		Logger.setLogLevel(Level.TRACE);
 
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        new SerializableListGsonTypeAdapter(classLoader).register(gsonBuilder);
-        new SerializableMapGsonTypeAdapter(classLoader).register(gsonBuilder);
-        new SerializableObjectTypeAdapter(classLoader).register(gsonBuilder);
-        gsonBuilder.registerTypeAdapterFactory(new InterfaceTypeFactory(classLoader));
+		GsonBuilder gsonBuilder = new GsonBuilder();
+		new SerializableListGsonTypeAdapter(classLoader).register(gsonBuilder);
+		new SerializableMapGsonTypeAdapter(classLoader).register(gsonBuilder);
+		new SerializableObjectTypeAdapter(classLoader).register(gsonBuilder);
+		gsonBuilder.registerTypeAdapterFactory(new InterfaceTypeFactory(classLoader));
 
-        gson = gsonBuilder.create();
-    }
+		gson = gsonBuilder.create();
+	}
 
-    @Test
-    public void serializeList() {
-        SerializableList<String> serializableList = new SerializableList<>(
-                String.class,
-                List.of("test1", "test2", "test3")
-        );
+	@Test
+	public void serializeList() {
+		SerializableList<String> serializableList = new SerializableList<>(
+				String.class,
+				List.of("test1", "test2", "test3")
+		);
 
-        String json = gson.toJson(serializableList);
+		String json = gson.toJson(serializableList);
 
-        assertEquals(listJson, json);
-    }
+		assertEquals(listJson, json);
+	}
 
-    @Test
-    public void deserializeList() {
-        //noinspection unchecked
-        SerializableList<String> serializableList = gson.fromJson(listJson, SerializableList.class);
+	@Test
+	public void deserializeList() {
+		//noinspection unchecked
+		SerializableList<String> serializableList = gson.fromJson(listJson, SerializableList.class);
 
-        assertNotNull(serializableList);
-        assertEquals(String.class, serializableList.getValueClass());
-        assertEquals(3, serializableList.size());
-        assertEquals("test1", serializableList.get(0));
-        assertEquals("test2", serializableList.get(1));
-        assertEquals("test3", serializableList.get(2));
-    }
+		assertNotNull(serializableList);
+		assertEquals(String.class, serializableList.getValueClass());
+		assertEquals(3, serializableList.size());
+		assertEquals("test1", serializableList.get(0));
+		assertEquals("test2", serializableList.get(1));
+		assertEquals("test3", serializableList.get(2));
+	}
 
-    @Test
-    public void serializeDeserializeList() {
-        SerializableList<String> serializableList = new SerializableList<>(String.class, List.of("test1", "test2", "test3"));
+	@Test
+	public void serializeDeserializeList() {
+		SerializableList<String> serializableList = new SerializableList<>(String.class, List.of("test1", "test2", "test3"));
 
-        String json = gson.toJson(serializableList);
+		String json = gson.toJson(serializableList);
 
-        //noinspection unchecked
-        SerializableList<String> serializableList2 = gson.fromJson(json, SerializableList.class);
+		//noinspection unchecked
+		SerializableList<String> serializableList2 = gson.fromJson(json, SerializableList.class);
 
-        assertNotNull(serializableList2);
-        assertEquals(String.class, serializableList2.getValueClass());
-        assertEquals(3, serializableList2.size());
-        assertEquals("test1", serializableList2.get(0));
-        assertEquals("test2", serializableList2.get(1));
-        assertEquals("test3", serializableList2.get(2));
-    }
+		assertNotNull(serializableList2);
+		assertEquals(String.class, serializableList2.getValueClass());
+		assertEquals(3, serializableList2.size());
+		assertEquals("test1", serializableList2.get(0));
+		assertEquals("test2", serializableList2.get(1));
+		assertEquals("test3", serializableList2.get(2));
+	}
 
-    @Test
-    public void serializeMap() {
-        SerializableMap<String, Integer> serializableMap = new SerializableMap<>(String.class, Integer.class, new HashMap<>() {{
-            put("test1", 1);
-            put("test2", 2);
-            put("test3", 3);
-        }});
+	@Test
+	public void serializeMap() {
+		SerializableMap<String, Integer> serializableMap = new SerializableMap<>(String.class, Integer.class, new HashMap<>() {{
+			put("test1", 1);
+			put("test2", 2);
+			put("test3", 3);
+		}});
 
-        String json = gson.toJson(serializableMap);
+		String json = gson.toJson(serializableMap);
 
-        //noinspection unchecked
-        SerializableMap<String, Integer> deserializedMap = (SerializableMap<String, Integer>) gson.fromJson(json, SerializableMap.class);
+		//noinspection unchecked
+		SerializableMap<String, Integer> deserializedMap = (SerializableMap<String, Integer>) gson.fromJson(json, SerializableMap.class);
 
-        assertNotNull(deserializedMap);
+		assertNotNull(deserializedMap);
 
-        assertEquals(String.class, serializableMap.getKeyClass());
-        assertEquals(String.class, deserializedMap.getKeyClass());
+		assertEquals(String.class, serializableMap.getKeyClass());
+		assertEquals(String.class, deserializedMap.getKeyClass());
 
-        assertEquals(Integer.class, serializableMap.getValueClass());
-        assertEquals(Integer.class, deserializedMap.getValueClass());
+		assertEquals(Integer.class, serializableMap.getValueClass());
+		assertEquals(Integer.class, deserializedMap.getValueClass());
 
-        assertEquals(3, serializableMap.size());
-        assertEquals(3, deserializedMap.size());
+		assertEquals(3, serializableMap.size());
+		assertEquals(3, deserializedMap.size());
 
-        assertEquals(serializableMap.getOrDefault("test1", 0), deserializedMap.getOrDefault("test1", 1));
-        assertEquals(serializableMap.getOrDefault("test2", 0), deserializedMap.getOrDefault("test2", 1));
-        assertEquals(serializableMap.getOrDefault("test3", 0), deserializedMap.getOrDefault("test3", 1));
-    }
+		assertEquals(serializableMap.getOrDefault("test1", 0), deserializedMap.getOrDefault("test1", 1));
+		assertEquals(serializableMap.getOrDefault("test2", 0), deserializedMap.getOrDefault("test2", 1));
+		assertEquals(serializableMap.getOrDefault("test3", 0), deserializedMap.getOrDefault("test3", 1));
+	}
 
-    @Test
-    public void serializeDeserializeMap() {
-        SerializableMap<String, Integer> serializableMap = new SerializableMap<>(String.class, Integer.class, new HashMap<>() {{
-            put("test1", 1);
-            put("test2", 2);
-            put("test3", 3);
-        }});
+	@Test
+	public void serializeDeserializeMap() {
+		SerializableMap<String, Integer> serializableMap = new SerializableMap<>(String.class, Integer.class, new HashMap<>() {{
+			put("test1", 1);
+			put("test2", 2);
+			put("test3", 3);
+		}});
 
-        String json = gson.toJson(serializableMap);
+		String json = gson.toJson(serializableMap);
 
-        //noinspection unchecked
-        SerializableMap<String, Integer> serializableMap2 = gson.fromJson(json, SerializableMap.class);
+		//noinspection unchecked
+		SerializableMap<String, Integer> serializableMap2 = gson.fromJson(json, SerializableMap.class);
 
-        assertNotNull(serializableMap2);
-        assertEquals(String.class, serializableMap2.getKeyClass());
-        assertEquals(Integer.class, serializableMap.getValueClass());
-        assertEquals(3, serializableMap.size());
-        assertEquals(1, serializableMap.get("test1"));
-        assertEquals(2, serializableMap.get("test2"));
-        assertEquals(3, serializableMap.get("test3"));
-    }
+		assertNotNull(serializableMap2);
+		assertEquals(String.class, serializableMap2.getKeyClass());
+		assertEquals(Integer.class, serializableMap.getValueClass());
+		assertEquals(3, serializableMap.size());
+		assertEquals(1, serializableMap.get("test1"));
+		assertEquals(2, serializableMap.get("test2"));
+		assertEquals(3, serializableMap.get("test3"));
+	}
 
 
-    @Test
-    public void serializeObject() {
-        SerializableObject<String> serializableObject = new SerializableObject<>(String.class, "test");
+	@Test
+	public void serializeObject() {
+		SerializableObject<String> serializableObject = new SerializableObject<>(String.class, "test");
 
-        String json = gson.toJson(serializableObject);
+		String json = gson.toJson(serializableObject);
 
-        assertEquals(objectJson, json);
-    }
+		assertEquals(objectJson, json);
+	}
 
-    @Test
-    public void deserializeObject() {
-        //noinspection unchecked
-        SerializableObject<String> serializableObject = gson.fromJson(objectJson, SerializableObject.class);
+	@Test
+	public void deserializeObject() {
+		//noinspection unchecked
+		SerializableObject<String> serializableObject = gson.fromJson(objectJson, SerializableObject.class);
 
-        assertNotNull(serializableObject);
-        assertEquals(String.class, serializableObject.objectClass());
-        assertEquals("test", serializableObject.object());
-    }
+		assertNotNull(serializableObject);
+		assertEquals(String.class, serializableObject.objectClass());
+		assertEquals("test", serializableObject.object());
+	}
 
-    @Test
-    public void serializeDeserializeObject() {
-        SerializableObject<String> serializableObject1 = new SerializableObject<>(String.class, "test");
+	@Test
+	public void serializeDeserializeObject() {
+		SerializableObject<String> serializableObject1 = new SerializableObject<>(String.class, "test");
 
-        String json = gson.toJson(serializableObject1);
+		String json = gson.toJson(serializableObject1);
 
-        //noinspection unchecked
-        SerializableObject<String> serializableObject2 = gson.fromJson(json, SerializableObject.class);
+		//noinspection unchecked
+		SerializableObject<String> serializableObject2 = gson.fromJson(json, SerializableObject.class);
 
-        assertNotNull(serializableObject2);
-        assertEquals(String.class, serializableObject2.objectClass());
-    }
+		assertNotNull(serializableObject2);
+		assertEquals(String.class, serializableObject2.objectClass());
+	}
 
-    @Test
-    public void serializeInterface() {
-        ISerializable customInterface1 = new CustomObject1("object1");
-        ISerializable customInterface2 = new CustomObject2("object2", "some other data");
+	@Test
+	public void serializeInterface() {
+		ISerializable customInterface1 = new CustomObject1("object1");
+		ISerializable customInterface2 = new CustomObject2("object2", "some other data");
 
-        String json1 = gson.toJson(customInterface1);
-        String json2 = gson.toJson(customInterface2);
+		String json1 = gson.toJson(customInterface1);
+		String json2 = gson.toJson(customInterface2);
 
-        assertEquals(CUSTOM_OBJECT_1_JSON, json1);
-        assertEquals(CUSTOM_OBJECT_2_JSON, json2);
-    }
+		assertEquals(CUSTOM_OBJECT_1_JSON, json1);
+		assertEquals(CUSTOM_OBJECT_2_JSON, json2);
+	}
 
-    @Test
-    public void deserializeInterface() {
-        CustomInterface object1 = gson.fromJson(CUSTOM_OBJECT_1_JSON, CustomInterface.class);
-        CustomInterface object2 = gson.fromJson(CUSTOM_OBJECT_2_JSON, CustomInterface.class);
+	@Test
+	public void deserializeInterface() {
+		CustomInterface object1 = gson.fromJson(CUSTOM_OBJECT_1_JSON, CustomInterface.class);
+		CustomInterface object2 = gson.fromJson(CUSTOM_OBJECT_2_JSON, CustomInterface.class);
 
-        assertEquals("object1", object1.getData());
-        assertEquals("object2", object2.getData());
-    }
+		assertEquals("object1", object1.getData());
+		assertEquals("object2", object2.getData());
+	}
 
-    @Test
-    public void serializeDeserializeInterface() {
-        CustomObject1 class1 = new CustomObject1("object1");
-        CustomObject2 class2 = new CustomObject2("object2", "some other data");
+	@Test
+	public void serializeDeserializeInterface() {
+		CustomObject1 class1 = new CustomObject1("object1");
+		CustomObject2 class2 = new CustomObject2("object2", "some other data");
 
-        String json1 = gson.toJson(class1);
-        String json2 = gson.toJson(class2);
+		String json1 = gson.toJson(class1);
+		String json2 = gson.toJson(class2);
 
-        assertTrue(json1.contains("\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject1\""));
-        assertTrue(json2.contains("\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject2\""));
+		assertTrue(json1.contains("\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject1\""));
+		assertTrue(json2.contains("\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject2\""));
 
-        assertEquals("object1", gson.fromJson(json1, CustomInterface.class).getData());
-        assertEquals("object2", gson.fromJson(json2, CustomInterface.class).getData());
-    }
+		assertEquals("object1", gson.fromJson(json1, CustomInterface.class).getData());
+		assertEquals("object2", gson.fromJson(json2, CustomInterface.class).getData());
+	}
 
 
 }

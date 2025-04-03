@@ -9,14 +9,14 @@ import java.util.List;
 @Getter
 public class SimpleEvent2 extends RedisRequest<String> {
 
-    private final List<String> a;
-    private final String b;
+	private final List<String> a;
+	private final String b;
 
-    public SimpleEvent2(RedisManager eventManager, List<String> a, String b) {
-        super(eventManager, eventManager.getRedisConfig().getRedisID());
+	public SimpleEvent2(RedisManager eventManager, List<String> a, String b) {
+		super(eventManager, eventManager.getRedisConfig().getRedisID());
 
-        this.a = a;
-        this.b = b;
-    }
+		this.a = a;
+		this.b = b;
+	}
 
 }

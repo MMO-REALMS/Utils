@@ -14,33 +14,33 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class MessageBuilderListTypeAdapter extends GsonTypeAdapter<MessageBuilderList> {
 
-    public MessageBuilderListTypeAdapter(ClassLoader classLoader) {
-        super(classLoader, MessageBuilderList.class);
-    }
+	public MessageBuilderListTypeAdapter(ClassLoader classLoader) {
+		super(classLoader, MessageBuilderList.class);
+	}
 
-    @Override
-    public MessageBuilderList deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext context) {
+	@Override
+	public MessageBuilderList deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext context) {
 
-        JsonArray array = jsonElement.getAsJsonArray();
-        List<String> list = new ArrayList<>();
+		JsonArray array = jsonElement.getAsJsonArray();
+		List<String> list = new ArrayList<>();
 
-        for (JsonElement element : array) {
-            list.add(element.getAsString());
-        }
+		for (JsonElement element : array) {
+			list.add(element.getAsString());
+		}
 
-        return new MessageBuilderList(list);
-    }
+		return new MessageBuilderList(list);
+	}
 
 
-    @Override
-    public JsonElement serialize(MessageBuilderList src, Type type, JsonSerializationContext context) {
-        JsonArray array = new JsonArray();
+	@Override
+	public JsonElement serialize(MessageBuilderList src, Type type, JsonSerializationContext context) {
+		JsonArray array = new JsonArray();
 
-        for (String line : src.getBase()) {
-            array.add(line);
-        }
+		for (String line : src.getBase()) {
+			array.add(line);
+		}
 
-        return array;
-    }
+		return array;
+	}
 
 }

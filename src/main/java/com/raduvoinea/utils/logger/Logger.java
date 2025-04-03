@@ -13,143 +13,144 @@ import org.jetbrains.annotations.Nullable;
 
 public class Logger {
 
-    private static final StackWalker STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
-    private static @Setter Level logLevel;
-    private static @Setter ReturnArgLambdaExecutor<String, String> packageParser;
-    private static @Setter @Getter Handler logHandler;
+	private static final StackWalker STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
+	private static @Setter Level logLevel;
+	private static @Setter ReturnArgLambdaExecutor<String, String> packageParser;
+	private static @Setter
+	@Getter Handler logHandler;
 
-    static {
-        reset();
-    }
+	static {
+		reset();
+	}
 
-    public static void reset() {
-        Logger.logLevel = Level.TRACE;
-        Logger.packageParser = packageName -> null;
-        Logger.logHandler = Handler.defaultHandler();
-    }
+	public static void reset() {
+		Logger.logLevel = Level.TRACE;
+		Logger.packageParser = packageName -> null;
+		Logger.logHandler = Handler.defaultHandler();
+	}
 
-    private static @NotNull Class<?> getCallerClass() {
-        Class<?> clazz = STACK_WALKER.walk(stack -> stack.map(StackWalker.StackFrame::getDeclaringClass)
-                .filter(c -> !c.equals(Logger.class))
-                .findFirst()
-        ).orElse(null);
+	private static @NotNull Class<?> getCallerClass() {
+		Class<?> clazz = STACK_WALKER.walk(stack -> stack.map(StackWalker.StackFrame::getDeclaringClass)
+				.filter(c -> !c.equals(Logger.class))
+				.findFirst()
+		).orElse(null);
 
-        if (clazz == null) {
-            System.out.println("<!> Failed to get caller class <!>");
-            clazz = Logger.class;
-        }
+		if (clazz == null) {
+			System.out.println("<!> Failed to get caller class <!>");
+			clazz = Logger.class;
+		}
 
-        return clazz;
-    }
+		return clazz;
+	}
 
-    public static void debug(@Nullable Object object) {
-        log(Level.DEBUG, object, ConsoleColor.BRIGHT_BLACK, logHandler::debug);
-    }
+	public static void debug(@Nullable Object object) {
+		log(Level.DEBUG, object, ConsoleColor.BRIGHT_BLACK, logHandler::debug);
+	}
 
-    public static void debug(@Nullable Object object, ConsoleColor color) {
-        log(Level.DEBUG, object, color, logHandler::debug);
-    }
+	public static void debug(@Nullable Object object, ConsoleColor color) {
+		log(Level.DEBUG, object, color, logHandler::debug);
+	}
 
-    public static void log(@Nullable Object object) {
-        info(object);
-    }
+	public static void log(@Nullable Object object) {
+		info(object);
+	}
 
-    public static void info(@Nullable Object object) {
-        log(Level.INFO, object, ConsoleColor.RESET, logHandler::info);
-    }
+	public static void info(@Nullable Object object) {
+		log(Level.INFO, object, ConsoleColor.RESET, logHandler::info);
+	}
 
-    public static void good(@Nullable Object object) {
-        log(Level.INFO, object, ConsoleColor.DARK_GREEN, logHandler::info);
-    }
+	public static void good(@Nullable Object object) {
+		log(Level.INFO, object, ConsoleColor.DARK_GREEN, logHandler::info);
+	}
 
-    public static void warn(@Nullable Object object) {
-        log(Level.WARN, object, ConsoleColor.DARK_YELLOW, logHandler::warn);
-    }
+	public static void warn(@Nullable Object object) {
+		log(Level.WARN, object, ConsoleColor.DARK_YELLOW, logHandler::warn);
+	}
 
-    public static void error(@Nullable Object object) {
-        log(Level.ERROR, object, ConsoleColor.DARK_RED, logHandler::error);
-    }
+	public static void error(@Nullable Object object) {
+		log(Level.ERROR, object, ConsoleColor.DARK_RED, logHandler::error);
+	}
 
-    public static void goodOrWarn(Object object, boolean goodCheck) {
-        if (goodCheck) {
-            good(object);
-        } else {
-            warn(object);
-        }
-    }
+	public static void goodOrWarn(Object object, boolean goodCheck) {
+		if (goodCheck) {
+			good(object);
+		} else {
+			warn(object);
+		}
+	}
 
 
-    private static void genericHandle(@Nullable String log, ArgLambdaExecutor<String> logger) {
-        if (log != null) {
-            logger.execute(log);
-        }
-    }
+	private static void genericHandle(@Nullable String log, ArgLambdaExecutor<String> logger) {
+		if (log != null) {
+			logger.execute(log);
+		}
+	}
 
-    private static void log(@NotNull Level level, @Nullable Object object, @NotNull ConsoleColor color, ArgLambdaExecutor<String> logger) {
-        if (level.getLevel() < logLevel.getLevel()) {
-            return;
-        }
+	private static void log(@NotNull Level level, @Nullable Object object, @NotNull ConsoleColor color, ArgLambdaExecutor<String> logger) {
+		if (level.getLevel() < logLevel.getLevel()) {
+			return;
+		}
 
-        Class<?> caller = getCallerClass();
-        String id = packageParser.execute(caller.getPackageName());
+		Class<?> caller = getCallerClass();
+		String id = packageParser.execute(caller.getPackageName());
 
-        if (id == null || id.isEmpty()) {
-            id = caller.getSimpleName();
-        }
+		if (id == null || id.isEmpty()) {
+			id = caller.getSimpleName();
+		}
 
-        id = "[" + id + "] ";
+		id = "[" + id + "] ";
 
-        String log = switch (object) {
-            case null -> "null";
-            case MessageBuilder messageBuilder -> messageBuilder.parse();
-            case Throwable throwable -> StackTraceUtils.toString(throwable);
-            case StackTraceElement[] stackTraceElements -> StackTraceUtils.toString(stackTraceElements);
-            default -> object.toString();
-        };
+		String log = switch (object) {
+			case null -> "null";
+			case MessageBuilder messageBuilder -> messageBuilder.parse();
+			case Throwable throwable -> StackTraceUtils.toString(throwable);
+			case StackTraceElement[] stackTraceElements -> StackTraceUtils.toString(stackTraceElements);
+			default -> object.toString();
+		};
 
-        log = color + id + String.join("\n" + color, log.split("\n")) + ConsoleColor.RESET;
-        logger.execute(log);
-    }
+		log = color + id + String.join("\n" + color, log.split("\n")) + ConsoleColor.RESET;
+		logger.execute(log);
+	}
 
-    public static void printStackTrace() {
-        try {
-            throw new Exception();
-        } catch (Exception e) {
-            debug(StackTraceUtils.toString(e));
-        }
-    }
+	public static void printStackTrace() {
+		try {
+			throw new Exception();
+		} catch (Exception e) {
+			debug(StackTraceUtils.toString(e));
+		}
+	}
 
-    public interface Handler {
-        void info(@NotNull String log);
+	public interface Handler {
+		void info(@NotNull String log);
 
-        void error(@NotNull String log);
+		void error(@NotNull String log);
 
-        void warn(@NotNull String log);
+		void warn(@NotNull String log);
 
-        void debug(@NotNull String log);
+		void debug(@NotNull String log);
 
-        static Handler defaultHandler() {
-            return new Handler() {
-                @Override
-                public void info(@NotNull String log) {
-                    System.out.println(log);
-                }
+		static Handler defaultHandler() {
+			return new Handler() {
+				@Override
+				public void info(@NotNull String log) {
+					System.out.println(log);
+				}
 
-                @Override
-                public void error(@NotNull String log) {
-                    System.err.println(log);
-                }
+				@Override
+				public void error(@NotNull String log) {
+					System.err.println(log);
+				}
 
-                @Override
-                public void warn(@NotNull String log) {
-                    System.out.println(log);
-                }
+				@Override
+				public void warn(@NotNull String log) {
+					System.out.println(log);
+				}
 
-                @Override
-                public void debug(@NotNull String log) {
-                    System.out.println(log);
-                }
-            };
-        }
-    }
+				@Override
+				public void debug(@NotNull String log) {
+					System.out.println(log);
+				}
+			};
+		}
+	}
 }

@@ -5,9 +5,9 @@ import com.raduvoinea.utils.event_manager.annotation.EventHandler;
 
 public class TestUnregisterEventListener {
 
-    @EventHandler
-    public void onTestUnregisterEvent(TestUnregisterEvent event) {
-        event.setResult(event.getNumber1() + event.getNumber2());
-    }
+	@EventHandler
+	public void onTestUnregisterEvent(TestUnregisterEvent event) {
+		event.setResult(event.getNumber1() + event.getNumber2());
+	}
 
 }

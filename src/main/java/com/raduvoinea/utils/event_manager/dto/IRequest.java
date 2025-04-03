@@ -2,12 +2,12 @@ package com.raduvoinea.utils.event_manager.dto;
 
 public interface IRequest<Result> extends IEvent {
 
-    void respond(Result result);
+	void respond(Result result);
 
-    Result getResult();
+	Result getResult();
 
-    default void setResult(Result result) {
-        respond(result);
-    }
+	default void setResult(Result result) {
+		respond(result);
+	}
 
 }
