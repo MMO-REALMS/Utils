@@ -12,9 +12,11 @@ import java.lang.reflect.Type;
 
 
 @SuppressWarnings("rawtypes")
+@Deprecated(forRemoval = true)
 public class SerializableObjectTypeAdapter extends GsonTypeAdapter<SerializableObject> {
 
 	private static final String CLASS_NAME = "class_name";
+	private static final String CLASS_NAME2 = "className";
 	private static final String DATA = "data";
 
 	public SerializableObjectTypeAdapter(ClassLoader classLoader) {
@@ -23,12 +25,19 @@ public class SerializableObjectTypeAdapter extends GsonTypeAdapter<SerializableO
 
 	@Override
 	public SerializableObject deserialize(JsonElement json, Type type, JsonDeserializationContext context) {
-		String className = json.getAsJsonObject().get(CLASS_NAME).getAsString();
+		String className;
+
+		if (json.getAsJsonObject().has(CLASS_NAME)) {
+			className = json.getAsJsonObject().get(CLASS_NAME).getAsString();
+		} else {
+			className = json.getAsJsonObject().get(CLASS_NAME2).getAsString();
+		}
 
 		try {
 			Class clazz = classLoader.loadClass(className);
 
 			JsonElement jsonData = json.getAsJsonObject().get(DATA);
+
 			Object object = context.deserialize(jsonData, clazz);
 
 			//noinspection unchecked

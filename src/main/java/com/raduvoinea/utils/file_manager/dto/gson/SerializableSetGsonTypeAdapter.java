@@ -11,6 +11,7 @@ import java.util.List;
 
 
 @SuppressWarnings("rawtypes")
+@Deprecated(forRemoval = true)
 public class SerializableSetGsonTypeAdapter extends GsonTypeAdapter<SerializableSet> {
 
 	private static final String CLASS_NAME_FIELD = "class_name";
