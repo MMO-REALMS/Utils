@@ -11,12 +11,10 @@ import com.raduvoinea.utils.logger.Logger;
 import java.lang.reflect.Type;
 
 
-@SuppressWarnings("rawtypes")
-@Deprecated(forRemoval = true)
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class SerializableObjectTypeAdapter extends GsonTypeAdapter<SerializableObject> {
 
 	private static final String CLASS_NAME = "class_name";
-	private static final String CLASS_NAME2 = "className";
 	private static final String DATA = "data";
 
 	public SerializableObjectTypeAdapter(ClassLoader classLoader) {
@@ -25,26 +23,23 @@ public class SerializableObjectTypeAdapter extends GsonTypeAdapter<SerializableO
 
 	@Override
 	public SerializableObject deserialize(JsonElement json, Type type, JsonDeserializationContext context) {
-		String className;
+		JsonObject jsonObject = json.getAsJsonObject();
 
-		if (json.getAsJsonObject().has(CLASS_NAME)) {
-			className = json.getAsJsonObject().get(CLASS_NAME).getAsString();
-		} else {
-			className = json.getAsJsonObject().get(CLASS_NAME2).getAsString();
+		JsonElement jsonData = jsonObject.get(DATA);
+		String className = jsonObject.get(CLASS_NAME).getAsString();
+
+		if (className == null) {
+			return new SerializableObject(null);
 		}
 
 		try {
-			Class clazz = classLoader.loadClass(className);
-
-			JsonElement jsonData = json.getAsJsonObject().get(DATA);
-
+			Class<?> clazz = classLoader.loadClass(className);
 			Object object = context.deserialize(jsonData, clazz);
 
-			//noinspection unchecked
-			return new SerializableObject(clazz, object);
-		} catch (ClassNotFoundException error) {
-			Logger.error(error);
-			return null;
+			return new SerializableObject(object);
+		} catch (ClassNotFoundException exception) {
+			Logger.error(exception);
+			return new SerializableObject(null);
 		}
 	}
 
@@ -52,8 +47,8 @@ public class SerializableObjectTypeAdapter extends GsonTypeAdapter<SerializableO
 	public JsonElement serialize(SerializableObject object, Type type, JsonSerializationContext context) {
 		JsonObject jsonObject = new JsonObject();
 
-		jsonObject.addProperty(CLASS_NAME, object.objectClass().getName());
-		jsonObject.add(DATA, context.serialize(object.object()));
+		jsonObject.addProperty(CLASS_NAME, object.getObjectClass().getName());
+		jsonObject.add(DATA, context.serialize(object.getObject()));
 
 		return jsonObject;
 	}

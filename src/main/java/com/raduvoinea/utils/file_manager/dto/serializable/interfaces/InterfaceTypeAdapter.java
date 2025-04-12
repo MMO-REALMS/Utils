@@ -33,14 +33,14 @@ public class InterfaceTypeAdapter<T extends ISerializable> extends TypeAdapter<T
 	public T read(JsonReader in) {
 		SerializableInterface heldInterface = gson.fromJson(in, SerializableInterface.class);
 
-		if (heldInterface.className() == null || heldInterface.data() == null) {
+		if (heldInterface.getClassName() == null || heldInterface.getData() == null) {
 			return null;
 		}
 
 		//noinspection unchecked
-		Class<? extends T> clazz = (Class<? extends T>) classLoader.loadClass(heldInterface.className());
+		Class<? extends T> clazz = (Class<? extends T>) classLoader.loadClass(heldInterface.getClassName());
 		TypeAdapter<? extends T> localDelegate = gson.getDelegateAdapter(this.interfaceTypeFactory, TypeToken.get(clazz));
 
-		return localDelegate.fromJson(heldInterface.data());
+		return localDelegate.fromJson(heldInterface.getData());
 	}
 }

@@ -10,7 +10,6 @@ import java.util.HashMap;
 
 
 @SuppressWarnings("rawtypes")
-@Deprecated(forRemoval = true)
 public class SerializableMapGsonTypeAdapter extends GsonTypeAdapter<SerializableMap> {
 
 	private static final String KEY_CLASS_NAME = "key_class_name";

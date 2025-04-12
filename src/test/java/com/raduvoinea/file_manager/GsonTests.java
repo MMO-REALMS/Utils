@@ -155,8 +155,8 @@ public class GsonTests {
 		SerializableObject<String> serializableObject = gson.fromJson(objectJson, SerializableObject.class);
 
 		assertNotNull(serializableObject);
-		assertEquals(String.class, serializableObject.objectClass());
-		assertEquals("test", serializableObject.object());
+		assertEquals(String.class, serializableObject.getObjectClass());
+		assertEquals("test", serializableObject.getObject());
 	}
 
 	@Test
@@ -169,7 +169,7 @@ public class GsonTests {
 		SerializableObject<String> serializableObject2 = gson.fromJson(json, SerializableObject.class);
 
 		assertNotNull(serializableObject2);
-		assertEquals(String.class, serializableObject2.objectClass());
+		assertEquals(String.class, serializableObject2.getObjectClass());
 	}
 
 	@Test

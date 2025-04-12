@@ -1,4 +1,4 @@
-package com.raduvoinea.utils.message_builder.data;
+package com.raduvoinea.utils.message_builder.gson;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
@@ -9,7 +9,6 @@ import com.raduvoinea.utils.message_builder.MessageBuilder;
 
 import java.lang.reflect.Type;
 
-@SuppressWarnings("unused")
 public class MessageBuilderTypeAdapter extends GsonTypeAdapter<MessageBuilder> {
 
 	public MessageBuilderTypeAdapter(ClassLoader classLoader) {
