@@ -18,7 +18,20 @@ public class RandomUtils {
 	}
 
 	@SuppressWarnings("unused")
-	public static @NotNull <T extends IWeighted> T getRandom(@NotNull List<T> items) {
+	public static @NotNull <T> T getRandom(@NotNull List<T> items) {
+		if (items.isEmpty()) {
+			throw new IllegalArgumentException("Tried to get random item from empty list");
+		}
+
+		if (items.getFirst() instanceof IWeighted) {
+			//noinspection unchecked
+			return (T) getRandomWeighed(items.stream().map(item -> (IWeighted) item).toList());
+		}
+
+		return items.get(getRandom(0, items.size()));
+	}
+
+	public static @NotNull <T extends IWeighted> T getRandomWeighed(@NotNull List<T> items) {
 		int totalWeight = items.stream().mapToInt(IWeighted::getWeight).sum();
 		int random = getRandom(0, totalWeight);
 		for (T item : items) {
