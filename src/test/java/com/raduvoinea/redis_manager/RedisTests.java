@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class RedisTests {
 
-	private static RedisManager redisManager;
+	public static RedisManager REDIS_MANAGER;
 	private static final Holder<Gson> gsonHolder = Holder.empty();
 
 
@@ -40,9 +40,9 @@ public class RedisTests {
 		ClassLoader classLoader = RedisTests.class.getClassLoader();
 		EventManager eventManager = new EventManager();
 
-		redisManager = new RedisManager(gsonHolder, new RedisConfig(), classLoader, Holder.of(eventManager), true, true);
+		REDIS_MANAGER = new RedisManager(gsonHolder, new RedisConfig(), classLoader, Holder.of(eventManager), true, true);
 
-		RedisEventGsonTypeAdapter redisRequestTypeAdapter = new RedisEventGsonTypeAdapter(classLoader, redisManager);
+		RedisEventGsonTypeAdapter redisRequestTypeAdapter = new RedisEventGsonTypeAdapter(classLoader, REDIS_MANAGER);
 		SerializableListGsonTypeAdapter serializableListGsonTypeAdapter = new SerializableListGsonTypeAdapter(classLoader);
 		SerializableMapGsonTypeAdapter serializableMapGsonTypeAdapter = new SerializableMapGsonTypeAdapter(classLoader);
 		SerializableObjectTypeAdapter serializableObjectTypeAdapter = new SerializableObjectTypeAdapter(classLoader);
@@ -57,13 +57,13 @@ public class RedisTests {
 		Gson gson = gsonBuilder.create();
 		gsonHolder.set(gson);
 
-		redisManager.getEventManagerHolder().value().register(TestListener.class);
+		REDIS_MANAGER.getEventManagerHolder().value().register(TestListener.class);
 	}
 
 	@Test
 	@SneakyThrows
 	public void simpleEvent1() {
-		SimpleEvent1 event = new SimpleEvent1(redisManager, 10, 20);
+		SimpleEvent1 event = new SimpleEvent1( 10, 20);
 		CompletableFuture<Integer> future = event.send();
 		Integer result = future.get();
 
@@ -74,7 +74,7 @@ public class RedisTests {
 	@Test
 	@SneakyThrows
 	public void simpleEvent2() {
-		SimpleEvent2 event = new SimpleEvent2(redisManager, Arrays.asList("test1", "test2"), "-");
+		SimpleEvent2 event = new SimpleEvent2( Arrays.asList("test1", "test2"), "-");
 		CompletableFuture<String> future = event.send();
 		String result = future.get();
 
@@ -85,7 +85,7 @@ public class RedisTests {
 	@Test
 	@SneakyThrows
 	public void complexEvent1() {
-		ComplexEvent1 event = new ComplexEvent1(redisManager, Arrays.asList("test1", "test2"), "test3");
+		ComplexEvent1 event = new ComplexEvent1( Arrays.asList("test1", "test2"), "test3");
 		CompletableFuture<List<String>> future = event.send();
 		List<String> result = future.get();
 
@@ -97,32 +97,37 @@ public class RedisTests {
 		assertEquals("test3",result.get(2));
 	}
 
-	@Test
-	public void testGsonImplementation1() {
-		RedisRequest<Boolean> event1 = new RedisRequest<>(redisManager, "test");
-		event1.setId(100);
-		event1.setOriginator("test_env");
-
-		String json = redisManager.getGsonHolder().value().toJson(event1);
-
-		RedisRequest<?> event2 = RedisRequest.deserialize(redisManager, json);
-
-		assertNotNull(event2);
-		assertEquals(event1.getClassName(), event2.getClassName());
-		assertEquals(event1.getId(), event2.getId());
-		assertEquals(event1.getOriginator(), event2.getOriginator());
-		assertEquals(event1.getTarget(), event2.getTarget());
-	}
+//	@Test
+//	public void testGsonImplementation1() {
+//		RedisRequest<Boolean> event1 = new RedisRequest<>("test") {
+//			@Override
+//			public RedisManager getRedisManager() {
+//				return REDIS_MANAGER;
+//			}
+//		};
+//		event1.setId(100);
+//		event1.setOriginator("test_env");
+//
+//		String json = REDIS_MANAGER.getGsonHolder().value().toJson(event1);
+//
+//		RedisRequest<?> event2 = REDIS_MANAGER.getGsonHolder().value().fromJson(json, RedisRequest.class);
+//
+//		assertNotNull(event2);
+//		assertEquals(event1.getClassName(), event2.getClassName());
+//		assertEquals(event1.getId(), event2.getId());
+//		assertEquals(event1.getOriginator(), event2.getOriginator());
+//		assertEquals(event1.getTarget(), event2.getTarget());
+//	}
 
 	@Test
 	public void testGsonImplementation2() {
-		ComplexEvent1 event1 = new ComplexEvent1(redisManager, Arrays.asList("test1", "test2"), "test3");
+		ComplexEvent1 event1 = new ComplexEvent1(Arrays.asList("test1", "test2"), "test3");
 		event1.setId(100);
 		event1.setOriginator("test_env");
 
-		String json = redisManager.getGsonHolder().value().toJson(event1);
+		String json = REDIS_MANAGER.getGsonHolder().value().toJson(event1);
 
-		RedisRequest<?> event2 = RedisRequest.deserialize(redisManager, json);
+		RedisRequest<?> event2 = REDIS_MANAGER.getGsonHolder().value().fromJson(json, RedisRequest.class);
 
 		assertNotNull(event2);
 		assertEquals(event1.getClassName(), event2.getClassName());

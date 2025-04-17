@@ -15,50 +15,35 @@ import java.util.concurrent.TimeoutException;
 
 @Getter
 @Setter
-public class RedisRequest<Response> extends LocalRequest<Response> {
-
-	protected transient RedisManager redisManager;
+public abstract class RedisRequest<Response> extends LocalRequest<Response> {
 
 	private final String className;
 	private long id = -1;
 	private String originator = "UNKNOWN";
 	private String target;
 
-	public RedisRequest(RedisManager redisManager, String className, long id, String originator, String target) {
+	public RedisRequest(String className, long id, String originator, String target) {
 		super(null);
 		this.className = className;
-		this.redisManager = redisManager;
 		this.id = id;
 		this.originator = originator;
 		this.target = target;
 	}
 
-	public RedisRequest(RedisManager redisManager, String target) {
+	public RedisRequest(String target) {
 		super(null);
 		this.className = getClass().getName();
-		this.redisManager = redisManager;
 		this.target = target;
 	}
 
-	public static @Nullable RedisRequest<?> deserialize(RedisManager redisManager, String data) {
-		RedisRequest<?> event = redisManager.getGsonHolder().value().fromJson(data, RedisRequest.class);
-
-		if (event == null) {
-			return null;
-		}
-
-		event.setRedisManager(redisManager);
-		return event;
-	}
-
 	public CompletableFuture<Response> send() {
-		return redisManager.send(this)
+		return getRedisManager().send(this)
 				.orTimeout(2, TimeUnit.MINUTES); // TODO Config
 	}
 
 	public @Nullable Response sendAndGet() {
 		try {
-			CompletableFuture<Response> future = redisManager.send(this);
+			CompletableFuture<Response> future = getRedisManager().send(this);
 			return future.get(2, TimeUnit.MINUTES); // TODO Config
 		} catch (InterruptedException | ExecutionException | TimeoutException exception) {
 			Logger.error(exception);
@@ -68,15 +53,21 @@ public class RedisRequest<Response> extends LocalRequest<Response> {
 
 	@Override
 	public String toString() {
-		return redisManager.getGsonHolder().value().toJson(this);
+		return getRedisManager().getGsonHolder().value().toJson(this);
 	}
 
 	public String getPublishChannel() {
-		return redisManager.getRedisConfig().getChannel() + "#" + this.target;
+		return getRedisManager().getRedisConfig().getChannel() + "#" + this.target;
 	}
 
 	@Override
 	public EventManager getEventManager() {
-		return redisManager.getEventManagerHolder().value();
+		return getRedisManager().getEventManagerHolder().value();
+	}
+
+	public abstract RedisManager getRedisManager();
+
+	public boolean canRespond() {
+		return true;
 	}
 }

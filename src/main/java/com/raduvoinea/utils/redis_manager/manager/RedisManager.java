@@ -139,7 +139,7 @@ public class RedisManager {
 					return;
 				}
 
-				RedisRequest<?> event = RedisRequest.deserialize(_this, eventJson);
+				RedisRequest<?> event = gsonHolder.value().fromJson(eventJson, RedisRequest.class);
 
 				if (event == null) {
 					Logger.warn("Received invalid RedisEvent: " + eventJson);
@@ -179,7 +179,9 @@ public class RedisManager {
 				ScheduleUtils.runTaskAsync(() -> {
 					debugger.receive(channel, eventJson);
 					CompletableFuture<?> future = finalEvent.fire();
-					future.whenComplete((response, exception) -> new ResponseEvent(RedisManager.getInstance(), finalEvent, response).send());
+					if (finalEvent.canRespond()) {
+						future.whenComplete((response, exception) -> new ResponseEvent(_this, finalEvent, response).send());
+					}
 				});
 			}
 
@@ -245,9 +247,14 @@ public class RedisManager {
 
 		id++;
 		event.setId(id);
+		CompletableFuture<T> future;
 
-		CompletableFuture<T> future = new CompletableFuture<>();
-		awaitingResponses.put(event.getId(), future);
+		if (event.canRespond()) {
+			future = new CompletableFuture<>();
+			awaitingResponses.put(event.getId(), future);
+		} else {
+			future = CompletableFuture.completedFuture(null);
+		}
 
 		debugger.send(event.getPublishChannel(), gsonHolder.value().toJson(event));
 

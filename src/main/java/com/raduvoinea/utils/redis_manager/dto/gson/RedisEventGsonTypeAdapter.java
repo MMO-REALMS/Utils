@@ -7,6 +7,7 @@ import com.google.gson.JsonSerializationContext;
 import com.raduvoinea.utils.file_manager.dto.GsonTypeAdapter;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.redis_manager.event.RedisRequest;
+import com.raduvoinea.utils.redis_manager.event.impl.ResponseEvent;
 import com.raduvoinea.utils.redis_manager.manager.RedisManager;
 
 import java.lang.reflect.Type;
@@ -25,38 +26,33 @@ public class RedisEventGsonTypeAdapter extends GsonTypeAdapter<RedisRequest> {
 	@Override
 	public RedisRequest deserialize(JsonElement json, Type type, JsonDeserializationContext context) {
 		try {
-			boolean __RedisEventTypeAdapter = json.getAsJsonObject().has("__RedisRequestTypeAdapter#deserialize");
 			String className = json.getAsJsonObject().get("className").getAsString();
+			Class<? extends RedisRequest<?>> clazz;
 
-			if (!__RedisEventTypeAdapter && !className.equals(RedisRequest.class.getName())) {
-				Class<? extends RedisRequest<?>> clazz;
-
-				try {
-					//noinspection unchecked
-					clazz = (Class<? extends RedisRequest<?>>) classLoader.loadClass(className);
-				} catch (Throwable throwable) {
-					Logger.error("Class " + className + " was not found in the current JVM context. Please make sure" +
-							"the exact class exists in the project. If you want to have different classes in the sender and " +
-							"receiver override RedisEvent#getClassName and specify the class name there.");
-					return null;
-				}
-
-				JsonObject object = json.getAsJsonObject();
-				object.addProperty("__RedisRequestTypeAdapter#deserialize", true);
-				return context.deserialize(json, clazz);
+			try {
+				//noinspection unchecked
+				clazz = (Class<? extends RedisRequest<?>>) classLoader.loadClass(className);
+			} catch (Throwable throwable) {
+				Logger.error("Class " + className + " was not found in the current JVM context. Please make sure" +
+						"the exact class exists in the project. If you want to have different classes in the sender and " +
+						"receiver override RedisEvent#getClassName and specify the class name there.");
+				return null;
 			}
 
-			long id = json.getAsJsonObject().get("id").getAsLong();
-			String originator = json.getAsJsonObject().get("originator").getAsString();
-			String redisTarget = json.getAsJsonObject().get("redisTarget").getAsString();
+			JsonObject object = json.getAsJsonObject();
+			object.addProperty("__RedisRequestTypeAdapter#deserialize", true);
+			RedisRequest output = context.deserialize(json, clazz);
 
-			return new RedisRequest(redisManager, className, id, originator, redisTarget);
-		} catch (Exception e) {
+			if(output instanceof ResponseEvent responseEvent) {
+				responseEvent.setRedisManager(redisManager);
+			}
+
+			return output;
+		} catch (Exception exception) {
 			Logger.error("Error while deserializing RedisEvent");
 			Logger.error("Json:");
 			Logger.error(json.toString());
-			//noinspection CallToPrintStackTrace
-			e.printStackTrace();
+			Logger.error(exception);
 			return null;
 		}
 	}
