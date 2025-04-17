@@ -56,7 +56,7 @@ public class Time {
 
 	@Override
 	public String toString() {
-		return millisecondsToString(toMilliseconds());
+		return detailedMillisecondsToString(toMilliseconds());
 	}
 
 	public enum Unit {
@@ -114,6 +114,29 @@ public class Time {
 
 		return null;
 	}
+
+	private static String detailedMillisecondsToString(long milliseconds) {
+		StringBuilder sb = new StringBuilder();
+		long remaining = milliseconds;
+		int parts = 0; // Limit to 3 parts
+
+		for (Unit unit : new Unit[]{Unit.YEARS, Unit.MONTHS, Unit.WEEKS, Unit.DAYS, Unit.HOURS, Unit.MINUTES, Unit.SECONDS}) {
+			if (parts >= 3) break;
+
+			long unitAmount = remaining / unit.toMilliseconds();
+			if (unitAmount > 0) {
+				if (sb.length() > 0) {
+					sb.append(" ");
+				}
+				sb.append(unitAmount).append(unit.shortName);
+				remaining %= unit.toMilliseconds();
+				parts++;
+			}
+		}
+
+		return sb.length() == 0 ? "0s" : sb.toString();
+	}
+
 
 	public static String millisecondsToString(long milliseconds) {
 		for (int i = Unit.values().length - 1; i >= 0; i--) {
