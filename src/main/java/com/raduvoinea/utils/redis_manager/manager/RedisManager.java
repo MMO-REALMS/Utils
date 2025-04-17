@@ -9,33 +9,32 @@ import com.raduvoinea.utils.lambda.lambda.ReturnArgLambdaExecutor;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.message_builder.MessageBuilder;
 import com.raduvoinea.utils.redis_manager.dto.RedisConfig;
-import com.raduvoinea.utils.redis_manager.dto.RedisResponse;
 import com.raduvoinea.utils.redis_manager.event.RedisBroadcast;
 import com.raduvoinea.utils.redis_manager.event.RedisRequest;
 import com.raduvoinea.utils.redis_manager.event.impl.ResponseEvent;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisPubSub;
 
 import java.util.Arrays;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 public class RedisManager {
 
 	private static @Getter RedisManager instance;
 
-	private final @Getter Queue<RedisResponse<?>> awaitingResponses;
-	private final @Getter EventManager eventManager;
+	private final @Getter ConcurrentHashMap<Long, CompletableFuture<?>> awaitingResponses;
 	private final @Getter RedisDebugger debugger;
 	private final @Getter RedisConfig redisConfig;
 	private final @Getter ClassLoader classLoader;
 	private final @Getter boolean localOnly;
 	private final @Getter Holder<Gson> gsonHolder;
+	private final @Getter Holder<EventManager> eventManagerHolder;
 	protected @Getter JedisPubSub subscriberJedisPubSub;
 	private @Getter Thread redisTread;
 	private @Getter long id;
@@ -71,15 +70,15 @@ public class RedisManager {
 		}
 	}
 
-	public RedisManager(Holder<Gson> gsonProvider, RedisConfig redisConfig, ClassLoader classLoader, EventManager eventManager) {
-		this(gsonProvider, redisConfig, classLoader, eventManager, false);
+	public RedisManager(Holder<Gson> gsonProvider, RedisConfig redisConfig, ClassLoader classLoader, Holder<EventManager> eventManagerHolder) {
+		this(gsonProvider, redisConfig, classLoader, eventManagerHolder, false);
 	}
 
-	public RedisManager(Holder<Gson> gsonProvider, RedisConfig redisConfig, ClassLoader classLoader, EventManager eventManager, boolean debug) {
-		this(gsonProvider, redisConfig, classLoader, eventManager, debug, false);
+	public RedisManager(Holder<Gson> gsonProvider, RedisConfig redisConfig, ClassLoader classLoader, Holder<EventManager> eventManagerHolder, boolean debug) {
+		this(gsonProvider, redisConfig, classLoader, eventManagerHolder, debug, false);
 	}
 
-	public RedisManager(Holder<Gson> gsonHolder, RedisConfig redisConfig, ClassLoader classLoader, EventManager eventManager, boolean debug, boolean localOnly) {
+	public RedisManager(Holder<Gson> gsonHolder, RedisConfig redisConfig, ClassLoader classLoader, Holder<EventManager> eventManagerHolder, boolean debug, boolean localOnly) {
 		instance = this;
 
 		this.gsonHolder = gsonHolder;
@@ -88,8 +87,8 @@ public class RedisManager {
 		this.classLoader = classLoader;
 
 		this.debugger = new RedisDebugger(debug);
-		this.eventManager = eventManager;
-		this.awaitingResponses = new ConcurrentLinkedQueue<>();
+		this.eventManagerHolder = eventManagerHolder;
+		this.awaitingResponses = new ConcurrentHashMap<>();
 
 		if (!localOnly) {
 			connectJedis();
@@ -120,17 +119,6 @@ public class RedisManager {
 		);
 	}
 
-	@Nullable
-	private RedisResponse<?> getResponse(ResponseEvent command) {
-		//noinspection rawtypes
-		for (RedisResponse response : awaitingResponses) {
-			if (response.getId() == command.getId()) {
-				return response;
-			}
-		}
-
-		return null;
-	}
 
 	protected void subscribe() {
 		RedisManager _this = this;
@@ -147,6 +135,7 @@ public class RedisManager {
 
 			public void onMessageReceive(String channel, final String eventJson) {
 				if (eventJson.isEmpty()) {
+					Logger.warn("Received empty RedisEvent");
 					return;
 				}
 
@@ -167,11 +156,16 @@ public class RedisManager {
 					}
 					case ResponseEvent responseEvent -> {
 						debugger.receiveResponse(channel, eventJson);
-						RedisResponse<?> response = getResponse(responseEvent);
+						//noinspection rawtypes
+						CompletableFuture response = awaitingResponses.remove(responseEvent.getId());
 						if (response == null) {
+							Logger.debug("Received response for non existent event: " + responseEvent.getId());
 							yield null;
 						}
-						response.respond(responseEvent);
+
+						//noinspection unchecked
+						response.complete(responseEvent.deserialize());
+
 						yield null;
 					}
 					default -> event;
@@ -184,7 +178,8 @@ public class RedisManager {
 				RedisRequest<?> finalEvent = event;
 				ScheduleUtils.runTaskAsync(() -> {
 					debugger.receive(channel, eventJson);
-					finalEvent.fire();
+					CompletableFuture<?> future = finalEvent.fire();
+					future.whenComplete((response, exception) -> new ResponseEvent(RedisManager.getInstance(), finalEvent, response).send());
 				});
 			}
 
@@ -235,46 +230,24 @@ public class RedisManager {
 		return new String[]{redisConfig.getChannel() + "#" + redisConfig.getRedisID(), redisConfig.getChannel() + "#*"};
 	}
 
-	public <T> RedisResponse<T> send(@NotNull RedisRequest<T> event) {
+	public <T> CompletableFuture<T> send(@NotNull RedisRequest<T> event) {
 		event.setOriginator(redisConfig.getRedisID());
 
-		if (event instanceof ResponseEvent) {
-			if (event.getTarget().equals(event.getOriginator())) {
-				debugger.sendResponse("LOCAL", gsonHolder.value().toJson(event));
-				eventManager.fire(event);
+		if (event instanceof ResponseEvent responseEvent) {
+			sendResponse(responseEvent);
+			return CompletableFuture.completedFuture(null);
+		}
 
-				ResponseEvent responseEvent = (ResponseEvent) event;
-
-				RedisResponse<?> response = getResponse(responseEvent);
-				if (response == null) {
-					return null;
-				}
-				response.respond(responseEvent);
-
-				return null;
-			}
-
-			debugger.sendResponse(event.getPublishChannel(), gsonHolder.value().toJson(event));
-
-			executeOnJedisAndForget(jedis ->
-					jedis.publish(event.getPublishChannel(), gsonHolder.value().toJson(event))
-			);
-
-			return null;
+		if (event.getTarget().equals(event.getOriginator())) {
+			debugger.send("LOCAL", gsonHolder.value().toJson(event));
+			return eventManagerHolder.value().fire(event);
 		}
 
 		id++;
 		event.setId(id);
 
-		RedisResponse<T> redisResponse = new RedisResponse<>(this, event.getId());
-		awaitingResponses.add(redisResponse);
-
-		if (event.getTarget().equals(event.getOriginator())) {
-			debugger.send("LOCAL", gsonHolder.value().toJson(event));
-			eventManager.fire(event);
-
-			return redisResponse;
-		}
+		CompletableFuture<T> future = new CompletableFuture<>();
+		awaitingResponses.put(event.getId(), future);
 
 		debugger.send(event.getPublishChannel(), gsonHolder.value().toJson(event));
 
@@ -282,6 +255,14 @@ public class RedisManager {
 				jedis.publish(event.getPublishChannel(), gsonHolder.value().toJson(event))
 		);
 
-		return redisResponse;
+		return future.orTimeout(2, TimeUnit.MINUTES); // TODO Config
+	}
+
+	public void sendResponse(ResponseEvent responseEvent) {
+		debugger.sendResponse(responseEvent.getPublishChannel(), gsonHolder.value().toJson(responseEvent));
+
+		executeOnJedisAndForget(jedis ->
+				jedis.publish(responseEvent.getPublishChannel(), gsonHolder.value().toJson(responseEvent))
+		);
 	}
 }

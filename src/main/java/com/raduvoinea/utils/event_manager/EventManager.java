@@ -6,6 +6,7 @@ import com.raduvoinea.utils.event_manager.annotation.EventHandler;
 import com.raduvoinea.utils.event_manager.dto.EventMethod;
 import com.raduvoinea.utils.event_manager.dto.IEvent;
 import com.raduvoinea.utils.generic.dto.Holder;
+import com.raduvoinea.utils.lambda.ScheduleUtils;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.message_builder.MessageBuilder;
 import com.raduvoinea.utils.reflections.Reflections;
@@ -18,6 +19,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class EventManager {
 
@@ -137,18 +140,18 @@ public class EventManager {
 		}
 	}
 
-	public void fire(@NotNull Object event) {
-		this.fire(event, true);
+	public <T> CompletableFuture<T> fire(@NotNull IEvent<T> event) {
+		return this.fire(event, true);
 	}
 
-	public void fire(@NotNull Object event, boolean suppressExceptions) {
+	public <T> CompletableFuture<T> fire(@NotNull IEvent<T> event, boolean suppressExceptions) {
 		Class<?> eventClass = event.getClass();
 
 		if (!methods.containsKey(eventClass)) {
 			Logger.warn(new MessageBuilder("No listeners found for event {event}")
 					.parse("event", eventClass.getSimpleName())
 			);
-			return;
+			return CompletableFuture.completedFuture(null);
 		}
 
 		List<EventMethod> eventMethods = methods.get(eventClass);
@@ -157,12 +160,16 @@ public class EventManager {
 			Logger.warn(new MessageBuilder("No listeners found for event {event}")
 					.parse("event", eventClass.getSimpleName())
 			);
-			return;
+			return CompletableFuture.completedFuture(null);
 		}
 
-		for (EventMethod method : eventMethods) {
-			method.fire(event, suppressExceptions);
-		}
+		return ScheduleUtils.runTaskAsync(() -> {
+					for (EventMethod method : eventMethods) {
+						method.fire(event, suppressExceptions);
+					}
+					return event.getResult();
+				})
+				.orTimeout(2, TimeUnit.MINUTES);
 	}
 
 	protected Class<?> getEventClass(@NotNull Method method) {

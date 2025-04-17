@@ -2,68 +2,20 @@ package com.raduvoinea.utils.lambda;
 
 import com.raduvoinea.utils.generic.Time;
 import com.raduvoinea.utils.lambda.lambda.LambdaExecutor;
-import lombok.Getter;
+import com.raduvoinea.utils.lambda.lambda.ReturnLambdaExecutor;
+import com.raduvoinea.utils.logger.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Timer;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
-@Getter
 public class ScheduleUtils {
 
-	public static CancelableTimeTask runTaskLater(@NotNull LambdaExecutor executor, long delay) {
-		CancelableTimeTask task = new CancelableTimeTask() {
-			@Override
-			public void execute() {
-				executor.execute();
-			}
-		};
-
-		return runTaskLater(task, delay);
-	}
-
-	public static CancelableTimeTask runTaskLater(@NotNull CancelableTimeTask task, long delay) {
-		Timer timer = new Timer();
-		timer.schedule(task, delay);
-
-		return task;
-	}
-
-	@Deprecated(forRemoval = true)
-	public static @NotNull CancelableTimeTask runTaskTimer(@NotNull LambdaExecutor executor, long period) {
-		return runTaskTimer(new CancelableTimeTask() {
-			@Override
-			public void execute() {
-				executor.execute();
-			}
-		}, period);
-	}
-
-	@Deprecated(forRemoval = true)
-	public static @NotNull CancelableTimeTask runTaskTimer(@NotNull CancelableTimeTask task, long period) {
-		Timer timer = new Timer();
-		timer.schedule(task, 0, period);
-
-		return task;
-	}
-
-	public static @NotNull CancelableTimeTask runTaskLaterAsync(@NotNull LambdaExecutor executor, long delay) {
-		CancelableTimeTask task = new CancelableTimeTask() {
-			@Override
-			public void execute() {
-				executor.execute();
-			}
-		};
-
-		Thread thread = Thread.ofVirtual().start(() -> runTaskLater(task, delay));
-		task.setThread(thread);
-		return task;
-	}
+	private static final Executor EXECUTOR_POOL = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().factory());
 
 	public static @NotNull CancelableTimeTask runTaskTimerAsync(@NotNull LambdaExecutor executor, Time period) {
-		return runTaskTimerAsync(executor, period.toMilliseconds());
-	}
-
-	public static @NotNull CancelableTimeTask runTaskTimerAsync(@NotNull LambdaExecutor executor, long period) {
 		CancelableTimeTask task = new CancelableTimeTask() {
 			@Override
 			public void execute() {
@@ -71,21 +23,26 @@ public class ScheduleUtils {
 			}
 		};
 
-		Thread thread = Thread.ofVirtual().start(() -> runTaskTimer(task, period));
+		Thread thread = Thread.ofVirtual().start(() -> {
+			Timer timer = new Timer();
+			timer.schedule(task, 0, period.toMilliseconds());
+		});
+
 		task.setThread(thread);
 		return task;
 	}
 
-	public static @NotNull CancelableTimeTask runTaskAsync(@NotNull LambdaExecutor executor) {
-		CancelableTimeTask task = new CancelableTimeTask() {
-			@Override
-			public void execute() {
+	public static @NotNull CompletableFuture<Void> runTaskAsync(@NotNull LambdaExecutor executor) {
+		return CompletableFuture.runAsync(()->{
+			try {
 				executor.execute();
+			} catch (Exception exception) {
+				Logger.error(exception);
 			}
-		};
+		}, EXECUTOR_POOL);
+	}
 
-		Thread thread = Thread.ofVirtual().start(task::execute);
-		task.setThread(thread);
-		return task;
+	public static @NotNull <R> CompletableFuture<R> runTaskAsync(@NotNull ReturnLambdaExecutor<R> executor) {
+		return CompletableFuture.supplyAsync(executor::execute, EXECUTOR_POOL);
 	}
 }

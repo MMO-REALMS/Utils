@@ -1,23 +1,15 @@
 package com.raduvoinea.utils.event_manager.dto;
 
-import com.raduvoinea.utils.event_manager.EventManager;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
-public abstract class LocalRequest<Result> extends LocalEvent implements IRequest<Result> {
+public abstract class LocalRequest<Result> implements IEvent<Result> {
 
-	private EventManager eventManager;
+	@Getter
+	@Setter
 	private Result result;
 
-	public LocalRequest(EventManager eventManager, Result defaultResult) {
-		super(eventManager);
+	public LocalRequest(Result defaultResult) {
 		this.result = defaultResult;
 	}
-
-	public void respond(Result result) {
-		this.result = result;
-	}
-
 }

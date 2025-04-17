@@ -13,11 +13,11 @@ import java.lang.reflect.Type;
 
 
 @SuppressWarnings("rawtypes")
-public class RedisRequestGsonTypeAdapter extends GsonTypeAdapter<RedisRequest> {
+public class RedisEventGsonTypeAdapter extends GsonTypeAdapter<RedisRequest> {
 
 	private final RedisManager redisManager;
 
-	public RedisRequestGsonTypeAdapter(ClassLoader classLoader, RedisManager redisManager) {
+	public RedisEventGsonTypeAdapter(ClassLoader classLoader, RedisManager redisManager) {
 		super(classLoader, RedisRequest.class);
 		this.redisManager = redisManager;
 	}

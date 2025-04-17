@@ -13,4 +13,6 @@ public @interface EventHandler {
 
 	boolean ignore() default false;
 
+	boolean async() default false;
+
 }

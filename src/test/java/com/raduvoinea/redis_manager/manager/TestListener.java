@@ -12,7 +12,7 @@ public class TestListener {
 
 	@EventHandler
 	public void onSimpleEvent1(SimpleEvent1 event) {
-		event.respond(event.getA() + event.getB());
+		event.setResult(event.getA() + event.getB());
 	}
 
 	@EventHandler
@@ -23,7 +23,7 @@ public class TestListener {
 			output.append(s).append(event.getB());
 		}
 
-		event.respond(output.toString());
+		event.setResult(output.toString());
 	}
 
 	@EventHandler
@@ -31,7 +31,7 @@ public class TestListener {
 		List<String> output = new ArrayList<>(event.getA());
 		output.add(event.getB());
 
-		event.respond(output);
+		event.setResult(output);
 	}
 
 }

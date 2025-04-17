@@ -13,19 +13,21 @@ import com.raduvoinea.utils.file_manager.dto.gson.SerializableObjectTypeAdapter;
 import com.raduvoinea.utils.generic.dto.Holder;
 import com.raduvoinea.utils.message_builder.MessageBuilderManager;
 import com.raduvoinea.utils.redis_manager.dto.RedisConfig;
-import com.raduvoinea.utils.redis_manager.dto.RedisResponse;
-import com.raduvoinea.utils.redis_manager.dto.gson.RedisRequestGsonTypeAdapter;
+import com.raduvoinea.utils.redis_manager.dto.gson.RedisEventGsonTypeAdapter;
 import com.raduvoinea.utils.redis_manager.event.RedisRequest;
 import com.raduvoinea.utils.redis_manager.manager.RedisManager;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class RedisTest {
+public class RedisTests {
 
 	private static RedisManager redisManager;
 	private static final Holder<Gson> gsonHolder = Holder.empty();
@@ -35,11 +37,12 @@ public class RedisTest {
 	public static void init() {
 		MessageBuilderManager.init(false);
 
-		ClassLoader classLoader = RedisTest.class.getClassLoader();
+		ClassLoader classLoader = RedisTests.class.getClassLoader();
+		EventManager eventManager = new EventManager();
 
-		redisManager = new RedisManager(gsonHolder, new RedisConfig(), classLoader, new EventManager(), true, true);
+		redisManager = new RedisManager(gsonHolder, new RedisConfig(), classLoader, Holder.of(eventManager), true, true);
 
-		RedisRequestGsonTypeAdapter redisRequestTypeAdapter = new RedisRequestGsonTypeAdapter(classLoader, redisManager);
+		RedisEventGsonTypeAdapter redisRequestTypeAdapter = new RedisEventGsonTypeAdapter(classLoader, redisManager);
 		SerializableListGsonTypeAdapter serializableListGsonTypeAdapter = new SerializableListGsonTypeAdapter(classLoader);
 		SerializableMapGsonTypeAdapter serializableMapGsonTypeAdapter = new SerializableMapGsonTypeAdapter(classLoader);
 		SerializableObjectTypeAdapter serializableObjectTypeAdapter = new SerializableObjectTypeAdapter(classLoader);
@@ -54,82 +57,85 @@ public class RedisTest {
 		Gson gson = gsonBuilder.create();
 		gsonHolder.set(gson);
 
-		redisManager.getEventManager().register(TestListener.class);
+		redisManager.getEventManagerHolder().value().register(TestListener.class);
 	}
 
 	@Test
+	@SneakyThrows
 	public void simpleEvent1() {
-		SimpleEvent1 event1 = new SimpleEvent1(redisManager, 10, 20);
-		RedisResponse<Integer> result = event1.sendAndWait();
+		SimpleEvent1 event = new SimpleEvent1(redisManager, 10, 20);
+		CompletableFuture<Integer> future = event.send();
+		Integer result = future.get();
 
-		assertFalse(result.hasTimeout());
-		assertTrue(result.isFinished());
-		assertEquals(30, result.getResponse());
+		assertEquals(Future.State.SUCCESS, future.state());
+		assertEquals(30, result);
 	}
 
 	@Test
+	@SneakyThrows
 	public void simpleEvent2() {
-		SimpleEvent2 event1 = new SimpleEvent2(redisManager, Arrays.asList("test1", "test2"), "-");
-		RedisResponse<String> result = event1.sendAndWait();
+		SimpleEvent2 event = new SimpleEvent2(redisManager, Arrays.asList("test1", "test2"), "-");
+		CompletableFuture<String> future = event.send();
+		String result = future.get();
 
-		assertFalse(result.hasTimeout());
-		assertTrue(result.isFinished());
-		assertEquals("test1-test2-", result.getResponse());
+		assertEquals(Future.State.SUCCESS, future.state());
+		assertEquals("test1-test2-", result);
 	}
 
 	@Test
+	@SneakyThrows
 	public void complexEvent1() {
-		ComplexEvent1 event1 = new ComplexEvent1(redisManager, Arrays.asList("test1", "test2"), "test3");
-		RedisResponse<List<String>> result = event1.sendAndWait();
+		ComplexEvent1 event = new ComplexEvent1(redisManager, Arrays.asList("test1", "test2"), "test3");
+		CompletableFuture<List<String>> future = event.send();
+		List<String> result = future.get();
 
-		assertFalse(result.hasTimeout());
-		assertTrue(result.isFinished());
+		assertEquals(Future.State.SUCCESS, future.state());
 		assertNotNull(result);
-		assertEquals(3, result.getResponse().size());
-		assertEquals("test1", result.getResponse().get(0));
-		assertEquals("test2", result.getResponse().get(1));
-		assertEquals("test3", result.getResponse().get(2));
+		assertEquals(3, result.size());
+		assertEquals("test1",result.get(0));
+		assertEquals("test2",result.get(1));
+		assertEquals("test3",result.get(2));
 	}
 
 	@Test
 	public void testGsonImplementation1() {
-		RedisRequest<Boolean> event = new RedisRequest<>(redisManager, "test");
-		event.setId(100);
-		event.setOriginator("test_env");
+		RedisRequest<Boolean> event1 = new RedisRequest<>(redisManager, "test");
+		event1.setId(100);
+		event1.setOriginator("test_env");
 
-		String json = redisManager.getGsonHolder().value().toJson(event);
+		String json = redisManager.getGsonHolder().value().toJson(event1);
 
 		RedisRequest<?> event2 = RedisRequest.deserialize(redisManager, json);
 
 		assertNotNull(event2);
-		assertEquals(event.getClassName(), event2.getClassName());
-		assertEquals(event.getId(), event2.getId());
-		assertEquals(event.getOriginator(), event2.getOriginator());
-		assertEquals(event.getTarget(), event2.getTarget());
+		assertEquals(event1.getClassName(), event2.getClassName());
+		assertEquals(event1.getId(), event2.getId());
+		assertEquals(event1.getOriginator(), event2.getOriginator());
+		assertEquals(event1.getTarget(), event2.getTarget());
 	}
 
 	@Test
 	public void testGsonImplementation2() {
-		ComplexEvent1 event = new ComplexEvent1(redisManager, Arrays.asList("test1", "test2"), "test3");
-		event.setId(100);
-		event.setOriginator("test_env");
+		ComplexEvent1 event1 = new ComplexEvent1(redisManager, Arrays.asList("test1", "test2"), "test3");
+		event1.setId(100);
+		event1.setOriginator("test_env");
 
-		String json = redisManager.getGsonHolder().value().toJson(event);
+		String json = redisManager.getGsonHolder().value().toJson(event1);
 
 		RedisRequest<?> event2 = RedisRequest.deserialize(redisManager, json);
 
 		assertNotNull(event2);
-		assertEquals(event.getClassName(), event2.getClassName());
-		assertEquals(event.getId(), event2.getId());
-		assertEquals(event.getOriginator(), event2.getOriginator());
-		assertEquals(event.getTarget(), event2.getTarget());
+		assertEquals(event1.getClassName(), event2.getClassName());
+		assertEquals(event1.getId(), event2.getId());
+		assertEquals(event1.getOriginator(), event2.getOriginator());
+		assertEquals(event1.getTarget(), event2.getTarget());
 		assertInstanceOf(ComplexEvent1.class, event2);
 
 		ComplexEvent1 event3 = (ComplexEvent1) event2;
 
 		assertNotNull(event3);
-		assertEquals(event.getA(), event3.getA());
-		assertEquals(event.getB(), event3.getB());
+		assertEquals(event1.getA(), event3.getA());
+		assertEquals(event1.getB(), event3.getB());
 	}
 
 }

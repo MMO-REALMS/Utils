@@ -1,21 +1,11 @@
 package com.raduvoinea.utils.event_manager.dto;
 
 import com.raduvoinea.utils.event_manager.EventManager;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
-public abstract class LocalEvent implements IEvent {
-
-	private EventManager eventManager;
+public abstract class LocalEvent extends LocalRequest<Void> {
 
 	public LocalEvent(EventManager eventManager) {
-		this.eventManager = eventManager;
+		super(null);
 	}
 
-	@Override
-	public void fire(boolean suppressExceptions) {
-		eventManager.fire(this, suppressExceptions);
-	}
 }

@@ -17,12 +17,12 @@ public class EventMethod {
 	public EventMethod(Object parentObject, @NotNull Method method) {
 		this.parentObject = parentObject;
 		this.method = method;
+		this.method.setAccessible(true);
 		this.annotation = method.getAnnotation(EventHandler.class);
 	}
 
 	public void fire(Object event, boolean suppressExceptions) {
 		try {
-			method.setAccessible(true);
 			method.invoke(parentObject, event);
 		} catch (Exception error) {
 			if (suppressExceptions) {

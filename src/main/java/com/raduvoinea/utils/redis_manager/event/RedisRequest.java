@@ -1,20 +1,21 @@
 package com.raduvoinea.utils.redis_manager.event;
 
-import com.raduvoinea.utils.event_manager.dto.IEvent;
-import com.raduvoinea.utils.lambda.ScheduleUtils;
-import com.raduvoinea.utils.lambda.lambda.ArgLambdaExecutor;
-import com.raduvoinea.utils.lambda.lambda.LambdaExecutor;
-import com.raduvoinea.utils.redis_manager.dto.RedisResponse;
-import com.raduvoinea.utils.redis_manager.event.impl.ResponseEvent;
+import com.raduvoinea.utils.event_manager.EventManager;
+import com.raduvoinea.utils.event_manager.dto.LocalRequest;
+import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.redis_manager.manager.RedisManager;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.SneakyThrows;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Getter
 @Setter
-public class RedisRequest<Response> implements IEvent {
+public class RedisRequest<Response> extends LocalRequest<Response> {
 
 	protected transient RedisManager redisManager;
 
@@ -24,6 +25,7 @@ public class RedisRequest<Response> implements IEvent {
 	private String target;
 
 	public RedisRequest(RedisManager redisManager, String className, long id, String originator, String target) {
+		super(null);
 		this.className = className;
 		this.redisManager = redisManager;
 		this.id = id;
@@ -32,6 +34,7 @@ public class RedisRequest<Response> implements IEvent {
 	}
 
 	public RedisRequest(RedisManager redisManager, String target) {
+		super(null);
 		this.className = getClass().getName();
 		this.redisManager = redisManager;
 		this.target = target;
@@ -48,17 +51,19 @@ public class RedisRequest<Response> implements IEvent {
 		return event;
 	}
 
-	/**
-	 * Sends the event locally only
-	 * Do NOT call manually, call {@link #sendAndWait()} or any of it derivatives
-	 */
-	public void fire() {
-		redisManager.getEventManager().fire(this);
+	public CompletableFuture<Response> send() {
+		return redisManager.send(this)
+				.orTimeout(2, TimeUnit.MINUTES); // TODO Config
 	}
 
-	@Override
-	public void fire(boolean suppressExceptions) {
-		redisManager.getEventManager().fire(this, suppressExceptions);
+	public @Nullable Response sendAndGet() {
+		try {
+			CompletableFuture<Response> future = redisManager.send(this);
+			return future.get(2, TimeUnit.MINUTES); // TODO Config
+		} catch (InterruptedException | ExecutionException | TimeoutException exception) {
+			Logger.error(exception);
+			return null;
+		}
 	}
 
 	@Override
@@ -66,75 +71,12 @@ public class RedisRequest<Response> implements IEvent {
 		return redisManager.getGsonHolder().value().toJson(this);
 	}
 
-	public void respond(Response response) {
-		new ResponseEvent(redisManager, this, response).send();
-	}
-
-	public RedisResponse<Response> send() {
-		return redisManager.send(this);
-	}
-
-	public void sendAndExecuteSync(ArgLambdaExecutor<Response> success, LambdaExecutor fail) {
-		RedisResponse<Response> response = this.sendAndWait();
-
-		if (response.hasTimeout()) {
-			fail.execute();
-			return;
-		}
-
-		success.execute(response.getResponse());
-	}
-
-	public @Nullable Response sendAndGet(LambdaExecutor fail) {
-		RedisResponse<Response> response = this.sendAndWait();
-
-		if (response.hasTimeout()) {
-			fail.execute();
-			return null;
-		}
-
-		return response.getResponse();
-	}
-
-	public @Nullable Response sendAndGet() {
-		return sendAndGet(() -> {
-		});
-	}
-
-	public void sendAndExecute(ArgLambdaExecutor<Response> success) {
-		sendAndExecute(success, () -> {
-		});
-	}
-
-	public void sendAndExecute(ArgLambdaExecutor<Response> success, LambdaExecutor fail) {
-		ScheduleUtils.runTaskAsync(() -> sendAndExecuteSync(success, fail));
-	}
-
-	@SneakyThrows
-	public RedisResponse<Response> sendAndWait() {
-		return sendAndWait(redisManager.getRedisConfig().getTimeout());
-	}
-
-	@SneakyThrows
-	public RedisResponse<Response> sendAndWait(int timeout) {
-		int currentWait = 0;
-		RedisResponse<Response> response = send();
-		while (!response.isFinished()) {
-			//noinspection BusyWait
-			Thread.sleep(redisManager.getRedisConfig().getWaitBeforeIteration());
-			currentWait += redisManager.getRedisConfig().getWaitBeforeIteration();
-			if (currentWait > timeout) {
-				response.timeout();
-				break;
-			}
-		}
-
-		redisManager.getAwaitingResponses().remove(response);
-		return response;
-	}
-
 	public String getPublishChannel() {
 		return redisManager.getRedisConfig().getChannel() + "#" + this.target;
 	}
 
+	@Override
+	public EventManager getEventManager() {
+		return redisManager.getEventManagerHolder().value();
+	}
 }

@@ -1,6 +1,9 @@
 package com.raduvoinea.event_manager;
 
-import com.raduvoinea.event_manager.dto.*;
+import com.raduvoinea.event_manager.dto.TestEvent;
+import com.raduvoinea.event_manager.dto.TestLocalEvent;
+import com.raduvoinea.event_manager.dto.TestLocalRequest;
+import com.raduvoinea.event_manager.dto.TestUnregisterEvent;
 import com.raduvoinea.event_manager.manager.TestEventListener;
 import com.raduvoinea.event_manager.manager.TestUnregisterEventListener;
 import com.raduvoinea.utils.event_manager.EventManager;
@@ -9,24 +12,23 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class EventManagerTests {
 
-	@Getter
-	private static final EventManager eventManager = new EventManager();
+	public static final EventManager EVENT_MANAGER = new EventManager();
+	private static final List<Method> EXTERNAL_METHODS = new ArrayList<>();
 
 	@BeforeAll
 	public static void setup() {
-		eventManager.registerExternalRegistrar(new EventManager.ExternalRegistrar() {
+		EVENT_MANAGER.registerExternalRegistrar(new EventManager.ExternalRegistrar() {
 			@Override
 			public boolean register(Object object, Method method, Class<?> eventClass) {
-				if (object instanceof ExternalEvent externalEvent) {
-					eventManager.register(new ExternalEvent.Wrapper(externalEvent));
-					return true;
-				}
-				return false;
+				EXTERNAL_METHODS.add(method);
+				return true;
 			}
 
 			@Override
@@ -35,7 +37,7 @@ public class EventManagerTests {
 				return false;
 			}
 		});
-		eventManager.register(new TestEventListener());
+		EVENT_MANAGER.register(new TestEventListener());
 	}
 
 	@Test
@@ -43,11 +45,8 @@ public class EventManagerTests {
 		TestEvent event1 = new TestEvent(1, 2);
 		TestEvent event2 = new TestEvent(10, 20);
 
-		eventManager.fire(event1);
-		eventManager.fire(event2);
-
-		assertEquals(3, event1.getResult());
-		assertEquals(30, event2.getResult());
+		assertEquals(3, event1.fireAndWait());
+		assertEquals(30, event2.fireAndWait());
 	}
 
 	@Test
@@ -55,13 +54,8 @@ public class EventManagerTests {
 		TestLocalEvent event1 = new TestLocalEvent(1, 2);
 		TestLocalEvent event2 = new TestLocalEvent(10, 20);
 
-		// We are not checking for the result as it has not been set by default
-
-		event1.fire();
-		event2.fire();
-
-		assertEquals(3, event1.getResult());
-		assertEquals(30, event2.getResult());
+		assertEquals(3, event1.fireAndWait());
+		assertEquals(30, event2.fireAndWait());
 	}
 
 	@Test
@@ -69,44 +63,26 @@ public class EventManagerTests {
 		TestLocalRequest event1 = new TestLocalRequest(1, 2);
 		TestLocalRequest event2 = new TestLocalRequest(10, 20);
 
-		assertEquals(0, event1.getResult());
-		assertEquals(0, event2.getResult());
-
-		eventManager.fire(event1);
-		eventManager.fire(event2);
-
-		assertEquals(3, event1.getResult());
-		assertEquals(30, event2.getResult());
+		assertEquals(3, event1.fireAndWait());
+		assertEquals(30, event2.fireAndWait());
 	}
 
 	@Test
 	public void testExternalEvent() {
-		ExternalEvent event1 = new ExternalEvent(1, 2);
-		ExternalEvent event2 = new ExternalEvent(10, 20);
-
-		// We are not checking for the result as it has not been set by default
-
-		eventManager.fire(event1);
-		eventManager.fire(event2);
-
-		assertEquals(3, event1.getResult());
-		assertEquals(30, event2.getResult());
+		System.out.println(EXTERNAL_METHODS);
+		assertEquals(1, EXTERNAL_METHODS.size());
 	}
 
 	@Test
 	public void testUnregisterEvent() {
-		eventManager.register(TestUnregisterEventListener.class);
-
+		EVENT_MANAGER.register(TestUnregisterEventListener.class);
 		TestUnregisterEvent event1 = new TestUnregisterEvent(1, 2);
-		eventManager.fire(event1);
+		assertEquals(3, event1.fireAndWait());
 
-		eventManager.unregister(TestUnregisterEventListener.class);
-
+		EVENT_MANAGER.unregister(TestUnregisterEventListener.class);
 		TestUnregisterEvent event2 = new TestUnregisterEvent(1, 2);
-		eventManager.fire(event2);
-
-		assertEquals(3, event1.getResult());
-		assertEquals(0, event2.getResult());
+		EVENT_MANAGER.fire(event2);
+		assertEquals(null, event2.fireAndWait());
 	}
 
 

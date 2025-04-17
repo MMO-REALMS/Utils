@@ -5,10 +5,7 @@ import com.raduvoinea.utils.event_manager.EventManager;
 import com.raduvoinea.utils.generic.dto.Holder;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.redis_manager.dto.RedisConfig;
-import com.raduvoinea.utils.redis_manager.dto.RedisResponse;
-import com.raduvoinea.utils.redis_manager.event.RedisRequest;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
 import redis.clients.jedis.JedisPubSub;
 
 import java.util.List;
@@ -18,15 +15,9 @@ public class DebugRedisManager extends RedisManager {
 
 	private final List<String> channels;
 
-	public DebugRedisManager(Holder<Gson> gsonProvider, RedisConfig redisConfig, ClassLoader classLoader, EventManager eventManager, boolean debug, boolean localOnly, List<String> channels) {
-		super(gsonProvider, redisConfig, classLoader, eventManager, debug, localOnly);
+	public DebugRedisManager(Holder<Gson> gsonProvider, RedisConfig redisConfig, ClassLoader classLoader, Holder<EventManager> eventManagerHolder, boolean debug, boolean localOnly, List<String> channels) {
+		super(gsonProvider, redisConfig, classLoader, eventManagerHolder, debug, localOnly);
 		this.channels = channels;
-	}
-
-	@Override
-	public <T> RedisResponse<T> send(@NotNull RedisRequest<T> event) {
-		Logger.log("Cannot sent events from DebugRedisManager");
-		return new RedisResponse<>(this, 0);
 	}
 
 	@Override
