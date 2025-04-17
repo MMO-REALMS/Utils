@@ -2,6 +2,7 @@ package com.raduvoinea.utils.event_manager.dto;
 
 import com.raduvoinea.utils.event_manager.annotation.EventHandler;
 import com.raduvoinea.utils.event_manager.exceptions.RuntimeEventException;
+import com.raduvoinea.utils.lambda.ScheduleUtils;
 import com.raduvoinea.utils.logger.Logger;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -22,6 +23,17 @@ public class EventMethod {
 	}
 
 	public void fire(Object event, boolean suppressExceptions) {
+		if (annotation.async()) {
+			ScheduleUtils.runTaskAsync(() -> {
+				fireSync(event, suppressExceptions);
+			});
+			return;
+		}
+
+		fireSync(event, suppressExceptions);
+	}
+
+	public void fireSync(Object event, boolean suppressExceptions) {
 		try {
 			method.invoke(parentObject, event);
 		} catch (Exception error) {
