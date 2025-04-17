@@ -50,10 +50,6 @@ public class Time {
         return Unit.YEARS.of(amount);
     }
 
-    public static Time range(Time min, Time max) {
-        return new TimeRange(min, max);
-    }
-
     @Override
     public String toString() {
         return millisecondsToString(toMilliseconds());
