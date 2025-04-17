@@ -63,7 +63,7 @@ public class RedisTests {
 	@Test
 	@SneakyThrows
 	public void simpleEvent1() {
-		SimpleEvent1 event = new SimpleEvent1( 10, 20);
+		SimpleEvent1 event = new SimpleEvent1(10, 20);
 		CompletableFuture<Integer> future = event.send();
 		Integer result = future.get();
 
@@ -74,7 +74,7 @@ public class RedisTests {
 	@Test
 	@SneakyThrows
 	public void simpleEvent2() {
-		SimpleEvent2 event = new SimpleEvent2( Arrays.asList("test1", "test2"), "-");
+		SimpleEvent2 event = new SimpleEvent2(Arrays.asList("test1", "test2"), "-");
 		CompletableFuture<String> future = event.send();
 		String result = future.get();
 
@@ -85,16 +85,16 @@ public class RedisTests {
 	@Test
 	@SneakyThrows
 	public void complexEvent1() {
-		ComplexEvent1 event = new ComplexEvent1( Arrays.asList("test1", "test2"), "test3");
+		ComplexEvent1 event = new ComplexEvent1(Arrays.asList("test1", "test2"), "test3");
 		CompletableFuture<List<String>> future = event.send();
 		List<String> result = future.get();
 
 		assertEquals(Future.State.SUCCESS, future.state());
 		assertNotNull(result);
 		assertEquals(3, result.size());
-		assertEquals("test1",result.get(0));
-		assertEquals("test2",result.get(1));
-		assertEquals("test3",result.get(2));
+		assertEquals("test1", result.get(0));
+		assertEquals("test2", result.get(1));
+		assertEquals("test3", result.get(2));
 	}
 
 //	@Test

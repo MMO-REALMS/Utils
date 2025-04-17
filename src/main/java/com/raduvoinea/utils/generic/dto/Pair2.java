@@ -7,10 +7,10 @@ import lombok.Getter;
 @AllArgsConstructor
 public class Pair2<First, Second> {
 
-    private final First first;
-    private final Second second;
+	private final First first;
+	private final Second second;
 
-    public static <First, Second> Pair2<First, Second> of(First first, Second second) {
+	public static <First, Second> Pair2<First, Second> of(First first, Second second) {
 		return new Pair2<>(first, second);
 	}
 }

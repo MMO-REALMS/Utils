@@ -7,7 +7,7 @@ public abstract class RedisBroadcast extends RedisEvent {
 	}
 
 	public RedisBroadcast() {
-		super( "*");
+		super("*");
 	}
 
 }

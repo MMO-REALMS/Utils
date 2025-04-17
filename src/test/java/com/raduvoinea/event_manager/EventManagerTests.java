@@ -7,7 +7,6 @@ import com.raduvoinea.event_manager.dto.TestUnregisterEvent;
 import com.raduvoinea.event_manager.manager.TestEventListener;
 import com.raduvoinea.event_manager.manager.TestUnregisterEventListener;
 import com.raduvoinea.utils.event_manager.EventManager;
-import lombok.Getter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

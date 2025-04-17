@@ -13,7 +13,7 @@ public class SimpleEvent2 extends RedisRequest<String> {
 	private final List<String> a;
 	private final String b;
 
-	public SimpleEvent2( List<String> a, String b) {
+	public SimpleEvent2(List<String> a, String b) {
 		super(RedisTests.REDIS_MANAGER.getRedisConfig().getRedisID());
 
 		this.a = a;

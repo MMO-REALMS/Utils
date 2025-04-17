@@ -15,7 +15,7 @@ public interface IEvent<Result> {
 		return fire(false);
 	}
 
-	default CompletableFuture<Result> fire(boolean suppressExceptions){
+	default CompletableFuture<Result> fire(boolean suppressExceptions) {
 		return this.getEventManager().fire(this, suppressExceptions);
 	}
 

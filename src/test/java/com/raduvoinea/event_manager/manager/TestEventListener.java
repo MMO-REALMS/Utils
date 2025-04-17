@@ -20,12 +20,12 @@ public class TestEventListener {
 
 	@EventHandler
 	public void onTestLocalRequest(TestLocalRequest event) {
-event.setResult(event.getNumber1() + event.getNumber2());
+		event.setResult(event.getNumber1() + event.getNumber2());
 	}
 
 	@EventHandler
 	public void onExternalEvent(ExternalEvent event) {
-		int a=event.getNumber1() + event.getNumber2();// TODO: Implement this method
+		int a = event.getNumber1() + event.getNumber2();// TODO: Implement this method
 	}
 
 

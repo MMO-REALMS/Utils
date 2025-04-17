@@ -33,7 +33,7 @@ public class ScheduleUtils {
 	}
 
 	public static @NotNull CompletableFuture<Void> runTaskAsync(@NotNull LambdaExecutor executor) {
-		return CompletableFuture.runAsync(()->{
+		return CompletableFuture.runAsync(() -> {
 			try {
 				executor.execute();
 			} catch (Exception exception) {

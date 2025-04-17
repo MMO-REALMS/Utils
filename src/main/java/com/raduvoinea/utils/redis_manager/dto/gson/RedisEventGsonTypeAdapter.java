@@ -43,7 +43,7 @@ public class RedisEventGsonTypeAdapter extends GsonTypeAdapter<RedisRequest> {
 			object.addProperty("__RedisRequestTypeAdapter#deserialize", true);
 			RedisRequest output = context.deserialize(json, clazz);
 
-			if(output instanceof ResponseEvent responseEvent) {
+			if (output instanceof ResponseEvent responseEvent) {
 				responseEvent.setRedisManager(redisManager);
 			}
 
