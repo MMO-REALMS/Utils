@@ -32,6 +32,23 @@ public class ScheduleUtils {
 		return task;
 	}
 
+	public static @NotNull CancelableTimeTask runTaskLaterAsync(@NotNull LambdaExecutor executor, Time delay) {
+		CancelableTimeTask task = new CancelableTimeTask() {
+			@Override
+			public void execute() {
+				executor.execute();
+			}
+		};
+
+		Thread thread = Thread.ofVirtual().start(() -> {
+			Timer timer = new Timer();
+			timer.schedule(task, delay.toMilliseconds());
+		});
+
+		task.setThread(thread);
+		return task;
+	}
+
 	public static @NotNull CompletableFuture<Void> runTaskAsync(@NotNull LambdaExecutor executor) {
 		return CompletableFuture.runAsync(() -> {
 			try {
