@@ -163,13 +163,29 @@ public class EventManager {
 			return CompletableFuture.completedFuture(null);
 		}
 
-		return ScheduleUtils.runTaskAsync(() -> {
-					for (EventMethod method : eventMethods) {
-						method.fire(event, suppressExceptions);
-					}
-					return event.getResult();
-				})
-				.orTimeout(2, TimeUnit.MINUTES);
+		boolean async = false;
+
+		for (EventMethod method : eventMethods) {
+			if (method.getAnnotation().async()) {
+				async = true;
+				break;
+			}
+		}
+
+		if (async) {
+			return ScheduleUtils.runTaskAsync(() -> {
+						for (EventMethod method : eventMethods) {
+							method.fire(event, suppressExceptions);
+						}
+						return event.getResult();
+					})
+					.orTimeout(2, TimeUnit.MINUTES);
+		} else {
+			for (EventMethod method : eventMethods) {
+				method.fire(event, suppressExceptions);
+			}
+			return CompletableFuture.completedFuture(event.getResult());
+		}
 	}
 
 	protected Class<?> getEventClass(@NotNull Method method) {
