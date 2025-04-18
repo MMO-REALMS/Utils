@@ -84,10 +84,10 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 				Logger.warn("The file " + path + " was empty. Skipping backup...");
 			} else {
 				Logger.warn("The file " + path + " has been automatically modified. Creating a backup...");
-				Logger.log("================================================");
-				Logger.log("Old content: " + oldContent);
-				Logger.log("New content: " + newContent);
-				Logger.log("================================================");
+//				Logger.log("================================================");
+//				Logger.log("Old content: " + oldContent);
+//				Logger.log("New content: " + newContent);
+//				Logger.log("================================================");
 
 				String date = DateUtils.getDate("dd_MM_yyyy_HH_mm_ss");
 				String backupFileName = fileName.split(".json")[0] + "_backup_" + date + ".json";
