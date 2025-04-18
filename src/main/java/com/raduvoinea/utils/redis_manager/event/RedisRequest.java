@@ -1,140 +1,73 @@
 package com.raduvoinea.utils.redis_manager.event;
 
-import com.raduvoinea.utils.event_manager.dto.IEvent;
-import com.raduvoinea.utils.lambda.ScheduleUtils;
-import com.raduvoinea.utils.lambda.lambda.ArgLambdaExecutor;
-import com.raduvoinea.utils.lambda.lambda.LambdaExecutor;
-import com.raduvoinea.utils.redis_manager.dto.RedisResponse;
-import com.raduvoinea.utils.redis_manager.event.impl.ResponseEvent;
+import com.raduvoinea.utils.event_manager.EventManager;
+import com.raduvoinea.utils.event_manager.dto.LocalRequest;
+import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.redis_manager.manager.RedisManager;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.SneakyThrows;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Getter
 @Setter
-public class RedisRequest<Response> implements IEvent {
+public abstract class RedisRequest<Response> extends LocalRequest<Response> {
 
-    protected transient RedisManager redisManager;
+	private final String className;
+	private long id = -1;
+	private String originator = "UNKNOWN";
+	private String target;
 
-    private final String className;
-    private long id = -1;
-    private String originator = "UNKNOWN";
-    private String target;
+	public RedisRequest(String className, long id, String originator, String target) {
+		super(null);
+		this.className = className;
+		this.id = id;
+		this.originator = originator;
+		this.target = target;
+	}
 
-    public RedisRequest(RedisManager redisManager, String className, long id, String originator, String target) {
-        this.className = className;
-        this.redisManager = redisManager;
-        this.id = id;
-        this.originator = originator;
-        this.target = target;
-    }
+	public RedisRequest(String target) {
+		super(null);
+		this.className = getClass().getName();
+		this.target = target;
+	}
 
-    public RedisRequest(RedisManager redisManager, String target) {
-        this.className = getClass().getName();
-        this.redisManager = redisManager;
-        this.target = target;
-    }
+	public CompletableFuture<Response> send() {
+		return getRedisManager().send(this)
+				.orTimeout(2, TimeUnit.MINUTES); // TODO Config
+	}
 
-    public static @Nullable RedisRequest<?> deserialize(RedisManager redisManager, String data) {
-        RedisRequest<?> event = redisManager.getGsonHolder().value().fromJson(data, RedisRequest.class);
+	public @Nullable Response sendAndGet() {
+		try {
+			CompletableFuture<Response> future = getRedisManager().send(this);
+			return future.get(2, TimeUnit.MINUTES); // TODO Config
+		} catch (InterruptedException | ExecutionException | TimeoutException exception) {
+			Logger.error(exception);
+			return null;
+		}
+	}
 
-        if (event == null) {
-            return null;
-        }
+	@Override
+	public String toString() {
+		return getRedisManager().getGsonHolder().value().toJson(this);
+	}
 
-        event.setRedisManager(redisManager);
-        return event;
-    }
+	public String getPublishChannel() {
+		return getRedisManager().getRedisConfig().getChannel() + "#" + this.target;
+	}
 
-    /**
-     * Sends the event locally only
-     * Do NOT call manually, call {@link #sendAndWait()} or any of it derivatives
-     */
-    public void fire() {
-        redisManager.getEventManager().fire(this);
-    }
+	@Override
+	public EventManager getEventManager() {
+		return getRedisManager().getEventManagerHolder().value();
+	}
 
-    @Override
-    public void fire(boolean suppressExceptions) {
-        redisManager.getEventManager().fire(this, suppressExceptions);
-    }
+	public abstract RedisManager getRedisManager();
 
-    @Override
-    public String toString() {
-        return redisManager.getGsonHolder().value().toJson(this);
-    }
-
-    public void respond(Response response) {
-        new ResponseEvent(redisManager, this, response).send();
-    }
-
-    public RedisResponse<Response> send() {
-        return redisManager.send(this);
-    }
-
-    public void sendAndExecuteSync(ArgLambdaExecutor<Response> success, LambdaExecutor fail) {
-        RedisResponse<Response> response = this.sendAndWait();
-
-        if (response.hasTimeout()) {
-            fail.execute();
-            return;
-        }
-
-        success.execute(response.getResponse());
-    }
-
-    public @Nullable Response sendAndGet(LambdaExecutor fail) {
-        RedisResponse<Response> response = this.sendAndWait();
-
-        if (response.hasTimeout()) {
-            fail.execute();
-            return null;
-        }
-
-        return response.getResponse();
-    }
-
-    public @Nullable Response sendAndGet() {
-        return sendAndGet(() -> {
-        });
-    }
-
-    public void sendAndExecute(ArgLambdaExecutor<Response> success) {
-        sendAndExecute(success, () -> {
-        });
-    }
-
-    public void sendAndExecute(ArgLambdaExecutor<Response> success, LambdaExecutor fail) {
-        ScheduleUtils.runTaskAsync(() -> sendAndExecuteSync(success, fail));
-    }
-
-    @SneakyThrows
-    public RedisResponse<Response> sendAndWait() {
-        return sendAndWait(redisManager.getRedisConfig().getTimeout());
-    }
-
-    @SneakyThrows
-    public RedisResponse<Response> sendAndWait(int timeout) {
-        int currentWait = 0;
-        RedisResponse<Response> response = send();
-        while (!response.isFinished()) {
-            //noinspection BusyWait
-            Thread.sleep(redisManager.getRedisConfig().getWaitBeforeIteration());
-            currentWait += redisManager.getRedisConfig().getWaitBeforeIteration();
-            if (currentWait > timeout) {
-                response.timeout();
-                break;
-            }
-        }
-
-        redisManager.getAwaitingResponses().remove(response);
-        return response;
-    }
-
-    public String getPublishChannel() {
-        return redisManager.getRedisConfig().getChannel() + "#" + this.target;
-    }
-
+	public boolean canRespond() {
+		return true;
+	}
 }

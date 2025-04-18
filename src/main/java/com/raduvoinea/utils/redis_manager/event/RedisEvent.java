@@ -1,22 +1,22 @@
 package com.raduvoinea.utils.redis_manager.event;
 
-import com.raduvoinea.utils.redis_manager.manager.RedisManager;
-import org.jetbrains.annotations.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 
-public class RedisEvent extends RedisRequest<Void> {
+@Getter
+@Setter
+public abstract class RedisEvent extends RedisRequest<Void> {
 
-    public RedisEvent(@NotNull String className, @NotNull RedisManager redisManager, long id, @NotNull String originator, @NotNull String target) {
-        super(redisManager, className, id, originator, target);
-    }
+	public RedisEvent(String className, long id, String originator, String target) {
+		super(className, id, originator, target);
+	}
 
-    public RedisEvent(RedisManager redisManager, @NotNull String target) {
-        super(redisManager, target);
-    }
+	public RedisEvent(String target) {
+		super(target);
+	}
 
-    @Override
-    public void fire() {
-        redisManager.getEventManager().fire(this);
-        respond(null); // Mark the event as completed
-    }
-
+	@Override
+	public boolean canRespond() {
+		return false;
+	}
 }

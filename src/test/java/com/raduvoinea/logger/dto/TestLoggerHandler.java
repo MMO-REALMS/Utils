@@ -10,29 +10,29 @@ import java.util.List;
 @Getter
 public class TestLoggerHandler implements Logger.Handler {
 
-    private final List<String> buffer;
+	private final List<String> buffer;
 
-    public TestLoggerHandler() {
-        this.buffer = new ArrayList<>();
-    }
+	public TestLoggerHandler() {
+		this.buffer = new ArrayList<>();
+	}
 
-    @Override
-    public void info(@NotNull String log) {
-        buffer.add(log);
-    }
+	@Override
+	public void info(@NotNull String log) {
+		buffer.add(log);
+	}
 
-    @Override
-    public void error(@NotNull String log) {
-        buffer.add(log);
-    }
+	@Override
+	public void error(@NotNull String log) {
+		buffer.add(log);
+	}
 
-    @Override
-    public void warn(@NotNull String log) {
-        buffer.add(log);
-    }
+	@Override
+	public void warn(@NotNull String log) {
+		buffer.add(log);
+	}
 
-    @Override
-    public void debug(@NotNull String log) {
-        buffer.add(log);
-    }
+	@Override
+	public void debug(@NotNull String log) {
+		buffer.add(log);
+	}
 }

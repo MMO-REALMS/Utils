@@ -13,41 +13,41 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MessageBuilderTests {
 
-    @Test
-    public void testMessageBuilder() {
-        MessageBuilder builder1 = new MessageBuilder("This is a %placeholder%");
-        MessageBuilder builder2 = new MessageBuilder("This is a %placeholder-1% with %placeholder-2%");
+	@Test
+	public void testMessageBuilder() {
+		MessageBuilder builder1 = new MessageBuilder("This is a %placeholder%");
+		MessageBuilder builder2 = new MessageBuilder("This is a %placeholder-1% with %placeholder-2%");
 
-        String result1 = builder1
-                .parse("placeholder", "banana")
-                .parse();
+		String result1 = builder1
+				.parse("placeholder", "banana")
+				.parse();
 
-        String result2 = builder2
-                .parse("placeholder-1", "banana")
-                .parse("%placeholder-2%", "1000 calories")
-                .parse();
+		String result2 = builder2
+				.parse("placeholder-1", "banana")
+				.parse("%placeholder-2%", "1000 calories")
+				.parse();
 
-        assertEquals("This is a banana", result1);
-        assertEquals("This is a banana with 1000 calories", result2);
-    }
+		assertEquals("This is a banana", result1);
+		assertEquals("This is a banana with 1000 calories", result2);
+	}
 
-    @Test
-    public void testMessageBuilderList() {
-        MessageBuilderList builder = new MessageBuilderList(Arrays.asList(
-                "This is a %placeholder-1%",
-                "This %placeholder-1% has %placeholder-2%"
-        ));
+	@Test
+	public void testMessageBuilderList() {
+		MessageBuilderList builder = new MessageBuilderList(Arrays.asList(
+				"This is a %placeholder-1%",
+				"This %placeholder-1% has %placeholder-2%"
+		));
 
-        List<String> result = builder
-                .parse("placeholder-1", "banana")
-                .parse("%placeholder-2%", "1000 calories")
-                .parse();
+		List<String> result = builder
+				.parse("placeholder-1", "banana")
+				.parse("%placeholder-2%", "1000 calories")
+				.parse();
 
-        List<String> expected = Arrays.asList(
-                "This is a banana",
-                "This banana has 1000 calories"
-        );
-        assertArrayEquals(expected.toArray(), result.toArray());
-    }
+		List<String> expected = Arrays.asList(
+				"This is a banana",
+				"This banana has 1000 calories"
+		);
+		assertArrayEquals(expected.toArray(), result.toArray());
+	}
 
 }

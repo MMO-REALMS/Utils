@@ -4,6 +4,7 @@ import com.google.gson.reflect.TypeToken;
 import com.raduvoinea.utils.redis_manager.event.RedisRequest;
 import com.raduvoinea.utils.redis_manager.manager.RedisManager;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 
 import java.util.ArrayList;
@@ -12,57 +13,68 @@ import java.util.List;
 @Getter
 public class ResponseEvent extends RedisRequest<Object> {
 
-    private static final String EMPTY_LIST = "EMPTY_LIST";
+	private static final String EMPTY_LIST = "EMPTY_LIST";
 
-    private final String response;
-    private final String responseClassName;
-    private String additionalData;
+	private final String response;
+	private final String responseClassName;
+	private String additionalData;
 
-    public ResponseEvent(RedisManager redisManager, RedisRequest<?> command, Object response) {
-        super(redisManager, command.getOriginator());
-        this.setId(command.getId());
+	private transient @Setter RedisManager redisManager;
 
-        if (response == null) {
-            this.response = "";
-            this.responseClassName = "";
-            return;
-        }
+	public ResponseEvent(RedisManager redisManager, RedisRequest<?> command, Object response) {
+		super(command.getOriginator());
+		this.setId(command.getId());
+		this.redisManager = redisManager;
 
-        this.response = redisManager.getGsonHolder().value().toJson(response);
-        this.responseClassName = response.getClass().getName();
+		if (response == null) {
+			this.response = "";
+			this.responseClassName = "";
+			return;
+		}
 
-        if (response.getClass().isAssignableFrom(List.class)) {
-            ArrayList<?> list = (ArrayList<?>) response;
+		this.response = redisManager.getGsonHolder().value().toJson(response);
+		this.responseClassName = response.getClass().getName();
 
-            if (list.isEmpty()) {
-                additionalData = EMPTY_LIST;
-                return;
-            }
+		if (response.getClass().isAssignableFrom(List.class)) {
+			ArrayList<?> list = (ArrayList<?>) response;
 
-            additionalData = list.getFirst().getClass().getName();
-        }
-    }
+			if (list.isEmpty()) {
+				additionalData = EMPTY_LIST;
+				return;
+			}
 
-    @SneakyThrows(value = {ClassNotFoundException.class})
-    public Object deserialize() {
-        Class<?> clazz = redisManager.getClassLoader().loadClass(responseClassName);
+			additionalData = list.getFirst().getClass().getName();
+		}
+	}
 
-        if (clazz.isAssignableFrom(List.class)) {
-            if (additionalData.equals(EMPTY_LIST)) {
-                return new ArrayList<>();
-            }
+	@SneakyThrows(value = {ClassNotFoundException.class})
+	public Object deserialize() {
+		if (responseClassName == null || responseClassName.isEmpty()) {
+			return null;
+		}
 
-            Class<?> aditionalClass = redisManager.getClassLoader().loadClass(additionalData);
+		Class<?> responseClass = redisManager.getClassLoader().loadClass(responseClassName);
 
-            return redisManager.getGsonHolder().value().fromJson(response, TypeToken.getParameterized(List.class, aditionalClass));
-        }
+		if (responseClass.isAssignableFrom(List.class)) {
+			if (additionalData.equals(EMPTY_LIST)) {
+				return new ArrayList<>();
+			}
 
-        return redisManager.getGsonHolder().value().fromJson(response, clazz);
-    }
+			Class<?> aditionalClass = redisManager.getClassLoader().loadClass(additionalData);
 
-    @SneakyThrows(value = {ClassNotFoundException.class})
-    public Class<?> getResponseClass() {
-        return redisManager.getClassLoader().loadClass(responseClassName);
-    }
+			return redisManager.getGsonHolder().value().fromJson(response, TypeToken.getParameterized(List.class, aditionalClass));
+		}
 
+		return redisManager.getGsonHolder().value().fromJson(response, responseClass);
+	}
+
+	@SneakyThrows(value = {ClassNotFoundException.class})
+	public Class<?> getResponseClass() {
+		return redisManager.getClassLoader().loadClass(responseClassName);
+	}
+
+	@Override
+	public RedisManager getRedisManager() {
+		return redisManager;
+	}
 }

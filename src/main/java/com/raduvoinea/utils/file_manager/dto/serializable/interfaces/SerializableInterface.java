@@ -1,4 +1,13 @@
 package com.raduvoinea.utils.file_manager.dto.serializable.interfaces;
 
-public record SerializableInterface(String className, String data) {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@AllArgsConstructor
+@Getter
+public class SerializableInterface {
+
+	private String className;
+	private String data;
+
 }

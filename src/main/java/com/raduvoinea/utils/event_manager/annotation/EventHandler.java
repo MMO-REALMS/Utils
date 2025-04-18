@@ -9,8 +9,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface EventHandler {
 
-    int order() default 0;
+	int order() default 0;
 
-    boolean ignore() default false;
+	boolean ignore() default false;
+
+	boolean async() default false;
 
 }

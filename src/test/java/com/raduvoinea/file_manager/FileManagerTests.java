@@ -15,44 +15,44 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FileManagerTests {
 
-    private static final String TEST_1 = "test1";
+	private static final String TEST_1 = "test1";
 
-    private static FileManager fileManager;
-    private static Holder<Gson> gsonHolder;
+	private static FileManager fileManager;
+	private static Holder<Gson> gsonHolder;
 
-    @BeforeAll
-    public static void init() {
-        Gson gson = new GsonBuilder().create();
-        gsonHolder = Holder.of(gson);
-        fileManager = new FileManager(gsonHolder, "tmp");
-    }
+	@BeforeAll
+	public static void init() {
+		Gson gson = new GsonBuilder().create();
+		gsonHolder = Holder.of(gson);
+		fileManager = new FileManager(gsonHolder, "tmp");
+	}
 
-    @AfterAll
-    public static void cleanup() {
-        deleteDirectory(fileManager.getDataFolder());
-    }
+	@AfterAll
+	public static void cleanup() {
+		deleteDirectory(fileManager.getDataFolder());
+	}
 
-    private static void deleteDirectory(File dir) {
-        File[] allContents = dir.listFiles();
-        if (allContents != null) {
-            for (File file : allContents) {
-                deleteDirectory(file);
-            }
-        }
+	private static void deleteDirectory(File dir) {
+		File[] allContents = dir.listFiles();
+		if (allContents != null) {
+			for (File file : allContents) {
+				deleteDirectory(file);
+			}
+		}
 
-        //noinspection ResultOfMethodCallIgnored
-        dir.delete();
-    }
+		//noinspection ResultOfMethodCallIgnored
+		dir.delete();
+	}
 
-    @Test
-    public void testObjectSaveLoad() {
-        FileObject object = new FileObject(101, TEST_1);
+	@Test
+	public void testObjectSaveLoad() {
+		FileObject object = new FileObject(101, TEST_1);
 
-        fileManager.save(object);
+		fileManager.save(object);
 
-        FileObject loadedObject = fileManager.load(FileObject.class);
+		FileObject loadedObject = fileManager.load(FileObject.class);
 
-        assertEquals(object.data1, loadedObject.data1);
-        assertEquals(object.data2, loadedObject.data2);
-    }
+		assertEquals(object.data1, loadedObject.data1);
+		assertEquals(object.data2, loadedObject.data2);
+	}
 }

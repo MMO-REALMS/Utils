@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FileObject {
 
-    public int data1;
-    public String data2;
+	public int data1;
+	public String data2;
 
 }
