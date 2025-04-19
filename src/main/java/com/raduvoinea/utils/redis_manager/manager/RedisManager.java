@@ -178,9 +178,11 @@ public class RedisManager {
 				RedisRequest<?> finalEvent = event;
 				ScheduleUtils.runTaskAsync(() -> {
 					debugger.receive(channel, eventJson);
-					CompletableFuture<?> future = finalEvent.fire();
+
+					Object result = finalEvent.fireSync();
+
 					if (finalEvent.canRespond()) {
-						future.whenComplete((response, exception) -> new ResponseEvent(_this, finalEvent, response).send());
+						new ResponseEvent(_this, finalEvent, result).send();
 					}
 				});
 			}
@@ -242,7 +244,7 @@ public class RedisManager {
 
 		if (event.getTarget().equals(event.getOriginator())) {
 			debugger.send("LOCAL", gsonHolder.value().toJson(event));
-			return eventManagerHolder.value().fire(event);
+			return event.fireAsync();
 		}
 
 		id++;

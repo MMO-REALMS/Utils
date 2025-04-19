@@ -38,13 +38,13 @@ public abstract class RedisRequest<Response> extends LocalRequest<Response> {
 
 	public CompletableFuture<Response> send() {
 		return getRedisManager().send(this)
-				.orTimeout(2, TimeUnit.MINUTES); // TODO Config
+				.orTimeout(5, TimeUnit.SECONDS); // TODO Config
 	}
 
 	public @Nullable Response sendAndGet() {
 		try {
 			CompletableFuture<Response> future = getRedisManager().send(this);
-			return future.get(2, TimeUnit.MINUTES); // TODO Config
+			return future.get(5, TimeUnit.SECONDS); // TODO Config
 		} catch (InterruptedException | ExecutionException | TimeoutException exception) {
 			Logger.error(exception);
 			return null;

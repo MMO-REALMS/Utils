@@ -140,52 +140,43 @@ public class EventManager {
 		}
 	}
 
-	public <T> CompletableFuture<T> fire(@NotNull IEvent<T> event) {
-		return this.fire(event, true);
-	}
-
-	public <T> CompletableFuture<T> fire(@NotNull IEvent<T> event, boolean suppressExceptions) {
-		Class<?> eventClass = event.getClass();
-
-		if (!methods.containsKey(eventClass)) {
-			Logger.warn(new MessageBuilder("No listeners found for event {event}")
-					.parse("event", eventClass.getSimpleName())
-			);
-			return CompletableFuture.completedFuture(null);
+	public <T> T fireSync(@NotNull IEvent<T> event, boolean suppressExceptions) {
+		List<EventMethod> eventMethods = getEventMethods(event);
+		if (eventMethods == null) {
+			return null;
 		}
-
-		List<EventMethod> eventMethods = methods.get(eventClass);
-
-		if (eventMethods.isEmpty()) {
-			Logger.warn(new MessageBuilder("No listeners found for event {event}")
-					.parse("event", eventClass.getSimpleName())
-			);
-			return CompletableFuture.completedFuture(null);
-		}
-
-		boolean async = false;
 
 		for (EventMethod method : eventMethods) {
-			if (method.getAnnotation().async()) {
-				async = true;
-				break;
-			}
+			method.fire(event, suppressExceptions);
+		}
+		return event.getResult();
+	}
+
+	public <T> CompletableFuture<T> fireAsync(@NotNull IEvent<T> event, boolean suppressExceptions) {
+		List<EventMethod> eventMethods = getEventMethods(event);
+		if (eventMethods == null) {
+			return CompletableFuture.completedFuture(null);
 		}
 
-		if (async) {
-			return ScheduleUtils.runTaskAsync(() -> {
-						for (EventMethod method : eventMethods) {
-							method.fire(event, suppressExceptions);
-						}
-						return event.getResult();
-					})
-					.orTimeout(2, TimeUnit.MINUTES);
-		} else {
-			for (EventMethod method : eventMethods) {
-				method.fire(event, suppressExceptions);
-			}
-			return CompletableFuture.completedFuture(event.getResult());
+		return ScheduleUtils.runTaskAsync(() -> {
+					for (EventMethod method : eventMethods) {
+						method.fire(event, suppressExceptions);
+					}
+					return event.getResult();
+				})
+				.orTimeout(5, TimeUnit.SECONDS);
+	}
+
+	private <T> List<EventMethod> getEventMethods(@NotNull IEvent<T> event) {
+		Class<?> eventClass = event.getClass();
+
+		List<EventMethod> eventMethods = methods.get(eventClass);
+		if (eventMethods == null || eventMethods.isEmpty()) {
+			Logger.warn(new MessageBuilder("No listeners found for event {event}")
+					.parse("event", eventClass.getSimpleName()));
+			return null;
 		}
+		return eventMethods;
 	}
 
 	protected Class<?> getEventClass(@NotNull Method method) {
