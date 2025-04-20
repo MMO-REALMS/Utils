@@ -315,11 +315,11 @@ public class Reflections {
 			return classes;
 		}
 
-		public @NotNull Set<Class<?>> getTypesAnnotatedWith(@NotNull Class<? extends Annotation> annotation) {
-			return getTypesAnnotatedWith(annotation, true);
+		public @NotNull Set<Class<?>> getClassesAnnotatedWith(@NotNull Class<? extends Annotation> annotation) {
+			return getClassesAnnotatedWith(annotation, true);
 		}
 
-		public @NotNull Set<Class<?>> getTypesAnnotatedWith(@NotNull Class<? extends Annotation> annotation, boolean includeNonConcreteTypes) {
+		public @NotNull Set<Class<?>> getClassesAnnotatedWith(@NotNull Class<? extends Annotation> annotation, boolean includeNonConcreteTypes) {
 			Set<Class<?>> classes = new HashSet<>();
 
 			for (Class<?> clazz : getClasses(includeNonConcreteTypes)) {
@@ -350,12 +350,12 @@ public class Reflections {
 			return methods;
 		}
 
-		public @NotNull <T> Set<Class<? extends T>> getOfType(@NotNull Class<T> typeClass) {
+		public @NotNull <T> Set<Class<T>> getOfType(@NotNull Class<T> typeClass) {
 			return getOfType(typeClass, true);
 		}
 
-		public @NotNull <T> Set<Class<? extends T>> getOfType(@NotNull Class<T> typeClass, boolean includeNonConcreteTypes) {
-			Set<Class<? extends T>> classes = new HashSet<>();
+		public @NotNull <T> Set<Class<T>> getOfType(@NotNull Class<T> typeClass, boolean includeNonConcreteTypes) {
+			Set<Class<T>> classes = new HashSet<>();
 
 			for (Class<?> clazz : getClasses(includeNonConcreteTypes)) {
 				if (typeClass.isAssignableFrom(clazz)) {
@@ -364,7 +364,7 @@ public class Reflections {
 					}
 
 					//noinspection unchecked
-					classes.add((Class<? extends T>) clazz);
+					classes.add((Class<T>) clazz);
 				}
 			}
 
