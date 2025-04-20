@@ -43,7 +43,7 @@ public abstract class RedisRequest<Response> extends LocalRequest<Response> {
 
 	public @Nullable Response sendAndGet() {
 		try {
-			CompletableFuture<Response> future = getRedisManager().send(this);
+			CompletableFuture<Response> future = send();
 			return future.get(5, TimeUnit.SECONDS); // TODO Config
 		} catch (InterruptedException | ExecutionException | TimeoutException exception) {
 			Logger.error(exception);

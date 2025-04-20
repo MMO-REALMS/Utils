@@ -10,6 +10,8 @@ module com.raduvoinea.utils {
 	exports com.raduvoinea.utils.reflections;
 	exports com.raduvoinea.utils.generic;
 	exports com.raduvoinea.utils.generic.dto;
+	exports com.raduvoinea.utils.dependency_injection;
+	exports com.raduvoinea.utils.dependency_injection.exception;
 
 	requires static lombok;
 	requires static org.jetbrains.annotations;
