@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class EventManagerTests {
 
@@ -44,8 +45,8 @@ public class EventManagerTests {
 		TestEvent event1 = new TestEvent(1, 2);
 		TestEvent event2 = new TestEvent(10, 20);
 
-		assertEquals(3, event1.fireAndWait());
-		assertEquals(30, event2.fireAndWait());
+		assertEquals(3, event1.fireSync());
+		assertEquals(30, event2.fireSync());
 	}
 
 	@Test
@@ -53,8 +54,8 @@ public class EventManagerTests {
 		TestLocalEvent event1 = new TestLocalEvent(1, 2);
 		TestLocalEvent event2 = new TestLocalEvent(10, 20);
 
-		assertEquals(3, event1.fireAndWait());
-		assertEquals(30, event2.fireAndWait());
+		assertEquals(3, event1.fireSync());
+		assertEquals(30, event2.fireSync());
 	}
 
 	@Test
@@ -62,8 +63,8 @@ public class EventManagerTests {
 		TestLocalRequest event1 = new TestLocalRequest(1, 2);
 		TestLocalRequest event2 = new TestLocalRequest(10, 20);
 
-		assertEquals(3, event1.fireAndWait());
-		assertEquals(30, event2.fireAndWait());
+		assertEquals(3, event1.fireSync());
+		assertEquals(30, event2.fireSync());
 	}
 
 	@Test
@@ -76,12 +77,11 @@ public class EventManagerTests {
 	public void testUnregisterEvent() {
 		EVENT_MANAGER.register(TestUnregisterEventListener.class);
 		TestUnregisterEvent event1 = new TestUnregisterEvent(1, 2);
-		assertEquals(3, event1.fireAndWait());
+		assertEquals(3, event1.fireSync());
 
 		EVENT_MANAGER.unregister(TestUnregisterEventListener.class);
 		TestUnregisterEvent event2 = new TestUnregisterEvent(1, 2);
-		EVENT_MANAGER.fire(event2);
-		assertEquals(null, event2.fireAndWait());
+		assertNull(event2.fireSync());
 	}
 
 
