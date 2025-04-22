@@ -2,7 +2,9 @@ package com.raduvoinea.file_manager;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.raduvoinea.file_manager.dto.files.DefaultFileObject;
 import com.raduvoinea.file_manager.dto.files.FileObject;
+import com.raduvoinea.file_manager.dto.files.ResourceFileObject;
 import com.raduvoinea.utils.file_manager.FileManager;
 import com.raduvoinea.utils.generic.dto.Holder;
 import org.junit.jupiter.api.AfterAll;
@@ -54,5 +56,21 @@ public class FileManagerTests {
 
 		assertEquals(object.data1, loadedObject.data1);
 		assertEquals(object.data2, loadedObject.data2);
+	}
+
+	@Test
+	public void testDefaultObject(){
+		DefaultFileObject object = fileManager.load(DefaultFileObject.class);
+
+		assertEquals(object.data1, 123);
+		assertEquals(object.data2, "123");
+	}
+
+	@Test
+	public void testResourceObject(){
+		ResourceFileObject object = fileManager.load(ResourceFileObject.class);
+
+		assertEquals(object.data1, 12345);
+		assertEquals(object.data2, "12345");
 	}
 }

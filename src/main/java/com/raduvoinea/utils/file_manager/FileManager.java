@@ -5,6 +5,7 @@ import com.raduvoinea.utils.file_manager.utils.DateUtils;
 import com.raduvoinea.utils.file_manager.utils.PathUtils;
 import com.raduvoinea.utils.generic.dto.Holder;
 import com.raduvoinea.utils.logger.Logger;
+import com.raduvoinea.utils.message_builder.MessageBuilder;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,9 +13,12 @@ import org.jetbrains.annotations.Nullable;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String basePath) {
 
@@ -128,18 +132,51 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 		return load(clazz, directory, PathUtils.toSnakeCase(clazz.getSimpleName()));
 	}
 
+	private String readFromDisk(@NotNull String directory, @NotNull String fileName) throws IOException, URISyntaxException {
+		String fileContents = readFile(directory, fileName);
+		String fullPath = directory.isEmpty() ?
+				String.join("/", List.of(basePath, fileName)) :
+				String.join("/", List.of(basePath, directory, fileName));
+
+		if (!fileContents.isEmpty()) {
+			return fileContents;
+		}
+
+		Logger.log(new MessageBuilder("The file {path} is empty. Checking for default in resources...")
+				.parse("path", fullPath)
+		);
+
+		URL url = this.getClass().getResource("/" + fullPath);
+
+		if (url == null) {
+			Logger.log(new MessageBuilder("The file resource:/{path} was not found.")
+					.parse("path", fullPath)
+			);
+
+			return "";
+		}
+
+		File file = new File(url.toURI());
+		return Files.readString(file.toPath());
+	}
+
 	@SneakyThrows
 	public synchronized <T> @NotNull T load(@NotNull Class<T> clazz, @NotNull String directory, @NotNull String fileName) {
 		if (!fileName.endsWith(".json")) {
 			fileName += ".json";
 		}
 
-		String oldJson = readFile(directory, fileName);
+		String oldJson = readFromDisk(directory, fileName);
+		String fullPath = directory.isEmpty() ?
+				String.join("/", List.of(basePath, fileName)) :
+				String.join("/", List.of(basePath, directory, fileName));
 
 		T output;
 
 		if (oldJson.isEmpty()) {
-			Logger.log("The file " + fileName + " in directory '" + directory + "' is empty. Creating a new instance...");
+			Logger.log(new MessageBuilder("Creating new file {path}")
+					.parse("path", fullPath)
+			);
 			output = clazz.getDeclaredConstructor().newInstance();
 		} else {
 			output = gsonHolder.value().fromJson(oldJson, clazz);
