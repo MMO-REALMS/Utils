@@ -41,7 +41,7 @@ public class GsonTests {
 		new SerializableListGsonTypeAdapter(classLoader).register(gsonBuilder);
 		new SerializableMapGsonTypeAdapter(classLoader).register(gsonBuilder);
 		new SerializableObjectTypeAdapter(classLoader).register(gsonBuilder);
-		gsonBuilder.registerTypeAdapterFactory(new InterfaceTypeFactory(classLoader));
+		gsonBuilder.registerTypeAdapterFactory(new InterfaceTypeFactory(classLoader, classname->classname));
 
 		gson = gsonBuilder.create();
 	}

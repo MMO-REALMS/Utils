@@ -10,6 +10,12 @@ public class NetworkUtils {
 	public static @NotNull String getHostname() {
 		String hostname;
 
+		hostname = System.getenv("DEV_HOSTNAME");
+
+		if (hostname != null) {
+			return hostname;
+		}
+
 		try {
 			hostname = ShellUtils.execute("hostname --fqdn");
 		} catch (IOException e) {

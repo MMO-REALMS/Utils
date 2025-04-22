@@ -26,7 +26,7 @@ public class ReflectionsTest {
 
 	@Test
 	public void testTypeAnnotationProcessing() {
-		int typesCount = reflectionsCrawler.getTypesAnnotatedWith(TestAnnotation.class).size();
+		int typesCount = reflectionsCrawler.getClassesAnnotatedWith(TestAnnotation.class).size();
 
 		assertEquals(1, typesCount);
 	}
