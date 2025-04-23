@@ -75,8 +75,8 @@ public class Reflections {
 
 				processFile(entry.getName());
 			}
-		} catch (Throwable error) {
-			Logger.warn(error);
+		} catch (Throwable ignored) {
+//			Logger.warn(error);
 		}
 
 		return this;
