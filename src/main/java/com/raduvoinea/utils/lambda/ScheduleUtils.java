@@ -15,6 +15,23 @@ public class ScheduleUtils {
 
 	private static final Executor EXECUTOR_POOL = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().factory());
 
+	public static @NotNull CancelableTimeTask runTaskLater(@NotNull LambdaExecutor executor, Time delay) {
+		CancelableTimeTask task = new CancelableTimeTask() {
+			@Override
+			public void execute() {
+				executor.execute();
+			}
+		};
+
+		Thread thread = Thread.ofVirtual().start(() -> {
+			Timer timer = new Timer();
+			timer.schedule(task, delay.toMilliseconds());
+		});
+
+		task.setThread(thread);
+		return task;
+	}
+
 	public static @NotNull CancelableTimeTask runTaskTimerAsync(@NotNull LambdaExecutor executor, Time period) {
 		CancelableTimeTask task = new CancelableTimeTask() {
 			@Override
