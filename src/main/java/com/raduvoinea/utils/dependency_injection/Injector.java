@@ -5,6 +5,7 @@ import com.raduvoinea.utils.dependency_injection.exception.InjectionException;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.message_builder.MessageBuilder;
 import com.raduvoinea.utils.reflections.Reflections;
+import lombok.Getter;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -13,6 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 // TODO Add tests
+@Getter
 public class Injector {
 
 	private final HashMap<Class<?>, Object> dependencies = new HashMap<>();
@@ -153,10 +155,3 @@ public class Injector {
 
 }
 
-/*
-
-
-IBalance balance = IBalance.getByOwner(owner);
-print(balance.getBalance());
-
- */
