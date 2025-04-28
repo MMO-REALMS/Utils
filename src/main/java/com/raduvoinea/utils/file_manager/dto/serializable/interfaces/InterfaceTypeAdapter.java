@@ -1,7 +1,6 @@
 package com.raduvoinea.utils.file_manager.dto.serializable.interfaces;
 
-import com.google.gson.Gson;
-import com.google.gson.TypeAdapter;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
@@ -27,27 +26,42 @@ public class InterfaceTypeAdapter<T extends ISerializable> extends TypeAdapter<T
 	}
 
 	@Override
+	@SneakyThrows
 	public void write(JsonWriter out, T value) {
-		SerializableInterface heldInterface = new SerializableInterface(value.getClass().getName(), delegate.toJson(value));
-		gson.toJson(heldInterface, SerializableInterface.class, out);
+		Gson gson = new Gson();
+
+		out.beginObject();
+
+		out.name("className").value(value.getClass().getName());
+		out.name("data");
+
+		gson.toJson(value, value.getClass(), out);
+
+		out.endObject();
 	}
 
-	@SneakyThrows
 	@Override
-	public T read(JsonReader in) {
-		SerializableInterface heldInterface = gson.fromJson(in, SerializableInterface.class);
+	@SneakyThrows
+	public T read(JsonReader reader) {
+		JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
 
-		if (heldInterface.getClassName() == null || heldInterface.getData() == null) {
-			return null;
+		String className = jsonObject.get("className").getAsString();
+		JsonElement dataElement = jsonObject.get("data");
+
+		Class<?> clazz = Class.forName(className);
+		Gson gson = new Gson();
+
+		JsonElement actualData;
+
+		if (dataElement.isJsonPrimitive() && dataElement.getAsJsonPrimitive().isString()) {
+			actualData = JsonParser.parseString(dataElement.getAsString());
+		} else {
+			actualData = dataElement;
 		}
 
-		String heldClassName = heldInterface.getClassName();
-		heldClassName = classMapper.execute(heldClassName);
+		Object obj = gson.fromJson(actualData, clazz);
 
-		//noinspection unchecked
-		Class<? extends T> clazz = (Class<? extends T>) classLoader.loadClass(heldClassName);
-		TypeAdapter<? extends T> localDelegate = gson.getDelegateAdapter(this.interfaceTypeFactory, TypeToken.get(clazz));
-
-		return localDelegate.fromJson(heldInterface.getData());
+		return (T) obj;
 	}
+
 }

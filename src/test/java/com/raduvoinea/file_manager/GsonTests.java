@@ -28,8 +28,10 @@ public class GsonTests {
 
 	private final static String listJson = "{\"class_name\":\"java.lang.String\",\"values\":[\"test1\",\"test2\",\"test3\"]}";
 	private final static String objectJson = "{\"class_name\":\"java.lang.String\",\"data\":\"test\"}";
-	private final static String CUSTOM_OBJECT_1_JSON = "{\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject1\",\"data\":\"{\\\"data\\\":\\\"object1\\\"}\"}";
-	private final static String CUSTOM_OBJECT_2_JSON = "{\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject2\",\"data\":\"{\\\"data\\\":\\\"object2\\\",\\\"otherData\\\":\\\"some other data\\\"}\"}";
+	private final static String CUSTOM_OBJECT_1_JSON = "{\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject1\",\"data\":{\"data\":\"object1\"}}";
+	private final static String CUSTOM_OBJECT_1_JSON_OLD = "{\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject1\",\"data\":\"{\\\"data\\\":\\\"object1\\\"}\"}";
+	private final static String CUSTOM_OBJECT_2_JSON = "{\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject2\",\"data\":{\"data\":\"object2\",\"otherData\":\"some other data\"}}";
+	private final static String CUSTOM_OBJECT_2_JSON_OLD = "{\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject2\",\"data\":\"{\\\"data\\\":\\\"object2\\\",\\\"otherData\\\":\\\"some other data\\\"}\"}";
 	private static @Getter Gson gson;
 
 	@BeforeAll
@@ -206,6 +208,15 @@ public class GsonTests {
 
 		assertEquals("object1", gson.fromJson(json1, CustomInterface.class).getData());
 		assertEquals("object2", gson.fromJson(json2, CustomInterface.class).getData());
+	}
+
+	@Test
+	public void deserializeInterfaceLegacy() {
+		CustomInterface object1 = gson.fromJson(CUSTOM_OBJECT_1_JSON_OLD, CustomInterface.class);
+		CustomInterface object2 = gson.fromJson(CUSTOM_OBJECT_2_JSON_OLD, CustomInterface.class);
+
+		assertEquals("object1", object1.getData());
+		assertEquals("object2", object2.getData());
 	}
 
 
