@@ -66,7 +66,7 @@ public class Time {
 		HOURS(60 * MINUTES.ms, "hours", "h"),
 		DAYS(24 * HOURS.ms, "days", "d"),
 		WEEKS(7 * DAYS.ms, "weeks", "w"),
-		MONTHS(30 * DAYS.ms, "months", "m"),
+		MONTHS(30 * DAYS.ms, "months", "M"),
 		YEARS(365 * DAYS.ms, "years", "y");
 
 		private final long ms;
