@@ -1,4 +1,4 @@
-package com.raduvoinea.utils.file_manager.dto.serializable.interfaces;
+package com.raduvoinea.utils.file_manager.dto.gson.interfaces;
 
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;

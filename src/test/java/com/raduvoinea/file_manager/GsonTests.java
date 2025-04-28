@@ -12,7 +12,7 @@ import com.raduvoinea.utils.file_manager.dto.serializable.ISerializable;
 import com.raduvoinea.utils.file_manager.dto.serializable.SerializableList;
 import com.raduvoinea.utils.file_manager.dto.serializable.SerializableMap;
 import com.raduvoinea.utils.file_manager.dto.serializable.SerializableObject;
-import com.raduvoinea.utils.file_manager.dto.serializable.interfaces.InterfaceTypeFactory;
+import com.raduvoinea.utils.file_manager.dto.gson.interfaces.InterfaceTypeFactory;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.logger.dto.Level;
 import lombok.Getter;

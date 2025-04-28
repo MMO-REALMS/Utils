@@ -20,4 +20,5 @@ module com.raduvoinea.utils {
 	requires static org.apache.commons.pool2;
 	requires java.sql;
 	requires java.desktop;
+	requires com.fasterxml.jackson.databind;
 }
