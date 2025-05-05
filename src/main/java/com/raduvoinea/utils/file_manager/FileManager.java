@@ -13,8 +13,10 @@ import org.jetbrains.annotations.Nullable;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -148,16 +150,22 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 
 		URL url = this.getClass().getResource("/" + fullPath);
 
-		if (url == null) {
-			Logger.log(new MessageBuilder("The file resource:/{path} was not found.")
+		try {
+			if ("file".equals(url.getProtocol())) {
+				File file = new File(url.toURI());
+				return Files.readString(file.toPath());
+			} else {
+				try (InputStream in = url.openStream()) {
+					return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+				}
+			}
+		} catch (Exception e) {
+			Logger.log(new MessageBuilder("Failed to read resource:/{path}. Error: {error}")
 					.parse("path", fullPath)
+					.parse("error", e.getMessage())
 			);
-
 			return "";
 		}
-
-		File file = new File(url.toURI());
-		return Files.readString(file.toPath());
 	}
 
 	@SneakyThrows
