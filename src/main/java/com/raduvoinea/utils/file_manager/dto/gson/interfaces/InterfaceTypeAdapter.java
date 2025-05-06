@@ -21,7 +21,7 @@ public class InterfaceTypeAdapter<T extends ISerializable> extends TypeAdapter<T
 		this.gson = gson;
 		this.delegate = delegate;
 		this.classLoader = classLoader;
-		this.classMapper=classMapper;
+		this.classMapper = classMapper;
 	}
 
 	@Override
@@ -43,6 +43,10 @@ public class InterfaceTypeAdapter<T extends ISerializable> extends TypeAdapter<T
 	@SneakyThrows
 	public T read(JsonReader reader) {
 		JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
+
+		if (!jsonObject.has("className")) {
+			return delegate.fromJson(jsonObject.toString());
+		}
 
 		String className = jsonObject.get("className").getAsString();
 		JsonElement dataElement = jsonObject.get("data");

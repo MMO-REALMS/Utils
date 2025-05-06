@@ -80,7 +80,6 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 	private synchronized void writeFileAndBackup(@NotNull String directory, @NotNull String fileName, @NotNull String newContent) {
 		Path path = Paths.get(getDataFolder().getPath(), directory, fileName);
 		File file = path.toFile();
-		//noinspection ResultOfMethodCallIgnored
 		file.getParentFile().mkdirs();
 
 		String oldContent = readFile(directory, fileName);
@@ -90,10 +89,6 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 				Logger.warn("The file " + path + " was empty. Skipping backup...");
 			} else {
 				Logger.warn("The file " + path + " has been automatically modified. Creating a backup...");
-//				Logger.log("================================================");
-//				Logger.log("Old content: " + oldContent);
-//				Logger.log("New content: " + newContent);
-//				Logger.log("================================================");
 
 				String date = DateUtils.getDate("dd_MM_yyyy_HH_mm_ss");
 				String backupFileName = fileName.split(".json")[0] + "_backup_" + date + ".json";
@@ -148,7 +143,16 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 				.parse("path", fullPath)
 		);
 
-		URL url = this.getClass().getResource("/" + fullPath);
+		fullPath = "/" + fullPath;
+
+		URL url = this.getClass().getResource(fullPath);
+
+		if (url == null) {
+			Logger.log(new MessageBuilder("Failed to read resource:{path}")
+					.parse("path", fullPath)
+			);
+			return "";
+		}
 
 		try {
 			if ("file".equals(url.getProtocol())) {
@@ -160,7 +164,7 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 				}
 			}
 		} catch (Exception e) {
-			Logger.log(new MessageBuilder("Failed to read resource:/{path}. Error: {error}")
+			Logger.log(new MessageBuilder("Failed to read resource:{path}. Error: {error}")
 					.parse("path", fullPath)
 					.parse("error", e.getMessage())
 			);
