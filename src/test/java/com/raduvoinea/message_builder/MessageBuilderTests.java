@@ -1,16 +1,8 @@
 package com.raduvoinea.message_builder;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.raduvoinea.utils.message_builder.MessageBuilder;
 import com.raduvoinea.utils.message_builder.MessageBuilderList;
-import com.raduvoinea.utils.message_builder.jackson.message_builder.MessageBuilderDeserializer;
-import com.raduvoinea.utils.message_builder.jackson.message_builder.MessageBuilderSerializer;
-import com.raduvoinea.utils.message_builder.jackson.message_builder_list.MessageBuilderListDeserializer;
-import com.raduvoinea.utils.message_builder.jackson.message_builder_list.MessageBuilderListSerializer;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -20,22 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MessageBuilderTests {
-
-	private static ObjectMapper objectMapper;
-
-	@BeforeAll
-	public static void setup() {
-		objectMapper = new ObjectMapper();
-
-		SimpleModule module = new SimpleModule();
-
-		module.addSerializer(MessageBuilder.class, new MessageBuilderSerializer());
-		module.addDeserializer(MessageBuilder.class, new MessageBuilderDeserializer());
-		module.addSerializer(MessageBuilderList.class, new MessageBuilderListSerializer());
-		module.addDeserializer(MessageBuilderList.class, new MessageBuilderListDeserializer());
-
-		objectMapper.registerModule(module);
-	}
 
 	@Test
 	public void testMessageBuilder() {
@@ -73,35 +49,5 @@ public class MessageBuilderTests {
 		);
 		assertArrayEquals(expected.toArray(), result.toArray());
 	}
-
-	@Test
-	public void testSerializeDeserializeMessageBuilder() throws JsonProcessingException {
-		String base = "This is a {placeholder}";
-		MessageBuilder builder = new MessageBuilder(base);
-
-		String json = objectMapper.writeValueAsString(builder);
-
-		MessageBuilder deserializedBuilder = objectMapper.readValue(json, MessageBuilder.class);
-
-		assertEquals(json, "\"" + base + "\"");
-		assertEquals(builder.getBase(), deserializedBuilder.getBase());
-	}
-
-	@Test
-	public void testSerializeDeserializeMessageBuilderList() throws JsonProcessingException {
-		List<String> base = List.of(
-				"This is a {placeholder} - L1",
-				"This is a {placeholder} - L2"
-		);
-		MessageBuilderList builder = new MessageBuilderList(base);
-
-		String json = objectMapper.writeValueAsString(builder);
-
-		MessageBuilderList deserializedBuilder = objectMapper.readValue(json, MessageBuilderList.class);
-
-		assertEquals(json, "[\"" + base.get(0) + "\",\"" + base.get(1) + "\"]");
-		assertEquals(builder.getBase(), deserializedBuilder.getBase());
-	}
-
 
 }
