@@ -1,11 +1,13 @@
 package com.raduvoinea.utils.file_manager;
 
 import com.google.gson.Gson;
+import com.raduvoinea.utils.file_manager.dto.ISerializer;
 import com.raduvoinea.utils.file_manager.utils.DateUtils;
 import com.raduvoinea.utils.file_manager.utils.PathUtils;
 import com.raduvoinea.utils.generic.dto.Holder;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.message_builder.MessageBuilder;
+import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,7 +24,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String basePath) {
+@AllArgsConstructor
+public class FileManager {
+
+	private final @NotNull Holder<ISerializer> gsonHolder;
+	private final @NotNull String basePath;
 
 	private synchronized @NotNull String readFile(@NotNull String directory, @NotNull String fileName) {
 		Path filePath = Paths.get(getDataFolder().getPath(), directory, fileName);
@@ -112,7 +118,7 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 
 	@SneakyThrows
 	private synchronized void save(@NotNull Object object, @NotNull String directory, @NotNull String fileName) {
-		String json = gsonHolder.value().toJson(object);
+		String json = gsonHolder.value().serialize(object);
 
 		if (!fileName.endsWith(".json")) {
 			fileName += ".json";
@@ -191,10 +197,10 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 			);
 			output = clazz.getDeclaredConstructor().newInstance();
 		} else {
-			output = gsonHolder.value().fromJson(oldJson, clazz);
+			output = gsonHolder.value().deserialize(oldJson, clazz);
 		}
 
-		String newJson = gsonHolder.value().toJson(output);
+		String newJson = gsonHolder.value().serialize(output);
 
 		writeFileAndBackup(directory, fileName, newJson);
 

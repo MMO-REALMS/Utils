@@ -62,36 +62,12 @@ public class JacksonTests {
 		module.addSerializer(SerializableObject.class, new SerializableObjectJacksonSerializer());
 		module.addDeserializer(SerializableObject.class, new SerializableObjectJacksonDeserializer(classLoader));
 		module.addSerializer(ISerializable.class, new InterfaceTypeSerializer(classLoader));
-//		module.addDeserializer(ISerializable.class, new InterfaceTypeDeserializer(classLoader, className -> className));
-//		module.setDeserializerModifier(new BeanDeserializerModifier() {
-//			@Override
-//			public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config,
-//			                                              BeanDescription beanDesc,
-//			                                              JsonDeserializer<?> defaultDeserializer)
-//			{
-//				Class<?> raw = beanDesc.getBeanClass();
-//				if ( raw.isInterface()
-//						&& ISerializable.class.isAssignableFrom(raw)  // any interface extending ISerializable
-//				) {
-//					return new InterfaceTypeDelegatingDeserializer(defaultDeserializer,
-//							classLoader,
-//							className -> className);
-//				}
-//				return defaultDeserializer;
-//			}
-//		});
-//		module.addSerializer(ISerializable.class, new InterfaceTypeSerializer(classLoader));
 		objectMapper.registerModule(
 				new InheritableDeserializerModule(
 						ISerializable.class,
 						new InterfaceTypeDeserializer(classLoader, classname -> classname)
 				)
 		);
-//		objectMapper.setDefaultTyping(new ClassNamePolymorphicTypeResolver()
-//				.init(JsonTypeInfo.Id.CLASS, null)
-//				.inclusion(JsonTypeInfo.As.PROPERTY)
-//				.typeProperty("className")
-//		);
 
 		objectMapper.registerModule(module);
 	}
