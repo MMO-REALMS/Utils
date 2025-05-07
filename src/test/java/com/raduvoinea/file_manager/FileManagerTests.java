@@ -6,7 +6,6 @@ import com.raduvoinea.file_manager.dto.files.DefaultFileObject;
 import com.raduvoinea.file_manager.dto.files.FileObject;
 import com.raduvoinea.file_manager.dto.files.ResourceFileObject;
 import com.raduvoinea.utils.file_manager.FileManager;
-import com.raduvoinea.utils.file_manager.dto.ISerializer;
 import com.raduvoinea.utils.generic.dto.Holder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -21,13 +20,13 @@ public class FileManagerTests {
 	private static final String TEST_1 = "test1";
 
 	private static FileManager fileManager;
-	private static Holder<ISerializer> serializerHolder;
+	private static Holder<Gson> gsonHolder;
 
 	@BeforeAll
 	public static void init() {
 		Gson gson = new GsonBuilder().create();
-		serializerHolder = Holder.of(ISerializer.of(gson));
-		fileManager = new FileManager(serializerHolder, "tmp");
+		gsonHolder = Holder.of(gson);
+		fileManager = new FileManager(gsonHolder, "tmp");
 	}
 
 	@AfterAll
