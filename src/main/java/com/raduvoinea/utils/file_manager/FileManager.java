@@ -1,10 +1,8 @@
 package com.raduvoinea.utils.file_manager;
 
-import com.google.gson.Gson;
 import com.raduvoinea.utils.file_manager.dto.ISerializer;
 import com.raduvoinea.utils.file_manager.utils.DateUtils;
 import com.raduvoinea.utils.file_manager.utils.PathUtils;
-import com.raduvoinea.utils.generic.dto.Holder;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.message_builder.MessageBuilder;
 import lombok.AllArgsConstructor;
@@ -27,7 +25,7 @@ import java.util.List;
 @AllArgsConstructor
 public class FileManager {
 
-	private final @NotNull Holder<ISerializer> gsonHolder;
+	private final @NotNull ISerializer serializer;
 	private final @NotNull String basePath;
 
 	private synchronized @NotNull String readFile(@NotNull String directory, @NotNull String fileName) {
@@ -118,7 +116,7 @@ public class FileManager {
 
 	@SneakyThrows
 	private synchronized void save(@NotNull Object object, @NotNull String directory, @NotNull String fileName) {
-		String json = gsonHolder.value().serialize(object);
+		String json = serializer.serialize(object);
 
 		if (!fileName.endsWith(".json")) {
 			fileName += ".json";
@@ -197,10 +195,10 @@ public class FileManager {
 			);
 			output = clazz.getDeclaredConstructor().newInstance();
 		} else {
-			output = gsonHolder.value().deserialize(oldJson, clazz);
+			output = serializer.deserialize(oldJson, clazz);
 		}
 
-		String newJson = gsonHolder.value().serialize(output);
+		String newJson = serializer.serialize(output);
 
 		writeFileAndBackup(directory, fileName, newJson);
 

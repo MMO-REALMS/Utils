@@ -2,6 +2,7 @@ package com.raduvoinea.utils.file_manager.dto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.raduvoinea.utils.generic.dto.Holder;
 import com.raduvoinea.utils.logger.Logger;
 
 public interface ISerializer {
@@ -10,26 +11,26 @@ public interface ISerializer {
 
 	<T> T deserialize(String json, Class<T> type);
 
-	static ISerializer of(Gson gson) {
+	static ISerializer fromGson(Holder<Gson> gsonHolder) {
 		return new ISerializer() {
 			@Override
 			public String serialize(Object object) {
-				return gson.toJson(object);
+				return gsonHolder.value().toJson(object);
 			}
 
 			@Override
 			public <T> T deserialize(String json, Class<T> type) {
-				return gson.fromJson(json, type);
+				return gsonHolder.value().fromJson(json, type);
 			}
 		};
 	}
 
-	static ISerializer of(ObjectMapper mapper) {
+	static ISerializer fromObjectMapper(Holder<ObjectMapper> mapperHolder) {
 		return new ISerializer() {
 			@Override
 			public String serialize(Object object) {
 				try {
-					return mapper.writeValueAsString(object);
+					return mapperHolder.value().writeValueAsString(object);
 				} catch (Exception exception) {
 					Logger.error(exception);
 					throw new RuntimeException(exception);
@@ -39,7 +40,7 @@ public interface ISerializer {
 			@Override
 			public <T> T deserialize(String json, Class<T> type) {
 				try {
-					return mapper.readValue(json, type);
+					return mapperHolder.value().readValue(json, type);
 				} catch (Exception exception) {
 					Logger.error(exception);
 					throw new RuntimeException(exception);
