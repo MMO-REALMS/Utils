@@ -4,6 +4,7 @@ import com.raduvoinea.utils.generic.dto.IWeighted;
 import com.raduvoinea.utils.generic.dto.Range;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RandomUtils {
@@ -41,6 +42,21 @@ public class RandomUtils {
 			}
 		}
 		return items.getLast();
+	}
+
+	public static @NotNull <T extends IWeighted> List<T> getNRandomWeighed(@NotNull List<T> items, int n) {
+		if (n <= 0) {
+			return List.of();
+		}
+		if (n >= items.size()) {
+			return items;
+		}
+
+		List<T> output = new ArrayList<>();
+		for (int i = 0; i < n; i++) {
+			output.add(getRandomWeighed(items));
+		}
+		return output;
 	}
 
 }
