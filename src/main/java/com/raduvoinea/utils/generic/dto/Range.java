@@ -20,4 +20,8 @@ public class Range {
 		return new Range(min, max);
 	}
 
+	public boolean contains(int n) {
+		return n >= min && n <= max;
+	}
+
 }
