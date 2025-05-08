@@ -52,9 +52,6 @@ public class RandomUtils {
 		if (n <= 0) {
 			return List.of();
 		}
-		if (n >= items.size()) {
-			return items;
-		}
 
 		List<T> output = new ArrayList<>();
 		for (int i = 0; i < n; i++) {
