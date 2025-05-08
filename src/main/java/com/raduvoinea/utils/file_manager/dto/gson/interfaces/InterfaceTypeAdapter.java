@@ -7,6 +7,7 @@ import com.raduvoinea.utils.file_manager.dto.serializable.ISerializable;
 import com.raduvoinea.utils.lambda.lambda.ReturnArgLambdaExecutor;
 import lombok.SneakyThrows;
 
+@SuppressWarnings("ALL")
 public class InterfaceTypeAdapter<T extends ISerializable> extends TypeAdapter<T> {
 
 	private final Gson gson;
@@ -31,7 +32,7 @@ public class InterfaceTypeAdapter<T extends ISerializable> extends TypeAdapter<T
 
 		out.beginObject();
 
-		out.name("className").value(value.getClass().getName());
+		out.name("class_name").value(value.getClass().getName());
 		out.name("data");
 
 		gson.toJson(value, value.getClass(), out);
@@ -44,11 +45,11 @@ public class InterfaceTypeAdapter<T extends ISerializable> extends TypeAdapter<T
 	public T read(JsonReader reader) {
 		JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
 
-		if (!jsonObject.has("className")) {
+		if (!jsonObject.has("className") && !jsonObject.has("class_name")) {
 			return delegate.fromJson(jsonObject.toString());
 		}
 
-		String className = jsonObject.get("className").getAsString();
+		String className = jsonObject.has("className") ? jsonObject.get("className").getAsString() : jsonObject.get("class_name").getAsString();
 		JsonElement dataElement = jsonObject.get("data");
 
 		Class<?> clazz = Class.forName(className);
