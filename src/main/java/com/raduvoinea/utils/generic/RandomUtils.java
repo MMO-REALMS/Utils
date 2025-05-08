@@ -18,6 +18,10 @@ public class RandomUtils {
 		return (int) (Math.random() * (max - min) + min);
 	}
 
+	public static double getRandom(double min , double max) {
+		return Math.random() * (max - min) + min;
+	}
+
 	@SuppressWarnings("unused")
 	public static @NotNull <T> T getRandom(@NotNull List<T> items) {
 		if (items.isEmpty()) {
@@ -33,8 +37,8 @@ public class RandomUtils {
 	}
 
 	public static @NotNull <T extends IWeighted> T getRandomWeighed(@NotNull List<T> items) {
-		int totalWeight = items.stream().mapToInt(IWeighted::getWeight).sum();
-		int random = getRandom(0, totalWeight);
+		double totalWeight = items.stream().mapToDouble(IWeighted::getWeight).sum();
+		double random = getRandom(0, totalWeight);
 		for (T item : items) {
 			random -= item.getWeight();
 			if (random <= 0) {
