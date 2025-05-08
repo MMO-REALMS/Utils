@@ -18,7 +18,6 @@ module com.raduvoinea.utils {
 	requires static com.google.gson;
 	requires static redis.clients.jedis;
 	requires static org.apache.commons.pool2;
-	requires java.sql;
-	requires java.desktop;
-	requires com.fasterxml.jackson.databind;
+	requires static java.sql;
+	requires static java.desktop;
 }
