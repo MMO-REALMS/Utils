@@ -81,7 +81,7 @@ public class Reflections {
 					Logger.warn(exception);
 				}
 			}
-		} catch (IOException exception) {
+		} catch (Throwable exception) {
 			Logger.error(exception);
 		}
 
