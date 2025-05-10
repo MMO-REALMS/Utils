@@ -140,7 +140,7 @@ public class Injector {
 		}
 
 		try {
-			Logger.debug("Injecting dependency: " + field.getType().getName());
+			Logger.debug("Injecting dependency: " + field.getType().getName() + " into field: " + field.getName() + " from class: " + object.getClass().getName());
 			field.set(object, dependencies.get(field.getType()));
 		} catch (IllegalAccessException exception) {
 			throw new InjectionException(
