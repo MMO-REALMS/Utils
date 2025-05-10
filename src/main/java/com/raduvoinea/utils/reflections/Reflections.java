@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -13,6 +14,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 /**
@@ -73,10 +75,14 @@ public class Reflections {
 					continue;
 				}
 
-				processFile(entry.getName());
+				try {
+					processFile(entry.getName());
+				} catch (ClassNotFoundException exception) {
+					Logger.warn(exception);
+				}
 			}
-		} catch (Throwable ignored) {
-//			Logger.warn(error);
+		} catch (IOException exception) {
+			Logger.error(exception);
 		}
 
 		return this;
