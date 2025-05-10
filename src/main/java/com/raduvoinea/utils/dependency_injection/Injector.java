@@ -115,8 +115,8 @@ public class Injector {
 
 		if (inject == null) {
 			for (Annotation annotation : field.getAnnotations()) {
-				if (annotation.getClass().getName().equals("com.google.inject.Inject")) {
-					Logger.warn("Google Guice annotation found. You might want to check if the field is being injected properly.");
+				if(annotation.getClass().getName().endsWith(".Inject")) {
+					Logger.warn("Inject annotation from other libs found. You might want to check if the field is being injected properly. Annotation: " + annotation.getClass().getName() );
 					return;
 				}
 			}
