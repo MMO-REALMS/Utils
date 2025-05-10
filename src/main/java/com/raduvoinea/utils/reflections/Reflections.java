@@ -73,7 +73,6 @@ public class Reflections {
 					continue;
 				}
 
-				Logger.debug("Processing zip entry: " + entry.getName());
 				processFile(entry.getName());
 			}
 		} catch (Throwable ignored) {
