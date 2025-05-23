@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class RandomUtils {
 
@@ -15,11 +16,11 @@ public class RandomUtils {
 	}
 
 	public static int getRandom(int min, int max) {
-		return (int) (Math.random() * (max - min) + min);
+		return ThreadLocalRandom.current().nextInt(min, max);
 	}
 
 	public static double getRandom(double min , double max) {
-		return Math.random() * (max - min) + min;
+		return ThreadLocalRandom.current().nextDouble(min, max);
 	}
 
 	@SuppressWarnings("unused")
