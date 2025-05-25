@@ -24,13 +24,13 @@ public class Injector {
 		return object;
 	}
 
-	public <T> T create(Class<T> clazz) throws InjectionException {
+	public <T> T create(Class<T> clazz, boolean inject, boolean export) throws InjectionException {
 		T instance = null;
 
 		for (Constructor<?> primitiveConstructor : clazz.getConstructors()) {
 			//noinspection unchecked
 			Constructor<T> constructor = (Constructor<T>) primitiveConstructor;
-			instance = create(constructor);
+			instance = create(constructor, inject, export);
 
 			if (instance != null) {
 				break;
@@ -45,11 +45,19 @@ public class Injector {
 					""");
 		}
 
+		if (inject) {
+			inject(instance);
+		}
+
+		if (export) {
+			bind(clazz, instance);
+		}
+
 		return instance;
 	}
 
-	private <T> T create(Constructor<T> constructor) throws InjectionException {
-		Inject inject = constructor.getAnnotation(Inject.class);
+	private <T> T create(Constructor<T> constructor, boolean inject, boolean export) throws InjectionException {
+		Inject injectAnnotation = constructor.getAnnotation(Inject.class);
 		constructor.setAccessible(true);
 
 		// Create with no args constructor
@@ -66,7 +74,7 @@ public class Injector {
 			}
 		}
 
-		if (inject == null) {
+		if (injectAnnotation == null) {
 			return null;
 		}
 
@@ -77,19 +85,20 @@ public class Injector {
 			parameters[i] = dependencies.getOrDefault(parameterTypes[i], null);
 
 			if (parameters[i] == null) {
-				if (inject.createMissingChildren()) {
-					parameters[i] = create(parameterTypes[i]);
-				} else {
-					throw new InjectionException(
-							new MessageBuilder("""
-									Failed to create instance of class {class}
-									Missing dependency: {dependency}
-									""")
-									.parse("class", constructor.getDeclaringClass().getName())
-									.parse("dependency", parameterTypes[i].getName())
-									.parse()
-					);
+				if (injectAnnotation.createMissingChildren()) {
+					parameters[i] = create(parameterTypes[i], inject, export);
+					continue;
 				}
+
+				throw new InjectionException(
+						new MessageBuilder("""
+								Failed to create instance of class {class}
+								Missing dependency: {dependency}
+								""")
+								.parse("class", constructor.getDeclaringClass().getName())
+								.parse("dependency", parameterTypes[i].getName())
+								.parse()
+				);
 			}
 		}
 
@@ -115,8 +124,8 @@ public class Injector {
 
 		if (inject == null) {
 			for (Annotation annotation : field.getAnnotations()) {
-				if(annotation.getClass().getName().endsWith(".Inject")) {
-					Logger.warn("Inject annotation from other libs found. You might want to check if the field is being injected properly. Annotation: " + annotation.getClass().getName() );
+				if (annotation.getClass().getName().endsWith(".Inject")) {
+					Logger.warn("Inject annotation from other libs found. You might want to check if the field is being injected properly. Annotation: " + annotation.getClass().getName());
 					return;
 				}
 			}
