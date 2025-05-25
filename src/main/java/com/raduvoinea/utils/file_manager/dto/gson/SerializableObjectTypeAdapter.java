@@ -9,6 +9,7 @@ import com.raduvoinea.utils.file_manager.dto.serializable.SerializableObject;
 import com.raduvoinea.utils.logger.Logger;
 
 import java.lang.reflect.Type;
+import java.util.Map;
 
 
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -16,6 +17,17 @@ public class SerializableObjectTypeAdapter extends GsonTypeAdapter<SerializableO
 
 	private static final String CLASS_NAME = "class_name";
 	private static final String DATA = "data";
+
+	private static final Map<String, String> PRIMITIVE_MAP = Map.ofEntries(
+			Map.entry("boolean", Boolean.class.getName()),
+			Map.entry("byte", Byte.class.getName()),
+			Map.entry("char", Character.class.getName()),
+			Map.entry("short", Short.class.getName()),
+			Map.entry("int", Integer.class.getName()),
+			Map.entry("long", Long.class.getName()),
+			Map.entry("float", Float.class.getName()),
+			Map.entry("double", Double.class.getName())
+	);
 
 	public SerializableObjectTypeAdapter(ClassLoader classLoader) {
 		super(classLoader, SerializableObject.class);
@@ -31,6 +43,8 @@ public class SerializableObjectTypeAdapter extends GsonTypeAdapter<SerializableO
 		if (className == null) {
 			return new SerializableObject(null);
 		}
+
+		className = PRIMITIVE_MAP.getOrDefault(className, className);
 
 		try {
 			Class<?> clazz = classLoader.loadClass(className);
