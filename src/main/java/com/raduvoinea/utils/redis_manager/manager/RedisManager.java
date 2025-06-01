@@ -242,6 +242,10 @@ public class RedisManager {
 			return CompletableFuture.completedFuture(null);
 		}
 
+		if (event.getTarget() == null) {
+			return CompletableFuture.completedFuture(null);
+		}
+
 		if (event.getTarget().equals(event.getOriginator())) {
 			debugger.send("LOCAL", gsonHolder.value().toJson(event));
 			return event.fireAsync();
