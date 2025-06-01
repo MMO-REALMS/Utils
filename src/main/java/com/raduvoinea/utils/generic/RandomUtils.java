@@ -16,10 +16,30 @@ public class RandomUtils {
 	}
 
 	public static int getRandom(int min, int max) {
+		if (min == max) {
+			return min;
+		}
+
+		if (min > max) {
+			int tmp = min;
+			min = max;
+			max = tmp;
+		}
+
 		return ThreadLocalRandom.current().nextInt(min, max);
 	}
 
-	public static double getRandom(double min , double max) {
+	public static double getRandom(double min, double max) {
+		if (min == max) {
+			return min;
+		}
+
+		if (min > max) {
+			double tmp = min;
+			min = max;
+			max = tmp;
+		}
+
 		return ThreadLocalRandom.current().nextDouble(min, max);
 	}
 
