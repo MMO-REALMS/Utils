@@ -79,4 +79,8 @@ public class MessageBuilderList extends GenericMessageBuilder<List<String>> {
 	public MessageBuilderList parse(Map<?, ?> placeholders) {
 		return (MessageBuilderList) super.parse(placeholders);
 	}
+
+	public MessageBuilderList parse(Object placeholder, Object value) {
+		return (MessageBuilderList) super.parse(placeholder, value);
+	}
 }

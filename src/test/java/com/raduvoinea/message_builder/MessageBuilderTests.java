@@ -50,4 +50,53 @@ public class MessageBuilderTests {
 		assertArrayEquals(expected.toArray(), result.toArray());
 	}
 
+	@Test
+	public void testMultiParse() {
+		MessageBuilder testMessage = new MessageBuilder("{p1}")
+				.parse("p1", "{p2}")
+				.parse("p2", "test2");
+
+		MessageBuilderList testList = new MessageBuilderList(List.of(
+				"{p1}",
+				"{p2}"
+		))
+
+				.parse("p1", "{p3}")
+				.parse("p2", "{p4}")
+				.parse("p3", "test3")
+				.parse("p4", "test4");
+
+
+		String resultMessage = testMessage.parse();
+		List<String> resultList = testList.parse();
+
+		assertEquals("test2", resultMessage);
+		assertEquals("test3", resultList.get(0));
+		assertEquals("test4", resultList.get(1));
+	}
+
+	@Test
+	public void testMultiParseReverseOrder() {
+		MessageBuilder testMessage = new MessageBuilder("{p1}")
+				.parse("p2", "test2")
+				.parse("p1", "{p2}");
+
+		MessageBuilderList testList = new MessageBuilderList(List.of(
+				"{p1}",
+				"{p2}"
+		))
+				.parse("p3", "test3")
+				.parse("p4", "test4")
+				.parse("p1", "{p3}")
+				.parse("p2", "{p4}");
+
+
+		String resultMessage = testMessage.parse();
+		List<String> resultList = testList.parse();
+
+		assertEquals("test2", resultMessage);
+		assertEquals("test3", resultList.get(0));
+		assertEquals("test4", resultList.get(1));
+	}
+
 }

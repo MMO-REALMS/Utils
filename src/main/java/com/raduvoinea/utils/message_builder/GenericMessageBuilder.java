@@ -49,6 +49,8 @@ public abstract class GenericMessageBuilder<T> {
 	public T parse() {
 		T parsed = base;
 
+		T before = base;
+
 		for (int i = 0; i < Math.min(placeholders.size(), values.size()); i++) {
 			String placeholder = null;
 			Object placeholderObj = placeholders.get(i);
@@ -80,6 +82,11 @@ public abstract class GenericMessageBuilder<T> {
 		}
 
 		this.base = parsed;
+
+		if (!equals(before, parsed)) {
+			return parse();
+		}
+
 		return parsed;
 	}
 
