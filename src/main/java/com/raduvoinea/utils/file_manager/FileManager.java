@@ -129,17 +129,25 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 		return load(clazz, directory, PathUtils.toSnakeCase(clazz.getSimpleName()));
 	}
 
+	private final static List<String> IGNORED_CALLER_CLASSES = List.of(
+			"java.lang.Thread",
+			FileManager.class.getName()
+	);
+
 	private Class<?> getCallerClass() {
 		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 
-		String thisClassName = this.getClass().getName();
-
 		for (StackTraceElement stackTraceElement : stackTrace) {
-			if (stackTraceElement.getClassName().equals(thisClassName)) {
+			if(IGNORED_CALLER_CLASSES.contains(stackTraceElement.getClassName())) {
 				continue;
 			}
 
-			return stackTraceElement.getClass();
+			try {
+				return Class.forName(stackTraceElement.getClassName());
+			} catch (ClassNotFoundException exception) {
+				Logger.error(exception);
+				return null;
+			}
 		}
 
 		return null;
@@ -170,6 +178,7 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 			return "";
 		}
 
+		Logger.debug("Caller class: " + callerClass.getName());
 		URL url = callerClass.getResource(fullPath);
 
 		if (url == null) {
