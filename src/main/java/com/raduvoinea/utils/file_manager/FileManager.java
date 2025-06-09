@@ -129,6 +129,22 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 		return load(clazz, directory, PathUtils.toSnakeCase(clazz.getSimpleName()));
 	}
 
+	private Class<?> getCallerClass() {
+		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+
+		String thisClassName = this.getClass().getName();
+
+		for (StackTraceElement stackTraceElement : stackTrace) {
+			if (stackTraceElement.getClassName().equals(thisClassName)) {
+				continue;
+			}
+
+			return stackTraceElement.getClass();
+		}
+
+		return null;
+	}
+
 	private String readFromDisk(@NotNull String directory, @NotNull String fileName) throws IOException, URISyntaxException {
 		String fileContents = readFile(directory, fileName);
 		String fullPath = directory.isEmpty() ?
@@ -145,7 +161,16 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 
 		fullPath = "/" + fullPath;
 
-		URL url = this.getClass().getResource(fullPath);
+		Class<?> callerClass = getCallerClass();
+
+		if (callerClass == null) {
+			Logger.log(new MessageBuilder("Could not determine caller class for resource: {path}")
+					.parse("path", fullPath)
+			);
+			return "";
+		}
+
+		URL url = callerClass.getResource(fullPath);
 
 		if (url == null) {
 			Logger.log(new MessageBuilder("Failed to read resource:{path}")
@@ -157,6 +182,7 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 		try {
 			if ("file".equals(url.getProtocol())) {
 				File file = new File(url.toURI());
+				Logger.log("Reading file " + fullPath + " from resources");
 				return Files.readString(file.toPath());
 			} else {
 				try (InputStream in = url.openStream()) {
