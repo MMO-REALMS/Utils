@@ -20,8 +20,8 @@ repositories {
 
 dependencies {
     // Dependencies
-    api(libs.gson)
-    compileOnly(libs.jedis)
+    compileOnlyApi(libs.gson)
+    compileOnlyApi(libs.jedis)
     testImplementation(libs.jedis)
 
     // Annotations
