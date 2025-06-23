@@ -143,7 +143,7 @@ public class EventManager {
 	public <T> T fireSync(@NotNull IEvent<T> event, boolean suppressExceptions) {
 		List<EventMethod> eventMethods = getEventMethods(event);
 		if (eventMethods == null) {
-			return null;
+			return event.getResult();
 		}
 
 		for (EventMethod method : eventMethods) {
@@ -155,7 +155,7 @@ public class EventManager {
 	public <T> CompletableFuture<T> fireAsync(@NotNull IEvent<T> event, boolean suppressExceptions) {
 		List<EventMethod> eventMethods = getEventMethods(event);
 		if (eventMethods == null) {
-			return CompletableFuture.completedFuture(null);
+			return CompletableFuture.completedFuture(event.getResult());
 		}
 
 		return ScheduleUtils.runTaskAsync(() -> {
