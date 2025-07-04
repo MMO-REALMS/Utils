@@ -19,7 +19,7 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisPubSub;
 
-import java.util.Arrays;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -231,7 +231,14 @@ public class RedisManager {
 	}
 
 	protected String[] getChannels() {
-		return new String[]{redisConfig.getChannel() + "#" + redisConfig.getRedisID(), redisConfig.getChannel() + "#*"};
+		Set<String> result = new HashSet<>();
+
+		result.add(redisConfig.getChannel() + "#" + redisConfig.getRedisID());
+		result.add(redisConfig.getChannel() + "#*");
+
+		result.addAll(Arrays.asList(redisConfig.getAdditionalListenChannels().split(",")));
+
+		return result.toArray(new String[0]);
 	}
 
 	public <T> CompletableFuture<T> send(@NotNull RedisRequest<T> event) {

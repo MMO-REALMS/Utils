@@ -160,7 +160,11 @@ public class EventManager {
 
 		return ScheduleUtils.runTaskAsync(() -> {
 					for (EventMethod method : eventMethods) {
-						method.fire(event, suppressExceptions);
+						try{
+							method.fire(event, suppressExceptions);
+						}catch (Throwable error){
+							Logger.error(error);
+						}
 					}
 					return event.getResult();
 				})

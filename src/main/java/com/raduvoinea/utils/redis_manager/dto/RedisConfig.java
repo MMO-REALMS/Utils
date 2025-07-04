@@ -12,6 +12,7 @@ public class RedisConfig {
 	private int port = 6379;
 	private String password = "password";
 	private String channel = "channel";
+	private String additionalListenChannels = "c1,c2";
 
 	// Advanced settings
 	private String redisID = NetworkUtils.getHostname();
