@@ -2,6 +2,7 @@ package com.raduvoinea.utils.redis_manager.event;
 
 import com.raduvoinea.utils.event_manager.EventManager;
 import com.raduvoinea.utils.event_manager.dto.LocalRequest;
+import com.raduvoinea.utils.generic.Time;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.redis_manager.manager.RedisManager;
 import lombok.Getter;
@@ -37,14 +38,22 @@ public abstract class RedisRequest<Response> extends LocalRequest<Response> {
 	}
 
 	public CompletableFuture<Response> send() {
+		return send(Time.seconds(5)); // TODO Config
+	}
+
+	public CompletableFuture<Response> send(Time time) {
 		return getRedisManager().send(this)
-				.orTimeout(5, TimeUnit.SECONDS); // TODO Config
+				.orTimeout(time.toMilliseconds(), TimeUnit.MILLISECONDS);
 	}
 
 	public @Nullable Response sendAndGet() {
+		return sendAndGet(Time.seconds(5)); // TODO Config
+	}
+
+	public @Nullable Response sendAndGet(Time time) {
 		try {
 			CompletableFuture<Response> future = send();
-			return future.get(5, TimeUnit.SECONDS); // TODO Config
+			return future.get(time.toMilliseconds(), TimeUnit.MILLISECONDS);
 		} catch (InterruptedException | ExecutionException | TimeoutException exception) {
 			Logger.error(exception);
 			return null;

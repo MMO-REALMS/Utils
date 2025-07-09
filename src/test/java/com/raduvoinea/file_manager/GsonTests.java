@@ -28,9 +28,9 @@ public class GsonTests {
 
 	private final static String listJson = "{\"class_name\":\"java.lang.String\",\"values\":[\"test1\",\"test2\",\"test3\"]}";
 	private final static String objectJson = "{\"class_name\":\"java.lang.String\",\"data\":\"test\"}";
-	private final static String CUSTOM_OBJECT_1_JSON = "{\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject1\",\"data\":{\"data\":\"object1\"}}";
+	private final static String CUSTOM_OBJECT_1_JSON = "{\"class_name\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject1\",\"data\":{\"data\":\"object1\"}}";
 	private final static String CUSTOM_OBJECT_1_JSON_OLD = "{\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject1\",\"data\":\"{\\\"data\\\":\\\"object1\\\"}\"}";
-	private final static String CUSTOM_OBJECT_2_JSON = "{\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject2\",\"data\":{\"data\":\"object2\",\"otherData\":\"some other data\"}}";
+	private final static String CUSTOM_OBJECT_2_JSON = "{\"class_name\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject2\",\"data\":{\"data\":\"object2\",\"otherData\":\"some other data\"}}";
 	private final static String CUSTOM_OBJECT_2_JSON_OLD = "{\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject2\",\"data\":\"{\\\"data\\\":\\\"object2\\\",\\\"otherData\\\":\\\"some other data\\\"}\"}";
 	private static @Getter Gson gson;
 
@@ -203,8 +203,8 @@ public class GsonTests {
 		String json1 = gson.toJson(class1);
 		String json2 = gson.toJson(class2);
 
-		assertTrue(json1.contains("\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject1\""));
-		assertTrue(json2.contains("\"className\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject2\""));
+		assertTrue(json1.contains("\"class_name\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject1\""));
+		assertTrue(json2.contains("\"class_name\":\"com.raduvoinea.file_manager.dto.interface_serialization.CustomObject2\""));
 
 		assertEquals("object1", gson.fromJson(json1, CustomInterface.class).getData());
 		assertEquals("object2", gson.fromJson(json2, CustomInterface.class).getData());

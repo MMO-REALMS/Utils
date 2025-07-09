@@ -81,7 +81,7 @@ public class EventManagerTests {
 
 		EVENT_MANAGER.unregister(TestUnregisterEventListener.class);
 		TestUnregisterEvent event2 = new TestUnregisterEvent(1, 2);
-		assertNull(event2.fireSync());
+		assertEquals(0, event2.fireSync());
 	}
 
 
