@@ -48,33 +48,43 @@ public abstract class GenericMessageBuilder<T> {
 
 	public T parse() {
 		T parsed = base;
-
 		T before = base;
 
 		for (int i = 0; i < Math.min(placeholders.size(), values.size()); i++) {
-			String placeholder = null;
+			String placeholder;
 			Object placeholderObj = placeholders.get(i);
 
-			String value = "null";
-			Object valueObj = values.get(i);
+			Object value = values.get(i);
 
-			if (placeholderObj != null) {
-				placeholder = placeholderObj.toString();
-			}
-			if (valueObj != null) {
-				value = valueObj.toString();
-			}
-
-			if (placeholder == null) {
+			if (placeholderObj == null) {
 				continue;
 			}
+
+			placeholder = placeholderObj.toString();
 
 			if (placeholder.startsWith("%") && placeholder.endsWith("%")) {
 				placeholder = placeholder.substring(1, placeholder.length() - 1);
 			}
 
-			parsed = parsePlaceholder(parsed, "%" + placeholder + "%", value);
-			parsed = parsePlaceholder(parsed, "{" + placeholder + "}", value);
+			if (value instanceof List<?> list) {
+				List<String> valueList = new ArrayList<>();
+
+				for (Object obj : list) {
+					if (obj != null) {
+						valueList.add(obj.toString());
+					} else {
+						valueList.add("null");
+					}
+				}
+
+				parsed = parsePlaceholder(parsed, "%" + placeholder + "%", valueList);
+				parsed = parsePlaceholder(parsed, "{" + placeholder + "}", valueList);
+			} else {
+				String valueString = value.toString();
+
+				parsed = parsePlaceholder(parsed, "%" + placeholder + "%", valueString);
+				parsed = parsePlaceholder(parsed, "{" + placeholder + "}", valueString);
+			}
 		}
 
 		if (MessageBuilderManager.instance().isChatColor()) {
@@ -115,9 +125,15 @@ public abstract class GenericMessageBuilder<T> {
 	 */
 	protected abstract T parsePlaceholder(T base, String placeholder, String value);
 
+	protected abstract T parsePlaceholder(T base, String placeholder, List<String> values);
+
 	/**
 	 * Clones the current object
 	 */
 	public abstract GenericMessageBuilder<T> clone();
+
+	public String convertListToString(List<String> list) {
+		return "[" + String.join(", ", list) + "]";
+	}
 
 }

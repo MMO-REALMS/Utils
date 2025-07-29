@@ -37,6 +37,15 @@ public class MessageBuilder extends GenericMessageBuilder<String> {
 	}
 
 	@Override
+	protected String parsePlaceholder(String base, String placeholder, List<String> values) {
+		if (base == null) {
+			return null;
+		}
+
+		return base.replace(placeholder, convertListToString(values));
+	}
+
+	@Override
 	public GenericMessageBuilder<String> clone() {
 		return new MessageBuilder(base, new ArrayList<>(placeholders), new ArrayList<>(values));
 	}

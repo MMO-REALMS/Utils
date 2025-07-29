@@ -7,7 +7,6 @@ import java.util.Map;
 
 public class MessageBuilderList extends GenericMessageBuilder<List<String>> {
 
-
 	/**
 	 * Can use the separator %%new-line%% to split the message into multiple lines.
 	 *
@@ -65,6 +64,28 @@ public class MessageBuilderList extends GenericMessageBuilder<List<String>> {
 		List<String> output = new ArrayList<>();
 
 		for (String line : base) {
+			output.add(line.replace(placeholder, value));
+		}
+
+		return output;
+	}
+
+	@Override
+	protected List<String> parsePlaceholder(List<String> base, String placeholder, List<String> values) {
+		if (base == null) {
+			return new ArrayList<>();
+		}
+
+		String value = convertListToString(values);
+
+		List<String> output = new ArrayList<>();
+
+		for (String line : base) {
+			if (line.equals(placeholder)) {
+				output.addAll(values);
+				continue;
+			}
+
 			output.add(line.replace(placeholder, value));
 		}
 
