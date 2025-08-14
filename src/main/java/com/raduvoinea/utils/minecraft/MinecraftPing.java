@@ -124,6 +124,18 @@ public class MinecraftPing {
 		private int timeout = 2000;
 		private String charset = "UTF-8";
 
+		public Options hostname(String hostname) {
+			if (hostname.contains(":")) {
+				String[] parts = hostname.split(":");
+				hostname(parts[0]);
+				port(Integer.parseInt(parts[1]));
+				return this;
+			}
+
+			this.hostname = hostname;
+			return this;
+		}
+
 	}
 
 	@Getter
