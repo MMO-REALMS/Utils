@@ -4,6 +4,7 @@ import com.raduvoinea.utils.event_manager.annotation.EventHandler;
 import com.raduvoinea.utils.event_manager.exceptions.RuntimeEventException;
 import com.raduvoinea.utils.lambda.ScheduleUtils;
 import com.raduvoinea.utils.logger.Logger;
+import com.raduvoinea.utils.message_builder.MessageBuilder;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,6 +38,14 @@ public class EventMethod {
 		try {
 			method.invoke(parentObject, event);
 		} catch (Exception error) {
+			Logger.error(
+					new MessageBuilder("Error while invoking event method {method} from class {class} for event {event}")
+							.parse("method", method.getName())
+							.parse("class", method.getDeclaringClass().getName())
+							.parse("event", event.getClass().getSimpleName())
+							.parse()
+			);
+
 			if (suppressExceptions) {
 				Logger.error(error);
 			} else {
