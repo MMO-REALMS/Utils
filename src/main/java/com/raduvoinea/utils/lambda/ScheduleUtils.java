@@ -19,7 +19,11 @@ public class ScheduleUtils {
 		CancelableTimeTask task = new CancelableTimeTask() {
 			@Override
 			public void execute() {
-				executor.execute();
+				try {
+					executor.execute();
+				} catch (Throwable throwable) {
+					Logger.error(throwable);
+				}
 			}
 		};
 
@@ -32,11 +36,15 @@ public class ScheduleUtils {
 		return task;
 	}
 
-	public static @NotNull CancelableTimeTask runTaskTimerAsync(@NotNull LambdaExecutor executor, Time period) {
+	public static @NotNull CancelableTimeTask runTaskTimer(@NotNull LambdaExecutor executor, Time period) {
 		CancelableTimeTask task = new CancelableTimeTask() {
 			@Override
 			public void execute() {
-				executor.execute();
+				try {
+					executor.execute();
+				} catch (Throwable throwable) {
+					Logger.error(throwable);
+				}
 			}
 		};
 
@@ -49,29 +57,12 @@ public class ScheduleUtils {
 		return task;
 	}
 
-	public static @NotNull CancelableTimeTask runTaskLaterAsync(@NotNull LambdaExecutor executor, Time delay) {
-		CancelableTimeTask task = new CancelableTimeTask() {
-			@Override
-			public void execute() {
-				executor.execute();
-			}
-		};
-
-		Thread thread = Thread.ofVirtual().start(() -> {
-			Timer timer = new Timer();
-			timer.schedule(task, delay.toMilliseconds());
-		});
-
-		task.setThread(thread);
-		return task;
-	}
-
 	public static @NotNull CompletableFuture<Void> runTaskAsync(@NotNull LambdaExecutor executor) {
 		return CompletableFuture.runAsync(() -> {
 			try {
 				executor.execute();
-			} catch (Exception exception) {
-				Logger.error(exception);
+			} catch (Throwable throwable) {
+				Logger.error(throwable);
 			}
 		}, EXECUTOR_POOL);
 	}
