@@ -24,17 +24,6 @@ public class EventMethod {
 	}
 
 	public void fire(Object event, boolean suppressExceptions) {
-		if (annotation.async()) {
-			ScheduleUtils.runTaskAsync(() -> {
-				fireSync(event, suppressExceptions);
-			});
-			return;
-		}
-
-		fireSync(event, suppressExceptions);
-	}
-
-	public void fireSync(Object event, boolean suppressExceptions) {
 		try {
 			method.invoke(parentObject, event);
 		} catch (Exception error) {

@@ -140,46 +140,28 @@ public class EventManager {
 		}
 	}
 
-	public <T> T fireSync(@NotNull IEvent<T> event, boolean suppressExceptions) {
+	public <T> CompletableFuture<T> fire(@NotNull IEvent<T> event, boolean suppressExceptions) {
 		List<EventMethod> eventMethods = getEventMethods(event);
-		if (eventMethods == null) {
-			return event.getResult();
-		}
-
-		for (EventMethod method : eventMethods) {
-			method.fire(event, suppressExceptions);
-		}
-		return event.getResult();
-	}
-
-	public <T> CompletableFuture<T> fireAsync(@NotNull IEvent<T> event, boolean suppressExceptions) {
-		List<EventMethod> eventMethods = getEventMethods(event);
-		if (eventMethods == null) {
-			return CompletableFuture.completedFuture(event.getResult());
-		}
 
 		return ScheduleUtils.runTaskAsync(() -> {
 					for (EventMethod method : eventMethods) {
-						try{
-							method.fire(event, suppressExceptions);
-						}catch (Throwable error){
-							Logger.error(error);
-						}
+						method.fire(event, suppressExceptions);
 					}
 					return event.getResult();
 				})
 				.orTimeout(5, TimeUnit.SECONDS);
 	}
 
-	private <T> List<EventMethod> getEventMethods(@NotNull IEvent<T> event) {
+	private @NotNull <T> List<EventMethod> getEventMethods(@NotNull IEvent<T> event) {
 		Class<?> eventClass = event.getClass();
-
 		List<EventMethod> eventMethods = methods.get(eventClass);
+
 		if (eventMethods == null || eventMethods.isEmpty()) {
 			Logger.warn(new MessageBuilder("No listeners found for event {event}")
 					.parse("event", eventClass.getSimpleName()));
-			return null;
+			return new ArrayList<>();
 		}
+
 		return eventMethods;
 	}
 

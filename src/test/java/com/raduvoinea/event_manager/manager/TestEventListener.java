@@ -1,9 +1,6 @@
 package com.raduvoinea.event_manager.manager;
 
-import com.raduvoinea.event_manager.dto.ExternalEvent;
-import com.raduvoinea.event_manager.dto.TestEvent;
-import com.raduvoinea.event_manager.dto.TestLocalEvent;
-import com.raduvoinea.event_manager.dto.TestLocalRequest;
+import com.raduvoinea.event_manager.dto.*;
 import com.raduvoinea.utils.event_manager.annotation.EventHandler;
 
 public class TestEventListener {
@@ -28,5 +25,10 @@ public class TestEventListener {
 		int a = event.getNumber1() + event.getNumber2();// TODO: Implement this method
 	}
 
+	@EventHandler
+	public void onLongLocalEvent(LongLocalEvent event) throws InterruptedException {
+		Thread.sleep(2500);
+		event.setResult(true);
+	}
 
 }

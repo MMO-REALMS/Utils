@@ -1,9 +1,6 @@
 package com.raduvoinea.event_manager;
 
-import com.raduvoinea.event_manager.dto.TestEvent;
-import com.raduvoinea.event_manager.dto.TestLocalEvent;
-import com.raduvoinea.event_manager.dto.TestLocalRequest;
-import com.raduvoinea.event_manager.dto.TestUnregisterEvent;
+import com.raduvoinea.event_manager.dto.*;
 import com.raduvoinea.event_manager.manager.TestEventListener;
 import com.raduvoinea.event_manager.manager.TestUnregisterEventListener;
 import com.raduvoinea.utils.event_manager.EventManager;
@@ -13,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -45,8 +44,8 @@ public class EventManagerTests {
 		TestEvent event1 = new TestEvent(1, 2);
 		TestEvent event2 = new TestEvent(10, 20);
 
-		assertEquals(3, event1.fireSync());
-		assertEquals(30, event2.fireSync());
+		assertEquals(3, event1.fireAndGet());
+		assertEquals(30, event2.fireAndGet());
 	}
 
 	@Test
@@ -54,8 +53,8 @@ public class EventManagerTests {
 		TestLocalEvent event1 = new TestLocalEvent(1, 2);
 		TestLocalEvent event2 = new TestLocalEvent(10, 20);
 
-		assertEquals(3, event1.fireSync());
-		assertEquals(30, event2.fireSync());
+		assertEquals(3, event1.fireAndGet());
+		assertEquals(30, event2.fireAndGet());
 	}
 
 	@Test
@@ -63,8 +62,8 @@ public class EventManagerTests {
 		TestLocalRequest event1 = new TestLocalRequest(1, 2);
 		TestLocalRequest event2 = new TestLocalRequest(10, 20);
 
-		assertEquals(3, event1.fireSync());
-		assertEquals(30, event2.fireSync());
+		assertEquals(3, event1.fireAndGet());
+		assertEquals(30, event2.fireAndGet());
 	}
 
 	@Test
@@ -77,11 +76,26 @@ public class EventManagerTests {
 	public void testUnregisterEvent() {
 		EVENT_MANAGER.register(TestUnregisterEventListener.class);
 		TestUnregisterEvent event1 = new TestUnregisterEvent(1, 2);
-		assertEquals(3, event1.fireSync());
+		assertEquals(3, event1.fireAndGet());
 
 		EVENT_MANAGER.unregister(TestUnregisterEventListener.class);
 		TestUnregisterEvent event2 = new TestUnregisterEvent(1, 2);
-		assertEquals(0, event2.fireSync());
+		assertEquals(0, event2.fireAndGet());
+	}
+
+	@Test
+	public void testLongEvnet() throws InterruptedException, ExecutionException {
+		LongLocalEvent event = new LongLocalEvent();
+
+		CompletableFuture<Boolean> completableFuture = event.fire(true);
+
+		assertEquals(false, event.getResult());
+
+		Thread.sleep(1000);
+		assertEquals(false, event.getResult());
+
+		completableFuture.get();
+		assertEquals(true, event.getResult());
 	}
 
 
