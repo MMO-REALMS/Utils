@@ -14,16 +14,11 @@ public interface LockableResource {
 	Time getLockTime();
 
 	default boolean setLock() {
-		return getRedisManager().executeOnJedisAndGet(jedis -> {
-			if (jedis.exists(getRedisLockID())) {
-				return false;
-			}
-
-			jedis.set(getRedisLockID(), String.valueOf(System.currentTimeMillis()),
-					SetParams.setParams()
-							.ex(getLockTime().toSeconds())
-			);
-			return true;
+		return this.getRedisManager().executeOnJedisAndGet((jedis) -> {
+			String response = jedis.set(this.getRedisLockID(),
+					String.valueOf(System.currentTimeMillis()),
+					SetParams.setParams().nx().ex(this.getLockTime().toSeconds()));
+			return response != null;
 		});
 	}
 
@@ -47,5 +42,18 @@ public interface LockableResource {
 		executor.execute();
 
 		removeLock();
+	}
+
+	default void withLockKeepingLockAfter(LambdaExecutor executor, LambdaExecutor failExecutor) {
+		if (!setLock()) {
+			failExecutor.execute();
+			return;
+		}
+
+		executor.execute();
+	}
+
+	default String getLockValue() {
+		return this.getRedisManager().executeOnJedisAndGet((jedis) -> jedis.get(this.getRedisLockID()));
 	}
 }
