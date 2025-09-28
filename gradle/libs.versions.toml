@@ -1,5 +1,5 @@
 [versions]
-version = "1.13.2"
+version = "1.13.5"
 group = "com.raduvoinea"
 
 [libraries]
