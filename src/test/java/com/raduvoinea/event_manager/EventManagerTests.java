@@ -44,8 +44,8 @@ public class EventManagerTests {
 		TestEvent event1 = new TestEvent(1, 2);
 		TestEvent event2 = new TestEvent(10, 20);
 
-		assertEquals(3, event1.fireAndGet());
-		assertEquals(30, event2.fireAndGet());
+		assertEquals(3, event1.fireSync());
+		assertEquals(30, event2.fireSync());
 	}
 
 	@Test
@@ -53,8 +53,8 @@ public class EventManagerTests {
 		TestLocalEvent event1 = new TestLocalEvent(1, 2);
 		TestLocalEvent event2 = new TestLocalEvent(10, 20);
 
-		assertEquals(3, event1.fireAndGet());
-		assertEquals(30, event2.fireAndGet());
+		assertEquals(3, event1.fireSync());
+		assertEquals(30, event2.fireSync());
 	}
 
 	@Test
@@ -62,8 +62,8 @@ public class EventManagerTests {
 		TestLocalRequest event1 = new TestLocalRequest(1, 2);
 		TestLocalRequest event2 = new TestLocalRequest(10, 20);
 
-		assertEquals(3, event1.fireAndGet());
-		assertEquals(30, event2.fireAndGet());
+		assertEquals(3, event1.fireSync());
+		assertEquals(30, event2.fireSync());
 	}
 
 	@Test
@@ -76,18 +76,18 @@ public class EventManagerTests {
 	public void testUnregisterEvent() {
 		EVENT_MANAGER.register(TestUnregisterEventListener.class);
 		TestUnregisterEvent event1 = new TestUnregisterEvent(1, 2);
-		assertEquals(3, event1.fireAndGet());
+		assertEquals(3, event1.fireSync());
 
 		EVENT_MANAGER.unregister(TestUnregisterEventListener.class);
 		TestUnregisterEvent event2 = new TestUnregisterEvent(1, 2);
-		assertEquals(0, event2.fireAndGet());
+		assertEquals(0, event2.fireSync());
 	}
 
 	@Test
 	public void testLongEvnet() throws InterruptedException, ExecutionException {
 		LongLocalEvent event = new LongLocalEvent();
 
-		CompletableFuture<Boolean> completableFuture = event.fire(true);
+		CompletableFuture<Boolean> completableFuture = event.fireAsync(true);
 
 		assertEquals(false, event.getResult());
 

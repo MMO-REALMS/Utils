@@ -38,7 +38,7 @@ public class EventMethod {
 			if (suppressExceptions) {
 				Logger.error(error);
 			} else {
-				throw new RuntimeEventException(error.getCause());
+				throw new RuntimeEventException(error);
 			}
 		}
 	}

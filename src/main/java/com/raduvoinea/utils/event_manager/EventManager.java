@@ -140,16 +140,20 @@ public class EventManager {
 		}
 	}
 
-	public <T> CompletableFuture<T> fire(@NotNull IEvent<T> event, boolean suppressExceptions) {
+	public <T> T fireSync(@NotNull IEvent<T> event, boolean suppressExceptions) {
 		List<EventMethod> eventMethods = getEventMethods(event);
 
-		return ScheduleUtils.runTaskAsync(() -> {
-					for (EventMethod method : eventMethods) {
-						method.fire(event, suppressExceptions);
-					}
-					return event.getResult();
-				})
-				.orTimeout(5, TimeUnit.SECONDS);
+		for (EventMethod method : eventMethods) {
+			method.fire(event, suppressExceptions);
+		}
+
+		return event.getResult();
+	}
+
+	public <T> CompletableFuture<T> fireAsync(@NotNull IEvent<T> event, boolean suppressExceptions, long timeoutMilliseconds) {
+		return ScheduleUtils
+				.runTaskAsync(() -> this.fireSync(event, suppressExceptions))
+				.orTimeout(timeoutMilliseconds, TimeUnit.MILLISECONDS);
 	}
 
 	private @NotNull <T> List<EventMethod> getEventMethods(@NotNull IEvent<T> event) {
