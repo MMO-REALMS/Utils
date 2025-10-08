@@ -77,7 +77,7 @@ public class Reflections {
 
 				try {
 					processFile(entry.getName());
-				} catch (ClassNotFoundException | NoClassDefFoundError exception) {
+				} catch (Throwable exception) {
 					Logger.warn("Reflections failed to find class " + exception.getMessage());
 				}
 			}
