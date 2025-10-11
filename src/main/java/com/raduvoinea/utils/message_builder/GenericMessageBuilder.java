@@ -70,17 +70,13 @@ public abstract class GenericMessageBuilder<T> {
 				List<String> valueList = new ArrayList<>();
 
 				for (Object obj : list) {
-					if (obj != null) {
-						valueList.add(obj.toString());
-					} else {
-						valueList.add("null");
-					}
+					valueList.add(obj == null ? "null" : obj.toString());
 				}
 
 				parsed = parsePlaceholder(parsed, "%" + placeholder + "%", valueList);
 				parsed = parsePlaceholder(parsed, "{" + placeholder + "}", valueList);
 			} else {
-				String valueString = value.toString();
+				String valueString = value == null ? "null" : value.toString();
 
 				parsed = parsePlaceholder(parsed, "%" + placeholder + "%", valueString);
 				parsed = parsePlaceholder(parsed, "{" + placeholder + "}", valueString);
