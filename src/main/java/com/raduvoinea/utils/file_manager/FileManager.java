@@ -24,7 +24,7 @@ import java.util.List;
 
 public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String basePath) {
 
-	private synchronized @NotNull String readFile(@NotNull String directory, @NotNull String fileName) {
+	public synchronized @NotNull String readFile(@NotNull String directory, @NotNull String fileName) {
 		Path filePath = Paths.get(getDataFolder().getPath(), directory, fileName);
 		File file = filePath.toFile();
 
@@ -50,7 +50,7 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 	}
 
 	@SuppressWarnings("UnusedReturnValue")
-	private synchronized @Nullable Path writeFile(@NotNull String directory, @NotNull String fileName, @NotNull String content) {
+	public synchronized @Nullable Path writeFile(@NotNull String directory, @NotNull String fileName, @NotNull String content) {
 		Path path = Paths.get(getDataFolder().getPath(), directory, fileName);
 		File file = path.toFile();
 		//noinspection ResultOfMethodCallIgnored
