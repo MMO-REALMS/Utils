@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -14,7 +13,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 /**
@@ -217,7 +215,11 @@ public class Reflections {
 			classesToSearch.add(searchClass.getSuperclass());
 
 			for (Field field : searchClass.getDeclaredFields()) {
-				field.setAccessible(true);
+				try {
+					field.setAccessible(true);
+				} catch (Throwable exception) {
+					Logger.error(exception);
+				}
 				output.add(field);
 			}
 		}
