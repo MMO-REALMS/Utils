@@ -8,4 +8,8 @@ public class InjectionException extends Exception {
 	public InjectionException(String message, Throwable cause) {
 		super(message, cause);
 	}
+
+	public RuntimeException toRuntimeException() {
+		return new RuntimeException(this);
+	}
 }
