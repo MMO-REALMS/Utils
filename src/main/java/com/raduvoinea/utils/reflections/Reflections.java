@@ -208,24 +208,29 @@ public class Reflections {
 		while (!classesToSearch.isEmpty()) {
 			Class<?> searchClass = classesToSearch.poll();
 
-			if (searchClass == null) {
+			if (searchClass == null || searchClass == Object.class) {
 				continue;
 			}
 
 			classesToSearch.add(searchClass.getSuperclass());
 
+			if (searchClass == Enum.class) {
+				continue;
+			}
+
 			for (Field field : searchClass.getDeclaredFields()) {
 				try {
 					field.setAccessible(true);
+					output.add(field);
 				} catch (Throwable exception) {
 					Logger.error(exception);
 				}
-				output.add(field);
 			}
 		}
 
 		return output;
 	}
+
 
 	public static @NotNull Set<Method> getMethods(@NotNull Class<?> clazz) {
 		Set<Method> output = new HashSet<>();
