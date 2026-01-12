@@ -1,8 +1,10 @@
 package com.raduvoinea.utils.event_manager.dto;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.raduvoinea.utils.event_manager.annotation.EventHandler;
 import com.raduvoinea.utils.event_manager.exceptions.RuntimeEventException;
-import com.raduvoinea.utils.lambda.ScheduleUtils;
+import com.raduvoinea.utils.lambda.lambda.ReturnArgLambdaExecutor;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.message_builder.MessageBuilder;
 import lombok.Getter;
@@ -12,6 +14,8 @@ import java.lang.reflect.Method;
 
 @Getter
 public class EventMethod {
+	private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
+
 	private final Method method;
 	private final Object parentObject;
 	private final EventHandler annotation;
@@ -28,10 +32,11 @@ public class EventMethod {
 			method.invoke(parentObject, event);
 		} catch (Exception error) {
 			Logger.error(
-					new MessageBuilder("Error while invoking event method {method} from class {class} for event {event}")
+					new MessageBuilder("Error while invoking event method {method} from class {class} for event {event}\nJSON (debug only json): {json}")
 							.parse("method", method.getName())
 							.parse("class", method.getDeclaringClass().getName())
 							.parse("event", event.getClass().getSimpleName())
+							.parse("json", GSON.toJson(event))
 							.parse()
 			);
 
