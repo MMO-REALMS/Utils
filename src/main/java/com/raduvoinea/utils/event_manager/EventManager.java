@@ -19,27 +19,17 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 public class EventManager {
 
 	private final HashMap<Class<?>, List<EventMethod>> methods = new HashMap<>();
+	private final HashMap<Class<?>, List<EventMethod>> unsafeMethods = new HashMap<>();
 	private final Holder<Injector> injectorHolder;
 
-	private ExternalRegistrar externalRegistrar = new ExternalRegistrar() {
-		@Override
-		public boolean register(Object object, Method method, Class<?> eventClass) {
-			Logger.warn("No external registrar found");
-			return false;
-		}
-
-		@Override
-		public boolean unregister(Method method, Class<?> eventClass) {
-			Logger.warn("No external registrar found");
-			return false;
-		}
-	};
+	private @Nullable ExternalRegistrar externalRegistrar = null;
 
 	public EventManager() {
 		this(Holder.empty());
@@ -140,8 +130,16 @@ public class EventManager {
 		}
 	}
 
+	public void fireUnsafe(@NotNull Object event, boolean suppressExceptions, boolean logIfNoListeners) {
+		List<EventMethod> eventMethods = getUnsafeEventMethods(event, logIfNoListeners);
+
+		for (EventMethod method : eventMethods) {
+			method.fire(event, suppressExceptions);
+		}
+	}
+
 	public <T> T fireSync(@NotNull IEvent<T> event, boolean suppressExceptions) {
-		List<EventMethod> eventMethods = getEventMethods(event);
+		List<EventMethod> eventMethods = getEventMethods(event, true);
 
 		for (EventMethod method : eventMethods) {
 			method.fire(event, suppressExceptions);
@@ -156,13 +154,26 @@ public class EventManager {
 				.orTimeout(timeoutMilliseconds, TimeUnit.MILLISECONDS);
 	}
 
-	private @NotNull <T> List<EventMethod> getEventMethods(@NotNull IEvent<T> event) {
+	private @NotNull <T> List<EventMethod> getEventMethods(@NotNull IEvent<T> event, boolean logIfNoListeners) {
+		return getEventMethodsGeneric(event, methods, logIfNoListeners);
+	}
+
+	private @NotNull List<EventMethod> getUnsafeEventMethods(@NotNull Object event, boolean logIfNoListeners) {
+		return getEventMethodsGeneric(event, unsafeMethods, logIfNoListeners);
+	}
+
+	private @NotNull <T> List<EventMethod> getEventMethodsGeneric(@NotNull Object event, Map<Class<?>, List<EventMethod>> map, boolean logIfNoListeners) {
 		Class<?> eventClass = event.getClass();
-		List<EventMethod> eventMethods = methods.get(eventClass);
+		List<EventMethod> eventMethods = map.get(eventClass);
 
 		if (eventMethods == null || eventMethods.isEmpty()) {
-			Logger.warn(new MessageBuilder("No listeners found for event {event}")
-					.parse("event", eventClass.getSimpleName()));
+			if (logIfNoListeners){
+				Logger.warn(
+						new MessageBuilder("No listeners found for event {event}")
+								.parse("event", eventClass.getSimpleName())
+				);
+			}
+
 			return new ArrayList<>();
 		}
 
@@ -202,71 +213,101 @@ public class EventManager {
 
 	private void register(Object parentObject, Method method) {
 		Class<?> eventClass = getEventClass(method);
-
 		if (eventClass == null) {
 			return;
 		}
 
-		Logger.debug(new MessageBuilder("Registering listener {listener} -> {class}#{method}")
-				.parse("listener", eventClass.getSimpleName())
-				.parse("class", method.getDeclaringClass())
-				.parse("method", method.getName())
-		);
-
-		if (!IEvent.class.isAssignableFrom(eventClass)) {
-			boolean result = externalRegistrar.register(parentObject, method, eventClass);
-
-			if (!result) {
-				Logger.error("Failed to register method " + method.getName() + " from class " +
-						method.getDeclaringClass() + " with event class " + eventClass.getName());
-				Logger.debug(this);
-			}
-
+		if (IEvent.class.isAssignableFrom(eventClass)) {
+			registerGeneric(parentObject, method, eventClass, methods);
 			return;
 		}
 
-		List<EventMethod> eventMethods = methods.getOrDefault(eventClass, new ArrayList<>());
-		eventMethods.add(new EventMethod(parentObject, method));
-		methods.put(eventClass, eventMethods);
+		if (this.externalRegistrar == null) {
+			registerGeneric(parentObject, method, eventClass, unsafeMethods);
+			return;
+		}
+
+		boolean result = externalRegistrar.register(parentObject, method, eventClass);
+		if (!result) {
+			Logger.error(new MessageBuilder("Failed to register method {class}#{method} ({eventClass})")
+					.parse("method", method.getName())
+					.parse("class", method.getDeclaringClass())
+					.parse("eventClass", eventClass.getName())
+			);
+			Logger.debug(this);
+		}
+
 	}
 
 	private void unregister(Method method) {
 		Class<?> eventClass = getEventClass(method);
-
 		if (eventClass == null) {
 			return;
 		}
 
 		if (!IEvent.class.isAssignableFrom(eventClass)) {
-			boolean result = externalRegistrar.unregister(method, eventClass);
-
-			if (!result) {
-				Logger.error("Failed to unregister method " + method.getName() + " from class " +
-						method.getDeclaringClass() + " with event class " + eventClass.getName());
+			if (externalRegistrar == null) {
+				unregisterGeneric(method, eventClass, unsafeMethods);
+				return;
 			}
 
+			boolean result = externalRegistrar.unregister(method, eventClass);
+			if (!result) {
+				Logger.error(new MessageBuilder("Failed to unregister method {class}#{method} ({eventClass})")
+						.parse("method", method.getName())
+						.parse("class", method.getDeclaringClass())
+						.parse("eventClass", eventClass.getName())
+				);
+			}
 			return;
 		}
 
-		List<EventMethod> eventMethods = methods.getOrDefault(eventClass, new ArrayList<>());
+		unregisterGeneric(method, eventClass, methods);
+	}
+
+	private void registerGeneric(Object parentObject, Method method, Class<?> eventClass, HashMap<Class<?>, List<EventMethod>> map) {
+		Logger.log(new MessageBuilder("Registering method {class}#{method}...")
+				.parse("method", method.getName())
+				.parse("class", method.getDeclaringClass())
+		);
+
+		List<EventMethod> eventMethods = map.getOrDefault(eventClass, new ArrayList<>());
+		eventMethods.add(new EventMethod(parentObject, method));
+		map.put(eventClass, eventMethods);
+	}
+
+	private void unregisterGeneric(Method method, Class<?> eventClass, HashMap<Class<?>, List<EventMethod>> map) {
+		Logger.warn(new MessageBuilder("Unregistering unsafe method {class}#{method}...")
+				.parse("method", method.getName())
+				.parse("class", method.getDeclaringClass())
+		);
+
+		List<EventMethod> eventMethods = map.getOrDefault(eventClass, new ArrayList<>());
 		boolean result = eventMethods.removeIf(eventMethod -> eventMethod.getMethod().equals(method));
 
 		if (!result) {
-			Logger.error("Failed to unregister method " + method.getName() + " from class " +
-					method.getDeclaringClass() + " with event class " + eventClass.getName());
+			Logger.error(new MessageBuilder("Failed to unregister method {class}#{method} ({eventClass})")
+					.parse("method", method.getName())
+					.parse("class", method.getDeclaringClass())
+					.parse("eventClass", eventClass.getName())
+			);
 			return;
 		}
 
-		methods.put(eventClass, eventMethods);
-		Logger.warn("Unregistered method " + method.getName() + " from class " + method.getDeclaringClass() +
-				" with event class " + eventClass.getName());
+		map.put(eventClass, eventMethods);
 	}
 
 	private void sortMethods() {
 		for (Class<?> eventClass : methods.keySet()) {
 			List<EventMethod> eventMethods = methods.getOrDefault(eventClass, new ArrayList<>());
-			eventMethods.sort(new EventMethod.Comparator());
+			eventMethods.sort(EventMethod.Comparator.getInstance());
 			methods.put(eventClass, eventMethods);
+		}
+
+		for (Class<?> eventClass : unsafeMethods.keySet()) {
+			List<EventMethod> eventMethods = unsafeMethods.getOrDefault(eventClass, new ArrayList<>());
+			eventMethods.sort(EventMethod.Comparator.getInstance());
+			unsafeMethods.put(eventClass, eventMethods);
 		}
 	}
 
