@@ -112,6 +112,7 @@ public class EventManager {
 		if (!injectorHolder.isEmpty()) {
 			try {
 				injectorHolder.value().inject(object);
+				injectorHolder.value().bind(object);
 			} catch (InjectionException error) {
 				throw new RuntimeException(error);
 			}
@@ -167,7 +168,7 @@ public class EventManager {
 		List<EventMethod> eventMethods = map.get(eventClass);
 
 		if (eventMethods == null || eventMethods.isEmpty()) {
-			if (logIfNoListeners){
+			if (logIfNoListeners) {
 				Logger.warn(
 						new MessageBuilder("No listeners found for event {event}")
 								.parse("event", eventClass.getSimpleName())

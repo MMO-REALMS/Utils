@@ -55,7 +55,7 @@ class InjectorTest {
 
 		InjectionException exception = assertThrows(
 				InjectionException.class,
-				() -> injector.inject(instance)
+				() -> injector.inject(instance, false)
 		);
 
 		assertTrue(exception.getMessage().contains("Missing dependency"));
@@ -133,39 +133,6 @@ class InjectorTest {
 	}
 
 	@Test
-	void testCreateDeferred() throws InjectionException {
-		ClassWithFieldInjection instance = injector.createDeferred(ClassWithFieldInjection.class, true);
-
-		assertNotNull(instance);
-		assertEquals(1, injector.getUnresolvedDependencies().size());
-		assertNull(instance.serviceA);
-
-		ServiceA serviceA = new ServiceA();
-		injector.bind(ServiceA.class, serviceA);
-		injector.resolveUnresolved();
-
-		assertSame(serviceA, instance.serviceA);
-	}
-
-	@Test
-	void testCyclicFieldDependencies() throws InjectionException {
-		CyclicA cyclicA = injector.createDeferred(CyclicA.class, true);
-		CyclicB cyclicB = injector.createDeferred(CyclicB.class, true);
-
-		assertNotNull(cyclicA);
-		assertNotNull(cyclicB);
-		assertEquals(1, injector.getUnresolvedDependencies().size());
-
-		int resolved = injector.resolveUnresolved();
-
-		assertEquals(1, resolved);
-		assertEquals(0, injector.getUnresolvedDependencies().size());
-		assertSame(cyclicB, cyclicA.cyclicB);
-		assertSame(cyclicA, cyclicB.cyclicA);
-	}
-
-
-	@Test
 	void testClearUnresolved() throws InjectionException {
 		ClassWithFieldInjection instance = new ClassWithFieldInjection();
 		injector.inject(instance, true);
@@ -205,23 +172,6 @@ class InjectorTest {
 
 		assertEquals(0, resolved);
 		assertEquals(1, injector.getUnresolvedDependencies().size());
-	}
-
-	@Test
-	void testComplexCyclicGraph() throws InjectionException {
-		CyclicA cyclicA = injector.createDeferred(CyclicA.class, true);
-		CyclicB cyclicB = injector.createDeferred(CyclicB.class, true);
-		CyclicC cyclicC = injector.createDeferred(CyclicC.class, true);
-
-		assertEquals(1, injector.getUnresolvedDependencies().size());
-
-		int resolved = injector.resolveUnresolved();
-
-		assertEquals(1, resolved);
-		assertSame(cyclicB, cyclicA.cyclicB);
-		assertSame(cyclicA, cyclicB.cyclicA);
-		assertSame(cyclicA, cyclicC.cyclicA);
-		assertSame(cyclicB, cyclicC.cyclicB);
 	}
 
 	@Test

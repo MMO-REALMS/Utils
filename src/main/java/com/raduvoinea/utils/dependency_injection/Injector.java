@@ -8,9 +8,7 @@ import com.raduvoinea.utils.reflections.Reflections;
 import lombok.Getter;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 @Getter
@@ -33,108 +31,18 @@ public class Injector {
 		}
 	}
 
+	public <Child extends Parent, Parent> Child bind(Child object) {
+		dependencies.put(object.getClass(), object);
+		return object;
+	}
+
 	public <Child extends Parent, Parent> Child bind(Class<Parent> clazz, Child object) {
 		dependencies.put(clazz, object);
 		return object;
 	}
 
-	public <T> T create(Class<T> clazz, boolean export) throws InjectionException {
-		if (currentlyCreating.contains(clazz)) {
-			throw new InjectionException(
-					new MessageBuilder("Cyclic constructor dependency detected for class {class}")
-							.parse("class", clazz.getName())
-							.parse()
-			);
-		}
-
-		currentlyCreating.add(clazz);
-		try {
-			T instance = null;
-
-			for (Constructor<?> primitiveConstructor : clazz.getConstructors()) {
-				Constructor<T> constructor = (Constructor<T>) primitiveConstructor;
-				instance = create(constructor, export);
-
-				if (instance != null) {
-					break;
-				}
-			}
-
-			if (instance == null) {
-				throw new InjectionException("""
-                    Failed to locate one of the bellow:
-                    - Constructor with @Inject annotation
-                    - No args constructor
-                    """);
-			}
-
-			if (export) {
-				bind(clazz, instance);
-			}
-
-			return instance;
-		} finally {
-			currentlyCreating.remove(clazz);
-		}
-	}
-
-	private <T> T create(Constructor<T> constructor, boolean export) throws InjectionException {
-		Inject injectAnnotation = constructor.getAnnotation(Inject.class);
-		constructor.setAccessible(true);
-
-		if (constructor.getParameterCount() == 0) {
-			try {
-				return constructor.newInstance();
-			} catch (InstantiationException | IllegalAccessException | InvocationTargetException exception) {
-				throw new InjectionException(
-						new MessageBuilder(" Failed to create instance of class {class}.")
-								.parse("class", constructor.getDeclaringClass().getName())
-								.parse(),
-						exception);
-			}
-		}
-
-		if (injectAnnotation == null) {
-			return null;
-		}
-
-		Class<?>[] parameterTypes = constructor.getParameterTypes();
-		Object[] parameters = new Object[parameterTypes.length];
-
-		for (int i = 0; i < parameterTypes.length; i++) {
-			parameters[i] = dependencies.getOrDefault(parameterTypes[i], null);
-
-			if (parameters[i] == null) {
-				if (injectAnnotation.createMissingChildren()) {
-					parameters[i] = create(parameterTypes[i], export);
-					continue;
-				}
-
-				throw new InjectionException(
-						new MessageBuilder("""
-                        Failed to create instance of class {class}
-                        Missing dependency: {dependency}
-                        """)
-								.parse("class", constructor.getDeclaringClass().getName())
-								.parse("dependency", parameterTypes[i].getName())
-								.parse()
-				);
-			}
-		}
-
-		try {
-			return constructor.newInstance(parameters);
-		} catch (InstantiationException | IllegalAccessException | InvocationTargetException exception) {
-			throw new InjectionException(
-					new MessageBuilder(" Failed to create instance of class {class}.")
-							.parse("class", constructor.getDeclaringClass().getName())
-							.parse(),
-					exception);
-		}
-	}
-
 	public void inject(Object object) throws InjectionException {
-		inject(object, false);
+		inject(object, true);
 	}
 
 	public void inject(Object object, boolean allowUnresolved) throws InjectionException {
@@ -156,9 +64,9 @@ public class Injector {
 			return;
 		}
 
-		Object value = dependencies.getOrDefault(field.getType(), null);
+		Object dependency = dependencies.get(field.getType());
 
-		if (value == null) {
+		if (dependency == null) {
 			if (allowUnresolved) {
 				unresolvedDependencies.add(new UnresolvedDependency(object, field, field.getType()));
 				Logger.debug("Deferred injection for field: " + field.getName() + " of type: " + field.getType().getName() + " in class: " + object.getClass().getName());
@@ -167,9 +75,9 @@ public class Injector {
 
 			throw new InjectionException(
 					new MessageBuilder("""
-                    Failed to inject dependency into field {field} from class {class}
-                    Missing dependency: {dependency}
-                    """)
+							Failed to inject dependency into field {field} from class {class}
+							Missing dependency: {dependency}
+							""")
 							.parse("class", object.getClass().getName())
 							.parse("field", field.getName())
 							.parse("dependency", field.getType().getName())
@@ -232,14 +140,4 @@ public class Injector {
 		unresolvedDependencies.clear();
 	}
 
-	public <T> T createDeferred(Class<T> clazz, boolean export) throws InjectionException {
-		T instance = create(clazz, false);
-		inject(instance, true);
-
-		if (export) {
-			bind(clazz, instance);
-		}
-
-		return instance;
-	}
 }
