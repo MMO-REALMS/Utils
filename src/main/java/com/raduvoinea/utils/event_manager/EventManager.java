@@ -10,6 +10,7 @@ import com.raduvoinea.utils.lambda.ScheduleUtils;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.message_builder.MessageBuilder;
 import com.raduvoinea.utils.reflections.Reflections;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,6 +31,9 @@ public class EventManager {
 	private final Holder<Injector> injectorHolder;
 
 	private @Nullable ExternalRegistrar externalRegistrar = null;
+
+	@Setter
+	private boolean verbose = false;
 
 	public EventManager() {
 		this(Holder.empty());
@@ -183,10 +187,12 @@ public class EventManager {
 
 	protected Class<?> getEventClass(@NotNull Method method) {
 		if (!method.isAnnotationPresent(EventHandler.class)) {
-			Logger.debug(new MessageBuilder("Method {class}#{method} does not have the EventHandler annotation")
-					.parse("class", method.getDeclaringClass())
-					.parse("method", method.getName())
-			);
+			if (verbose) {
+				Logger.debug(new MessageBuilder("Method {class}#{method} does not have the EventHandler annotation")
+						.parse("class", method.getDeclaringClass())
+						.parse("method", method.getName())
+				);
+			}
 			return null;
 		}
 
@@ -267,7 +273,7 @@ public class EventManager {
 	}
 
 	private void registerGeneric(Object parentObject, Method method, Class<?> eventClass, HashMap<Class<?>, List<EventMethod>> map) {
-		Logger.log(new MessageBuilder("Registering method {class}#{method}...")
+		Logger.debug(new MessageBuilder("Registering method {class}#{method}...")
 				.parse("method", method.getName())
 				.parse("class", method.getDeclaringClass())
 		);
