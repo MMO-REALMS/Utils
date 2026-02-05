@@ -13,7 +13,7 @@ import com.raduvoinea.utils.file_manager.dto.gson.SerializableObjectTypeAdapter;
 import com.raduvoinea.utils.generic.dto.Holder;
 import com.raduvoinea.utils.message_builder.MessageBuilderManager;
 import com.raduvoinea.utils.redis_manager.dto.RedisConfig;
-import com.raduvoinea.utils.redis_manager.dto.gson.RedisEventGsonTypeAdapter;
+import com.raduvoinea.utils.redis_manager.dto.gson.RedisRequestGsonTypeAdapter;
 import com.raduvoinea.utils.redis_manager.event.RedisRequest;
 import com.raduvoinea.utils.redis_manager.manager.RedisManager;
 import lombok.SneakyThrows;
@@ -42,7 +42,7 @@ public class RedisTests {
 
 		REDIS_MANAGER = new RedisManager(gsonHolder, new RedisConfig(), classLoader, Holder.of(eventManager), true, true);
 
-		RedisEventGsonTypeAdapter redisRequestTypeAdapter = new RedisEventGsonTypeAdapter(classLoader, REDIS_MANAGER);
+		RedisRequestGsonTypeAdapter redisRequestTypeAdapter = new RedisRequestGsonTypeAdapter(classLoader, REDIS_MANAGER);
 		SerializableListGsonTypeAdapter serializableListGsonTypeAdapter = new SerializableListGsonTypeAdapter(classLoader);
 		SerializableMapGsonTypeAdapter serializableMapGsonTypeAdapter = new SerializableMapGsonTypeAdapter(classLoader);
 		SerializableObjectTypeAdapter serializableObjectTypeAdapter = new SerializableObjectTypeAdapter(classLoader);
