@@ -19,7 +19,9 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisPubSub;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -62,6 +64,11 @@ public class RedisManager {
 	}
 
 	public void executeOnJedisAndForget(ArgLambdaExecutor<Jedis> executor, ArgLambdaExecutor<Exception> failExecutor) {
+		if (localOnly) {
+			Logger.warn("Attempted to execute Redis command while in local only mode. Command was not executed.");
+			return;
+		}
+
 		try (Jedis jedis = jedisPool.getResource()) {
 			executor.execute(jedis);
 		} catch (Exception error) {
