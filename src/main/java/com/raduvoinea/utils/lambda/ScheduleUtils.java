@@ -68,6 +68,13 @@ public class ScheduleUtils {
 	}
 
 	public static @NotNull <R> CompletableFuture<R> runTaskAsync(@NotNull ReturnLambdaExecutor<R> executor) {
-		return CompletableFuture.supplyAsync(executor::execute, EXECUTOR_POOL);
+		return CompletableFuture.supplyAsync(() -> {
+			try {
+				return executor.execute();
+			} catch (Throwable throwable) {
+				Logger.error(throwable);
+				return null;
+			}
+		}, EXECUTOR_POOL);
 	}
 }

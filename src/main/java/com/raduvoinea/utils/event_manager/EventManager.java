@@ -167,7 +167,7 @@ public class EventManager {
 		return getEventMethodsGeneric(event, unsafeMethods, logIfNoListeners);
 	}
 
-	private @NotNull <T> List<EventMethod> getEventMethodsGeneric(@NotNull Object event, Map<Class<?>, List<EventMethod>> map, boolean logIfNoListeners) {
+	private @NotNull List<EventMethod> getEventMethodsGeneric(@NotNull Object event, Map<Class<?>, List<EventMethod>> map, boolean logIfNoListeners) {
 		Class<?> eventClass = event.getClass();
 		List<EventMethod> eventMethods = map.get(eventClass);
 

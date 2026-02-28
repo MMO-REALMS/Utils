@@ -36,6 +36,9 @@ public class EventMethod {
 				eventData = GSON.toJson(event);
 			} catch (Exception e) {
 				eventData = event.toString();
+				Logger.debug(new MessageBuilder("Failed to serialize event data to JSON, using toString() instead. Event class: {class}")
+						.parse("class", event.getClass().getName())
+				);
 			}
 
 			Logger.error(
