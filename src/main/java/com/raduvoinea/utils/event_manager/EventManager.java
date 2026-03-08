@@ -110,7 +110,7 @@ public class EventManager {
 
 	public void register(@NotNull Object object) {
 		Logger.debug(new MessageBuilder("Registering object {object}")
-				.parse("object", object.getClass().getSimpleName())
+				.parse("object", object.getClass().getName())
 		);
 
 		if (!injectorHolder.isEmpty()) {
