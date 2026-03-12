@@ -1,4 +1,4 @@
-package com.raduvoinea.utils.redis_manager.utils;
+package com.raduvoinea.utils.generic.utils;
 
 import com.raduvoinea.utils.logger.Logger;
 import org.jetbrains.annotations.NotNull;

@@ -1,6 +1,6 @@
 package com.raduvoinea.utils.redis_manager.dto;
 
-import com.raduvoinea.utils.redis_manager.utils.NetworkUtils;
+import com.raduvoinea.utils.generic.utils.NetworkUtils;
 import lombok.Getter;
 import lombok.Setter;
 
