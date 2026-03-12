@@ -1,10 +1,10 @@
 [versions]
-version = "1.19.6"
+version = "1.20.0"
 group = "com.raduvoinea"
 
 [libraries]
 # Testing
-junit_jupiter = { module = "org.junit.jupiter:junit-jupiter ", version = "5.11.4" }
+junit_jupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.11.4" }
 junit_bom = { module = "org.junit:junit-bom", version = "5.11.4" }
 
 # Annotations

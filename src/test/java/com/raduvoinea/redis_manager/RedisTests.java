@@ -19,6 +19,7 @@ import com.raduvoinea.utils.redis_manager.manager.RedisManager;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.concurrent.Future;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SetEnvironmentVariable(key = "DEV_HOSTNAME", value = "localhost")
 public class RedisTests {
 
 	public static RedisManager REDIS_MANAGER;
@@ -39,6 +41,8 @@ public class RedisTests {
 
 		ClassLoader classLoader = RedisTests.class.getClassLoader();
 		EventManager eventManager = new EventManager();
+
+		System.out.println(System.getenv("DEV_HOSTNAME"));
 
 		REDIS_MANAGER = new RedisManager(gsonHolder, new RedisConfig(), classLoader, Holder.of(eventManager), true, true);
 

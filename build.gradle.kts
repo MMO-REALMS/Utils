@@ -38,6 +38,7 @@ dependencies {
     // Tests
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
+    testImplementation("org.junit-pioneer:junit-pioneer:2.3.0")
 }
 
 tasks {
@@ -51,6 +52,10 @@ tasks {
         testLogging {
             events("passed", "skipped", "failed")
         }
+        jvmArgs(
+            "--add-opens", "java.base/java.util=ALL-UNNAMED",
+            "--add-opens", "java.base/java.lang=ALL-UNNAMED"
+        )
     }
 }
 

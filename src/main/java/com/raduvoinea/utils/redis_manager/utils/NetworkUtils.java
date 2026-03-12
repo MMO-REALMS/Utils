@@ -17,8 +17,8 @@ public class NetworkUtils {
 		}
 
 		try {
-			hostname = ShellUtils.execute("hostname --fqdn");
-		} catch (IOException e) {
+			hostname = ShellUtils.executeAndCapture("hostname --fqdn");
+		} catch (IOException | InterruptedException exception) {
 			hostname = System.getenv("HOSTNAME");
 
 			if (hostname == null) {
