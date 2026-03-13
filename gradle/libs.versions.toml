@@ -1,5 +1,5 @@
 [versions]
-version = "1.20.2"
+version = "1.21.0"
 group = "com.raduvoinea"
 
 [libraries]
@@ -14,10 +14,5 @@ jetbrains_annotations = { module = "org.jetbrains:annotations", version = "26.0.
 # Dependencies
 gson = { module = "com.google.code.gson:gson", version = "2.11.0" }
 jedis = { module = "redis.clients:jedis", version = "5.2.0" }
-apache_commons_compress = { module = "org.apache.commons:commons-compress", version = "1.27.1" }
-apache_commons_lang3 = { module = "org.apache.commons:commons-lang3", version = "3.17.0" }
-apache_commons_pool2 = { module = "org.apache.commons:commons-pool2", version = "2.12.0" }
-apache_commons_io = { module = "commons-io:commons-io", version = "2.18.0" }
-google_guice = { module = "com.google.inject:guice", version = "7.0.0" }
-google_guice_assistedinject = { module = "com.google.inject.extensions:guice-assistedinject", version = "7.0.0" }
+
 
