@@ -9,7 +9,7 @@ import com.raduvoinea.utils.file_manager.dto.serializable.SerializableObject;
 import com.raduvoinea.utils.logger.Logger;
 
 import java.lang.reflect.Type;
-
+import java.util.Map;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class SerializableObjectTypeAdapter extends GsonTypeAdapter<SerializableObject> {
@@ -17,8 +17,28 @@ public class SerializableObjectTypeAdapter extends GsonTypeAdapter<SerializableO
 	private static final String CLASS_NAME = "class_name";
 	private static final String DATA = "data";
 
+	private static final Map<String, Class<?>> PRIMITIVE_TYPES = Map.of(
+		"boolean", boolean.class,
+		"byte", byte.class,
+		"char", char.class,
+		"double", double.class,
+		"float", float.class,
+		"int", int.class,
+		"long", long.class,
+		"short", short.class,
+		"void", void.class
+	);
+
 	public SerializableObjectTypeAdapter(ClassLoader classLoader) {
 		super(classLoader, SerializableObject.class);
+	}
+
+	private Class<?> resolveClass(String className) throws ClassNotFoundException {
+		Class<?> primitive = PRIMITIVE_TYPES.get(className);
+		if (primitive != null) {
+			return primitive;
+		}
+		return classLoader.loadClass(className);
 	}
 
 	@Override
@@ -26,14 +46,16 @@ public class SerializableObjectTypeAdapter extends GsonTypeAdapter<SerializableO
 		JsonObject jsonObject = json.getAsJsonObject();
 
 		JsonElement jsonData = jsonObject.get(DATA);
-		String className = jsonObject.get(CLASS_NAME).getAsString();
+		JsonElement classNameElement = jsonObject.get(CLASS_NAME);
 
-		if (className == null) {
+		if (classNameElement == null || classNameElement.isJsonNull()) {
 			return new SerializableObject(null);
 		}
 
+		String className = classNameElement.getAsString();
+
 		try {
-			Class<?> clazz = classLoader.loadClass(className);
+			Class<?> clazz = resolveClass(className);
 			Object object = context.deserialize(jsonData, clazz);
 
 			return new SerializableObject(object);
