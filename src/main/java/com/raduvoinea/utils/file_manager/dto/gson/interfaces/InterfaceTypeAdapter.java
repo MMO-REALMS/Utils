@@ -4,7 +4,7 @@ import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.raduvoinea.utils.file_manager.dto.serializable.ISerializable;
-import com.raduvoinea.utils.lambda.lambda.ReturnArgLambdaExecutor;
+import com.raduvoinea.utils.lambda.lambda.no_exception.ReturnArgLambdaExecutor;
 import lombok.SneakyThrows;
 
 @SuppressWarnings("ALL")

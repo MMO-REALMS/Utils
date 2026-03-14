@@ -1,7 +1,7 @@
 package com.raduvoinea.utils.logger;
 
-import com.raduvoinea.utils.lambda.lambda.ArgLambdaExecutor;
-import com.raduvoinea.utils.lambda.lambda.ReturnArgLambdaExecutor;
+import com.raduvoinea.utils.lambda.lambda.no_exception.ArgLambdaExecutor;
+import com.raduvoinea.utils.lambda.lambda.no_exception.ReturnArgLambdaExecutor;
 import com.raduvoinea.utils.logger.dto.ConsoleColor;
 import com.raduvoinea.utils.logger.dto.Level;
 import com.raduvoinea.utils.logger.utils.StackTraceUtils;

@@ -1,7 +1,7 @@
 package com.raduvoinea.utils.redis_manager.dto;
 
 import com.raduvoinea.utils.generic.Time;
-import com.raduvoinea.utils.lambda.lambda.LambdaExecutor;
+import com.raduvoinea.utils.lambda.lambda.no_exception.LambdaExecutor;
 import com.raduvoinea.utils.redis_manager.manager.RedisManager;
 import redis.clients.jedis.params.SetParams;
 
@@ -28,9 +28,7 @@ public interface LockableResource {
 	}
 
 	default void removeLock() {
-		getRedisManager().executeOnJedisAndForget(jedis -> {
-			jedis.del(getRedisLockID());
-		});
+		getRedisManager().executeOnJedisAndForget(jedis -> jedis.del(getRedisLockID()));
 	}
 
 	default void withLock(LambdaExecutor executor) {

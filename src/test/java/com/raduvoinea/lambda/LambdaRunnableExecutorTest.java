@@ -1,6 +1,6 @@
 package com.raduvoinea.lambda;
 
-import com.raduvoinea.utils.lambda.lambda.*;
+import com.raduvoinea.utils.lambda.lambda.no_exception.*;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ public class LambdaRunnableExecutorTest {
 
 		ReturnLambdaExecutor<String> getHelloWorld = () -> "Hello World";
 		ReturnArgLambdaExecutor<String, String> getHello = (arg) -> "Hello " + arg;
-		ReturnArgsLambdaExecutor<String, String, String> concatenateStrings = (arg1, arg2) -> arg1 + arg2;
+		Return2ArgsLambdaExecutor<String, String, String> concatenateStrings = (arg1, arg2) -> arg1 + arg2;
 
 		List<String> list = new ArrayList<>();
 

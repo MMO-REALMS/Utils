@@ -4,8 +4,8 @@ import com.google.gson.Gson;
 import com.raduvoinea.utils.event_manager.EventManager;
 import com.raduvoinea.utils.generic.dto.Holder;
 import com.raduvoinea.utils.lambda.ScheduleUtils;
-import com.raduvoinea.utils.lambda.lambda.ArgLambdaExecutor;
-import com.raduvoinea.utils.lambda.lambda.ReturnArgLambdaExecutor;
+import com.raduvoinea.utils.lambda.lambda.no_exception.ArgLambdaExecutor;
+import com.raduvoinea.utils.lambda.lambda.no_exception.ReturnArgLambdaExecutor;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.message_builder.MessageBuilder;
 import com.raduvoinea.utils.redis_manager.dto.RedisConfig;
@@ -118,11 +118,11 @@ public class RedisManager {
 		jedisConfig.setMaxTotal(16);
 
 		jedisPool = new JedisPool(
-				jedisConfig,
-				redisConfig.getHost(),
-				redisConfig.getPort(),
-				redisConfig.getTimeout(),
-				redisConfig.getPassword()
+			jedisConfig,
+			redisConfig.getHost(),
+			redisConfig.getPort(),
+			redisConfig.getTimeout(),
+			redisConfig.getPassword()
 		);
 	}
 
@@ -215,15 +215,15 @@ public class RedisManager {
 		}
 
 		Logger.log(new MessageBuilder("[RedisManager] Starting Redis {host}:{port} thread for channels {channels}")
-				.parse("host", redisConfig.getHost())
-				.parse("port", redisConfig.getPort())
-				.parse("channels", Arrays.toString(getChannels()))
+			.parse("host", redisConfig.getHost())
+			.parse("port", redisConfig.getPort())
+			.parse("channels", Arrays.toString(getChannels()))
 		);
 
 		redisTread = new Thread(() ->
-				executeOnJedisAndForget(jedis -> {
-					jedis.subscribe(subscriberJedisPubSub, getChannels());
-				}, exception -> {
+			executeOnJedisAndForget(
+				jedis -> jedis.subscribe(subscriberJedisPubSub, getChannels()),
+				exception -> {
 					Logger.error("Lost connection to redis server. Retrying in 3 seconds...");
 					try {
 						Thread.sleep(3000);
@@ -279,7 +279,7 @@ public class RedisManager {
 		debugger.send(event.getPublishChannel(), gsonHolder.value().toJson(event));
 
 		executeOnJedisAndForget(jedis ->
-				jedis.publish(event.getPublishChannel(), gsonHolder.value().toJson(event))
+			jedis.publish(event.getPublishChannel(), gsonHolder.value().toJson(event))
 		);
 
 		return future.orTimeout(2, TimeUnit.MINUTES); // TODO Config
@@ -289,7 +289,7 @@ public class RedisManager {
 		debugger.sendResponse(responseEvent.getPublishChannel(), gsonHolder.value().toJson(responseEvent));
 
 		executeOnJedisAndForget(jedis ->
-				jedis.publish(responseEvent.getPublishChannel(), gsonHolder.value().toJson(responseEvent))
+			jedis.publish(responseEvent.getPublishChannel(), gsonHolder.value().toJson(responseEvent))
 		);
 	}
 }

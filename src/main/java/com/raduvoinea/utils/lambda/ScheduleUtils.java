@@ -1,8 +1,8 @@
 package com.raduvoinea.utils.lambda;
 
 import com.raduvoinea.utils.generic.Time;
-import com.raduvoinea.utils.lambda.lambda.LambdaExecutor;
-import com.raduvoinea.utils.lambda.lambda.ReturnLambdaExecutor;
+import com.raduvoinea.utils.lambda.lambda.no_exception.LambdaExecutor;
+import com.raduvoinea.utils.lambda.lambda.no_exception.ReturnLambdaExecutor;
 import com.raduvoinea.utils.logger.Logger;
 import org.jetbrains.annotations.NotNull;
 
