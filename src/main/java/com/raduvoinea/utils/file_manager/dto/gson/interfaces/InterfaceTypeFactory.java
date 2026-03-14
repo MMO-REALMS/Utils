@@ -5,7 +5,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import com.raduvoinea.utils.file_manager.dto.serializable.ISerializable;
-import com.raduvoinea.utils.lambda.lambda.no_exception.ReturnArgLambda;
+import com.raduvoinea.utils.lambda.lambda.non_throwing.ReturnArgLambda;
 
 public class InterfaceTypeFactory implements TypeAdapterFactory {
 

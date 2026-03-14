@@ -1,4 +1,4 @@
-package com.raduvoinea.utils.lambda.lambda.exception;
+package com.raduvoinea.utils.lambda.lambda.throwing;
 
 @FunctionalInterface
 public interface Return2ArgsThrowLambda<Result, FirstArgument, SecondArgument, Thrown extends Throwable> {

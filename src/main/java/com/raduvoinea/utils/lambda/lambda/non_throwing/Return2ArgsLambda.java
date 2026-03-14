@@ -1,4 +1,4 @@
-package com.raduvoinea.utils.lambda.lambda.no_exception;
+package com.raduvoinea.utils.lambda.lambda.non_throwing;
 
 @FunctionalInterface
 public interface Return2ArgsLambda<Result, FirstArgument, SecondArgument> {

@@ -1,6 +1,6 @@
 package com.raduvoinea.lambda;
 
-import com.raduvoinea.utils.lambda.lambda.no_exception.*;
+import com.raduvoinea.utils.lambda.lambda.non_throwing.*;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -26,18 +26,18 @@ public class LambdaRunnableExecutorTest {
 
 		List<String> list = new ArrayList<>();
 
-		addEmpty.execute(list);
+		addEmpty.run(list);
 		//noinspection ConstantValue
 		assertEquals(1, list.size());
 		assertEquals("empty", list.getFirst());
 
-		add.execute(list, "test");
+		add.run(list, "test");
 		assertEquals(2, list.size());
 		assertEquals("test", list.get(1));
 
-		assertEquals("Hello World", getHelloWorld.execute());
-		assertEquals("Hello test", getHello.execute("test"));
-		assertEquals("testtest", concatenateStrings.execute("test", "test"));
+		assertEquals("Hello World", getHelloWorld.run());
+		assertEquals("Hello test", getHello.run("test"));
+		assertEquals("testtest", concatenateStrings.run("test", "test"));
 	}
 
 	@SneakyThrows

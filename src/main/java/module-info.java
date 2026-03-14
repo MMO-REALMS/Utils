@@ -3,8 +3,8 @@ module com.raduvoinea.utils {
 	exports com.raduvoinea.utils.event_manager.dto;
 	exports com.raduvoinea.utils.file_manager;
 	exports com.raduvoinea.utils.lambda;
-	exports com.raduvoinea.utils.lambda.lambda.no_exception;
-	exports com.raduvoinea.utils.lambda.lambda.exception;
+	exports com.raduvoinea.utils.lambda.lambda.non_throwing;
+	exports com.raduvoinea.utils.lambda.lambda.throwing;
 	exports com.raduvoinea.utils.logger;
 	exports com.raduvoinea.utils.logger.dto;
 	exports com.raduvoinea.utils.message_builder;

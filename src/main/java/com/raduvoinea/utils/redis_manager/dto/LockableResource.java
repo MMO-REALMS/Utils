@@ -1,7 +1,7 @@
 package com.raduvoinea.utils.redis_manager.dto;
 
 import com.raduvoinea.utils.generic.Time;
-import com.raduvoinea.utils.lambda.lambda.no_exception.Lambda;
+import com.raduvoinea.utils.lambda.lambda.non_throwing.Lambda;
 import com.raduvoinea.utils.redis_manager.manager.RedisManager;
 import redis.clients.jedis.params.SetParams;
 

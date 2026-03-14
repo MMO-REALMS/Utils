@@ -1,6 +1,6 @@
 package com.raduvoinea.utils.generic.utils;
 
-import com.raduvoinea.utils.lambda.lambda.no_exception.ArgLambda;
+import com.raduvoinea.utils.lambda.lambda.non_throwing.ArgLambda;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
