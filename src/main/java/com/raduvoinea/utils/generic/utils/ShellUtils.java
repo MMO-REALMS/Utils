@@ -27,7 +27,7 @@ public class ShellUtils {
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
 			String line;
 			while ((line = reader.readLine()) != null) {
-				lineExecutor.execute(line);
+				lineExecutor.run(line);
 			}
 		}
 

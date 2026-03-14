@@ -20,7 +20,7 @@ public class ScheduleUtils {
 			@Override
 			public void execute() {
 				try {
-					executor.execute();
+					executor.run();
 				} catch (Throwable throwable) {
 					Logger.error(throwable);
 				}
@@ -41,7 +41,7 @@ public class ScheduleUtils {
 			@Override
 			public void execute() {
 				try {
-					executor.execute();
+					executor.run();
 				} catch (Throwable throwable) {
 					Logger.error(throwable);
 				}
@@ -60,7 +60,7 @@ public class ScheduleUtils {
 	public static @NotNull CompletableFuture<Void> runTaskAsync(@NotNull Lambda executor) {
 		return CompletableFuture.runAsync(() -> {
 			try {
-				executor.execute();
+				executor.run();
 			} catch (Throwable throwable) {
 				Logger.error(throwable);
 			}
@@ -70,7 +70,7 @@ public class ScheduleUtils {
 	public static @NotNull <R> CompletableFuture<R> runTaskAsync(@NotNull ReturnLambda<R> executor) {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
-				return executor.execute();
+				return executor.run();
 			} catch (Throwable throwable) {
 				Logger.error(throwable);
 				return null;

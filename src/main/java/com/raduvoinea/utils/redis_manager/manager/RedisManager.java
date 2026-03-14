@@ -50,10 +50,10 @@ public class RedisManager {
 
 	public <T> T executeOnJedisAndGet(ReturnArgLambda<T, Jedis> executor, ArgLambda<Exception> failExecutor) {
 		try (Jedis jedis = jedisPool.getResource()) {
-			return executor.execute(jedis);
+			return executor.run(jedis);
 		} catch (Exception error) {
 			Logger.error(error);
-			failExecutor.execute(error);
+			failExecutor.run(error);
 			return null;
 		}
 	}
@@ -70,10 +70,10 @@ public class RedisManager {
 		}
 
 		try (Jedis jedis = jedisPool.getResource()) {
-			executor.execute(jedis);
+			executor.run(jedis);
 		} catch (Exception error) {
 			Logger.error(error);
-			failExecutor.execute(error);
+			failExecutor.run(error);
 		}
 	}
 

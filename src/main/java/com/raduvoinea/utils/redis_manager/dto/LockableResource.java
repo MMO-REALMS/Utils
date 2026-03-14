@@ -38,11 +38,11 @@ public interface LockableResource {
 
 	default void withLock(Lambda executor, Lambda failExecutor) {
 		if (!setLock()) {
-			failExecutor.execute();
+			failExecutor.run();
 			return;
 		}
 
-		executor.execute();
+		executor.run();
 
 		removeLock();
 	}

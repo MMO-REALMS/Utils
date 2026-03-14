@@ -82,7 +82,7 @@ public class Logger {
 
 	private static void genericHandle(@Nullable String log, ArgLambda<String> logger) {
 		if (log != null) {
-			logger.execute(log);
+			logger.run(log);
 		}
 	}
 
@@ -92,7 +92,7 @@ public class Logger {
 		}
 
 		Class<?> caller = getCallerClass();
-		String id = packageParser.execute(caller.getPackageName());
+		String id = packageParser.run(caller.getPackageName());
 
 		if (id == null || id.isEmpty()) {
 			id = caller.getSimpleName();
@@ -109,7 +109,7 @@ public class Logger {
 		};
 
 		log = color + id + String.join("\n" + color, log.split("\n")) + ConsoleColor.RESET;
-		logger.execute(log);
+		logger.run(log);
 	}
 
 	public static void printStackTrace() {
