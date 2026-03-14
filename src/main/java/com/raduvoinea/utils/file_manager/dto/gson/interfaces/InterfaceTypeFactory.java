@@ -5,14 +5,14 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import com.raduvoinea.utils.file_manager.dto.serializable.ISerializable;
-import com.raduvoinea.utils.lambda.lambda.no_exception.ReturnArgLambdaExecutor;
+import com.raduvoinea.utils.lambda.lambda.no_exception.ReturnArgLambda;
 
 public class InterfaceTypeFactory implements TypeAdapterFactory {
 
 	private final ClassLoader classLoader;
-	private final ReturnArgLambdaExecutor<String, String> classMapper;
+	private final ReturnArgLambda<String, String> classMapper;
 
-	public InterfaceTypeFactory(ClassLoader classLoader, ReturnArgLambdaExecutor<String, String> classMapper) {
+	public InterfaceTypeFactory(ClassLoader classLoader, ReturnArgLambda<String, String> classMapper) {
 		this.classLoader = classLoader;
 		this.classMapper = classMapper;
 	}

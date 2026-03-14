@@ -1,6 +1,6 @@
 package com.raduvoinea.utils.lambda.lambda.no_exception;
 
 @FunctionalInterface
-public interface ReturnLambdaExecutor<Result> {
-	Result execute();
+public interface ArgLambda<Argument> {
+	void execute(Argument argument);
 }

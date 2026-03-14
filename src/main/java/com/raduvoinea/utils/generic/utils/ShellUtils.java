@@ -1,6 +1,6 @@
 package com.raduvoinea.utils.generic.utils;
 
-import com.raduvoinea.utils.lambda.lambda.no_exception.ArgLambdaExecutor;
+import com.raduvoinea.utils.lambda.lambda.no_exception.ArgLambda;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -19,7 +19,7 @@ public class ShellUtils {
 		ShellUtils.executeGeneric(command, System.out::println);
 	}
 
-	public static void executeGeneric(String command, ArgLambdaExecutor<String> lineExecutor) throws IOException, InterruptedException {
+	public static void executeGeneric(String command, ArgLambda<String> lineExecutor) throws IOException, InterruptedException {
 		Process process = new ProcessBuilder(command)
 			.redirectErrorStream(true)
 			.start();

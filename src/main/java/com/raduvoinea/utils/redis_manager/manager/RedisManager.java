@@ -4,8 +4,8 @@ import com.google.gson.Gson;
 import com.raduvoinea.utils.event_manager.EventManager;
 import com.raduvoinea.utils.generic.dto.Holder;
 import com.raduvoinea.utils.lambda.ScheduleUtils;
-import com.raduvoinea.utils.lambda.lambda.no_exception.ArgLambdaExecutor;
-import com.raduvoinea.utils.lambda.lambda.no_exception.ReturnArgLambdaExecutor;
+import com.raduvoinea.utils.lambda.lambda.no_exception.ArgLambda;
+import com.raduvoinea.utils.lambda.lambda.no_exception.ReturnArgLambda;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.message_builder.MessageBuilder;
 import com.raduvoinea.utils.redis_manager.dto.RedisConfig;
@@ -43,12 +43,12 @@ public class RedisManager {
 	private JedisPool jedisPool;
 
 	@SuppressWarnings("unused")
-	public <T> T executeOnJedisAndGet(ReturnArgLambdaExecutor<T, Jedis> executor) {
+	public <T> T executeOnJedisAndGet(ReturnArgLambda<T, Jedis> executor) {
 		return executeOnJedisAndGet(executor, error -> {
 		});
 	}
 
-	public <T> T executeOnJedisAndGet(ReturnArgLambdaExecutor<T, Jedis> executor, ArgLambdaExecutor<Exception> failExecutor) {
+	public <T> T executeOnJedisAndGet(ReturnArgLambda<T, Jedis> executor, ArgLambda<Exception> failExecutor) {
 		try (Jedis jedis = jedisPool.getResource()) {
 			return executor.execute(jedis);
 		} catch (Exception error) {
@@ -58,12 +58,12 @@ public class RedisManager {
 		}
 	}
 
-	public void executeOnJedisAndForget(ArgLambdaExecutor<Jedis> executor) {
+	public void executeOnJedisAndForget(ArgLambda<Jedis> executor) {
 		executeOnJedisAndForget(executor, exception -> {
 		});
 	}
 
-	public void executeOnJedisAndForget(ArgLambdaExecutor<Jedis> executor, ArgLambdaExecutor<Exception> failExecutor) {
+	public void executeOnJedisAndForget(ArgLambda<Jedis> executor, ArgLambda<Exception> failExecutor) {
 		if (localOnly) {
 			Logger.warn("Attempted to execute Redis command while in local only mode. Command was not executed.");
 			return;

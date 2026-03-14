@@ -17,12 +17,12 @@ public class LambdaRunnableExecutorTest {
 
 	@Test
 	public void testLambdaExecutors() {
-		ArgLambdaExecutor<List<String>> addEmpty = (list) -> list.add("empty");
-		ArgsLambdaExecutor<List<String>, String> add = List::add;
+		ArgLambda<List<String>> addEmpty = (list) -> list.add("empty");
+		ArgsLambda<List<String>, String> add = List::add;
 
-		ReturnLambdaExecutor<String> getHelloWorld = () -> "Hello World";
-		ReturnArgLambdaExecutor<String, String> getHello = (arg) -> "Hello " + arg;
-		Return2ArgsLambdaExecutor<String, String, String> concatenateStrings = (arg1, arg2) -> arg1 + arg2;
+		ReturnLambda<String> getHelloWorld = () -> "Hello World";
+		ReturnArgLambda<String, String> getHello = (arg) -> "Hello " + arg;
+		Return2ArgsLambda<String, String, String> concatenateStrings = (arg1, arg2) -> arg1 + arg2;
 
 		List<String> list = new ArrayList<>();
 

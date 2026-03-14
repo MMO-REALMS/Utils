@@ -1,7 +1,7 @@
 package com.raduvoinea.utils.logger;
 
-import com.raduvoinea.utils.lambda.lambda.no_exception.ArgLambdaExecutor;
-import com.raduvoinea.utils.lambda.lambda.no_exception.ReturnArgLambdaExecutor;
+import com.raduvoinea.utils.lambda.lambda.no_exception.ArgLambda;
+import com.raduvoinea.utils.lambda.lambda.no_exception.ReturnArgLambda;
 import com.raduvoinea.utils.logger.dto.ConsoleColor;
 import com.raduvoinea.utils.logger.dto.Level;
 import com.raduvoinea.utils.logger.utils.StackTraceUtils;
@@ -15,7 +15,7 @@ public class Logger {
 
 	private static final StackWalker STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 	private static @Setter Level logLevel;
-	private static @Setter ReturnArgLambdaExecutor<String, String> packageParser;
+	private static @Setter ReturnArgLambda<String, String> packageParser;
 	private static @Setter
 	@Getter Handler logHandler;
 
@@ -80,13 +80,13 @@ public class Logger {
 	}
 
 
-	private static void genericHandle(@Nullable String log, ArgLambdaExecutor<String> logger) {
+	private static void genericHandle(@Nullable String log, ArgLambda<String> logger) {
 		if (log != null) {
 			logger.execute(log);
 		}
 	}
 
-	private static void log(@NotNull Level level, @Nullable Object object, @NotNull ConsoleColor color, ArgLambdaExecutor<String> logger) {
+	private static void log(@NotNull Level level, @Nullable Object object, @NotNull ConsoleColor color, ArgLambda<String> logger) {
 		if (level.getLevel() < logLevel.getLevel()) {
 			return;
 		}

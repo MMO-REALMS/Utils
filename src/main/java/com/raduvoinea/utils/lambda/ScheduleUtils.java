@@ -1,8 +1,8 @@
 package com.raduvoinea.utils.lambda;
 
 import com.raduvoinea.utils.generic.Time;
-import com.raduvoinea.utils.lambda.lambda.no_exception.LambdaExecutor;
-import com.raduvoinea.utils.lambda.lambda.no_exception.ReturnLambdaExecutor;
+import com.raduvoinea.utils.lambda.lambda.no_exception.Lambda;
+import com.raduvoinea.utils.lambda.lambda.no_exception.ReturnLambda;
 import com.raduvoinea.utils.logger.Logger;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,7 +15,7 @@ public class ScheduleUtils {
 
 	private static final Executor EXECUTOR_POOL = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().factory());
 
-	public static @NotNull CancelableTimeTask runTaskLater(@NotNull LambdaExecutor executor, Time delay) {
+	public static @NotNull CancelableTimeTask runTaskLater(@NotNull Lambda executor, Time delay) {
 		CancelableTimeTask task = new CancelableTimeTask() {
 			@Override
 			public void execute() {
@@ -36,7 +36,7 @@ public class ScheduleUtils {
 		return task;
 	}
 
-	public static @NotNull CancelableTimeTask runTaskTimer(@NotNull LambdaExecutor executor, Time period) {
+	public static @NotNull CancelableTimeTask runTaskTimer(@NotNull Lambda executor, Time period) {
 		CancelableTimeTask task = new CancelableTimeTask() {
 			@Override
 			public void execute() {
@@ -57,7 +57,7 @@ public class ScheduleUtils {
 		return task;
 	}
 
-	public static @NotNull CompletableFuture<Void> runTaskAsync(@NotNull LambdaExecutor executor) {
+	public static @NotNull CompletableFuture<Void> runTaskAsync(@NotNull Lambda executor) {
 		return CompletableFuture.runAsync(() -> {
 			try {
 				executor.execute();
@@ -67,7 +67,7 @@ public class ScheduleUtils {
 		}, EXECUTOR_POOL);
 	}
 
-	public static @NotNull <R> CompletableFuture<R> runTaskAsync(@NotNull ReturnLambdaExecutor<R> executor) {
+	public static @NotNull <R> CompletableFuture<R> runTaskAsync(@NotNull ReturnLambda<R> executor) {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
 				return executor.execute();

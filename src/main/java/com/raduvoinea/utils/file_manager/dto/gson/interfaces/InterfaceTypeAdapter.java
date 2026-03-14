@@ -4,7 +4,7 @@ import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.raduvoinea.utils.file_manager.dto.serializable.ISerializable;
-import com.raduvoinea.utils.lambda.lambda.no_exception.ReturnArgLambdaExecutor;
+import com.raduvoinea.utils.lambda.lambda.no_exception.ReturnArgLambda;
 import lombok.SneakyThrows;
 
 @SuppressWarnings("ALL")
@@ -14,10 +14,10 @@ public class InterfaceTypeAdapter<T extends ISerializable> extends TypeAdapter<T
 	private final TypeAdapter<T> delegate;
 	private final ClassLoader classLoader;
 	private final InterfaceTypeFactory interfaceTypeFactory;
-	private final ReturnArgLambdaExecutor<String, String> classMapper;
+	private final ReturnArgLambda<String, String> classMapper;
 
 	public InterfaceTypeAdapter(InterfaceTypeFactory interfaceTypeFactory, Gson gson, TypeAdapter<T> delegate,
-	                            ClassLoader classLoader, ReturnArgLambdaExecutor<String, String> classMapper) {
+	                            ClassLoader classLoader, ReturnArgLambda<String, String> classMapper) {
 		this.interfaceTypeFactory = interfaceTypeFactory;
 		this.gson = gson;
 		this.delegate = delegate;
