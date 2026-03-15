@@ -9,16 +9,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class TestLoggerHandler extends LoggerInstance {
+public class TestLogger extends LoggerInstance {
 
 	private final List<String> buffer;
 	private final boolean parsePackage;
 
-	public TestLoggerHandler() {
+	public TestLogger() {
 		this(false);
 	}
 
-	public TestLoggerHandler(boolean parsePackage) {
+	public TestLogger(boolean parsePackage) {
 		this.buffer = new ArrayList<>();
 		this.parsePackage = parsePackage;
 	}

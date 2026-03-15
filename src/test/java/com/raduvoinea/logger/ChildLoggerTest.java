@@ -1,5 +1,6 @@
 package com.raduvoinea.logger;
 
+import com.raduvoinea.logger.dto.ChildTestLogger;
 import com.raduvoinea.logger.dto.TestLogger;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.logger.dto.ConsoleColor;
@@ -14,16 +15,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class LoggerTest {
+public class ChildLoggerTest {
 
 	@BeforeEach
 	public void beforeEach() {
 		Logger.reset();
-		Logger.setInstance(new TestLogger());
+		Logger.setInstance(new ChildTestLogger());
 	}
 
-	private @NotNull TestLogger getInstance() {
-		if (Logger.getInstance() instanceof TestLogger testLogger) {
+	private @NotNull ChildTestLogger getInstance() {
+		if (Logger.getInstance() instanceof ChildTestLogger childTestLogger) {
+			return childTestLogger;
+		}
+
+		fail();
+		return null;
+	}
+
+	private @NotNull TestLogger getParent(){
+		ChildTestLogger  childTestLogger = getInstance();
+
+		if(childTestLogger.getParent() instanceof TestLogger testLogger) {
 			return testLogger;
 		}
 
@@ -41,7 +53,7 @@ public class LoggerTest {
 		Logger.warn("testDebugLogger#warn");
 		Logger.error("testDebugLogger#error");
 
-		assertEquals(5, this.getInstance().getBuffer().size());
+		assertEquals(5, this.getParent().getBuffer().size());
 	}
 
 	@Test
@@ -54,7 +66,7 @@ public class LoggerTest {
 		Logger.warn("testInfoLogger#warn");
 		Logger.error("testInfoLogger#error");
 
-		assertEquals(4, this.getInstance().getBuffer().size());
+		assertEquals(4, this.getParent().getBuffer().size());
 	}
 
 	@Test
@@ -67,7 +79,7 @@ public class LoggerTest {
 		Logger.warn("testWarnLogger#warn");
 		Logger.error("testWarnLogger#error");
 
-		assertEquals(2, this.getInstance().getBuffer().size());
+		assertEquals(2, this.getParent().getBuffer().size());
 	}
 
 	@Test
@@ -80,24 +92,24 @@ public class LoggerTest {
 		Logger.warn("testErrorLogger#warn");
 		Logger.error("testErrorLogger#error");
 
-		assertEquals(1, this.getInstance().getBuffer().size());
+		assertEquals(1, this.getParent().getBuffer().size());
 	}
 
 	@Test
 	public void testFormatClass() {
 		Logger.log("testErrorLogger#log");
 
-		assertEquals(1, this.getInstance().getBuffer().size());
-		assertEquals(ConsoleColor.RESET + "[LoggerTest] testErrorLogger#log" + ConsoleColor.RESET, this.getInstance().getBuffer().getFirst());
+		assertEquals(1, this.getParent().getBuffer().size());
+		assertEquals(ConsoleColor.RESET + "[ChildLoggerTest] testErrorLogger#log" + ConsoleColor.RESET, this.getParent().getBuffer().getFirst());
 	}
 
 	@Test
 	public void testFormatPackage() {
-		Logger.setInstance(new TestLogger(true));
+		Logger.setInstance(new ChildTestLogger(new TestLogger(true)));
 		Logger.log("testErrorLogger#log");
 
-		assertEquals(1, this.getInstance().getBuffer().size());
-		assertEquals(ConsoleColor.RESET + "[LoggerTestPackage] testErrorLogger#log" + ConsoleColor.RESET, this.getInstance().getBuffer().getFirst());
+		assertEquals(1, this.getParent().getBuffer().size());
+		assertEquals(ConsoleColor.RESET + "[LoggerTestPackage] testErrorLogger#log" + ConsoleColor.RESET, this.getParent().getBuffer().getFirst());
 	}
 
 	@Test
@@ -105,20 +117,20 @@ public class LoggerTest {
 		{
 			Logger.uninstallPrintStream();
 			System.out.println("testSoutOverride");
-			assertEquals(0, this.getInstance().getBuffer().size());
+			assertEquals(0, this.getParent().getBuffer().size());
 		}
 
 		Logger.installPrintStream();
 
 		{
 			System.out.println("testSoutOverride");
-			assertEquals(1, this.getInstance().getBuffer().size());
+			assertEquals(1, this.getParent().getBuffer().size());
 		}
 
 		{
-			Logger.setInstance(new TestLogger());
+			Logger.setInstance(new ChildTestLogger());
 			System.out.println("testSoutOverride");
-			assertEquals(1, this.getInstance().getBuffer().size());
+			assertEquals(1, this.getParent().getBuffer().size());
 		}
 	}
 

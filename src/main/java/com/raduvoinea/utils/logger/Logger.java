@@ -8,6 +8,9 @@ import java.io.PrintStream;
 
 public class Logger {
 
+	private static PrintStream ORIGINAL_PRINT_STREAM_OUT;
+	private static PrintStream ORIGINAL_PRINT_STREAM_ERR;
+
 	public static LoggerInstance ACTIVE_INSTANCE;
 	private static boolean installedPrintStream = false;
 
@@ -22,7 +25,7 @@ public class Logger {
 	public static void setInstance(LoggerInstance loggerInstance) {
 		Logger.ACTIVE_INSTANCE = loggerInstance;
 
-		if(installedPrintStream){
+		if (installedPrintStream) {
 			installPrintStream();
 		}
 	}
@@ -76,12 +79,25 @@ public class Logger {
 	}
 
 	public static void installPrintStream() {
+		if (ORIGINAL_PRINT_STREAM_OUT == null) {
+			ORIGINAL_PRINT_STREAM_OUT = System.out;
+		}
+		if (ORIGINAL_PRINT_STREAM_ERR == null) {
+			ORIGINAL_PRINT_STREAM_ERR = System.err;
+		}
+
 		System.setOut(new PrintStream(new LoggerOutputStream(ACTIVE_INSTANCE::info, true)));
 		System.setErr(new PrintStream(new LoggerOutputStream(ACTIVE_INSTANCE::error, false)));
 		installedPrintStream = true;
 	}
 
 	public static void uninstallPrintStream() {
+		if (ORIGINAL_PRINT_STREAM_OUT != null) {
+			System.setOut(ORIGINAL_PRINT_STREAM_OUT);
+		}
+		if (ORIGINAL_PRINT_STREAM_ERR != null) {
+			System.setErr(ORIGINAL_PRINT_STREAM_ERR);
+		}
 		installedPrintStream = false;
 	}
 

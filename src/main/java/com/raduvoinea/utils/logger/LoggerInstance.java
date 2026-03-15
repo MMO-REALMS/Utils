@@ -17,7 +17,6 @@ import java.io.PrintStream;
 public abstract class LoggerInstance {
 
 	public static final LoggerInstance DEFAULT;
-
 	private static final StackWalker STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
 	private Level logLevel;
@@ -148,7 +147,7 @@ public abstract class LoggerInstance {
 
 	private static @NotNull Class<?> getCallerClass() {
 		Class<?> clazz = STACK_WALKER.walk(stack -> stack.map(StackWalker.StackFrame::getDeclaringClass)
-			.filter(c -> !c.equals(Logger.class) && !LoggerInstance.class.isAssignableFrom(c))
+			.filter(c -> !Logger.class.isAssignableFrom(c) && !LoggerInstance.class.isAssignableFrom(c))
 			.findFirst()
 		).orElse(null);
 
