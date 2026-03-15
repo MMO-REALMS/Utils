@@ -16,8 +16,12 @@ public class Logger {
 	private static final StackWalker STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 	private static @Setter Level logLevel;
 	private static @Setter ReturnArgLambda<String, String> packageParser;
-	private static @Setter
-	@Getter Handler logHandler;
+
+	@Getter
+	@Setter
+	private static Handler logHandler;
+	@Setter
+	private static boolean printSourceClass = true;
 
 	static {
 		reset();
@@ -27,12 +31,13 @@ public class Logger {
 		Logger.logLevel = Level.TRACE;
 		Logger.packageParser = packageName -> null;
 		Logger.logHandler = Handler.defaultHandler();
+		Logger.printSourceClass = true;
 	}
 
 	private static @NotNull Class<?> getCallerClass() {
 		Class<?> clazz = STACK_WALKER.walk(stack -> stack.map(StackWalker.StackFrame::getDeclaringClass)
-				.filter(c -> !c.equals(Logger.class))
-				.findFirst()
+			.filter(c -> !c.equals(Logger.class))
+			.findFirst()
 		).orElse(null);
 
 		if (clazz == null) {
@@ -92,13 +97,17 @@ public class Logger {
 		}
 
 		Class<?> caller = getCallerClass();
-		String id = packageParser.run(caller.getPackageName());
+		String id = null;
 
-		if (id == null || id.isEmpty()) {
-			id = caller.getSimpleName();
+		if (printSourceClass) {
+			id = packageParser.run(caller.getPackageName());
+			if (id == null || id.isEmpty()) {
+				id = caller.getSimpleName();
+			}
+
+			id = "[" + id + "] ";
 		}
 
-		id = "[" + id + "] ";
 
 		String log = switch (object) {
 			case null -> "null";
@@ -108,7 +117,14 @@ public class Logger {
 			default -> object.toString();
 		};
 
-		log = color + id + String.join("\n" + color, log.split("\n")) + ConsoleColor.RESET;
+		String finalLog = "";
+		finalLog += color;
+		if (id != null) {
+			finalLog += id;
+		}
+		finalLog += String.join("\n" + color, log.split("\n"));
+		finalLog += ConsoleColor.RESET;
+
 		logger.run(log);
 	}
 
