@@ -9,6 +9,7 @@ import java.io.PrintStream;
 public class Logger {
 
 	public static LoggerInstance ACTIVE_INSTANCE;
+	private static boolean installedPrintStream = false;
 
 	static {
 		ACTIVE_INSTANCE = LoggerInstance.DEFAULT;
@@ -20,6 +21,10 @@ public class Logger {
 
 	public static void setInstance(LoggerInstance loggerInstance) {
 		Logger.ACTIVE_INSTANCE = loggerInstance;
+
+		if(installedPrintStream){
+			installPrintStream();
+		}
 	}
 
 	public static void reset() {
@@ -73,6 +78,11 @@ public class Logger {
 	public static void installPrintStream() {
 		System.setOut(new PrintStream(new LoggerOutputStream(ACTIVE_INSTANCE::info, true)));
 		System.setErr(new PrintStream(new LoggerOutputStream(ACTIVE_INSTANCE::error, false)));
+		installedPrintStream = true;
+	}
+
+	public static void uninstallPrintStream() {
+		installedPrintStream = false;
 	}
 
 }

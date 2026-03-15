@@ -4,6 +4,7 @@ import com.raduvoinea.logger.dto.TestLoggerHandler;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.logger.dto.ConsoleColor;
 import com.raduvoinea.utils.logger.dto.Level;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -13,11 +14,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class LoggerTest {
 
+	@BeforeEach
+	public void beforeEach(){
+		Logger.reset();
+		Logger.setInstance(new TestLoggerHandler());
+	}
+
 	@Test
 	public void testDebugLogger() {
-		Logger.reset();
 		Logger.getInstance().setLogLevel(Level.DEBUG);
-		Logger.setInstance(new TestLoggerHandler());
 
 		Logger.debug("testDebugLogger#debug");
 		Logger.log("testDebugLogger#log");
@@ -30,8 +35,6 @@ public class LoggerTest {
 
 	@Test
 	public void testInfoLogger() {
-		Logger.reset();
-		Logger.setInstance(new TestLoggerHandler());
 		Logger.getInstance().setLogLevel(Level.INFO);
 
 		Logger.debug("testInfoLogger#debug");
@@ -45,8 +48,6 @@ public class LoggerTest {
 
 	@Test
 	public void testWarnLogger() {
-		Logger.reset();
-		Logger.setInstance(new TestLoggerHandler());
 		Logger.getInstance().setLogLevel(Level.WARN);
 
 		Logger.debug("testWarnLogger#debug");
@@ -60,8 +61,6 @@ public class LoggerTest {
 
 	@Test
 	public void testErrorLogger() {
-		Logger.reset();
-		Logger.setInstance(new TestLoggerHandler());
 		Logger.getInstance().setLogLevel(Level.ERROR);
 
 		Logger.debug("testErrorLogger#debug");
@@ -75,9 +74,6 @@ public class LoggerTest {
 
 	@Test
 	public void testFormatClass() {
-		Logger.reset();
-		Logger.setInstance(new TestLoggerHandler());
-
 		Logger.log("testErrorLogger#log");
 
 		assertEquals(1, ((TestLoggerHandler) Logger.getInstance()).getBuffer().size());
@@ -86,13 +82,32 @@ public class LoggerTest {
 
 	@Test
 	public void testFormatPackage() {
-		Logger.reset();
 		Logger.setInstance(new TestLoggerHandler(true));
-
 		Logger.log("testErrorLogger#log");
 
 		assertEquals(1, ((TestLoggerHandler) Logger.getInstance()).getBuffer().size());
 		assertEquals(ConsoleColor.RESET + "[LoggerTestPackage] testErrorLogger#log" + ConsoleColor.RESET, ((TestLoggerHandler) Logger.getInstance()).getBuffer().getFirst());
+	}
+
+	@Test
+	public void testSoutOverride(){
+		{
+			System.out.println("testSoutOverride");
+			assertEquals(0, ((TestLoggerHandler) Logger.getInstance()).getBuffer().size());
+		}
+
+		Logger.installPrintStream();
+
+		{
+			System.out.println("testSoutOverride");
+			assertEquals(1, ((TestLoggerHandler) Logger.getInstance()).getBuffer().size());
+		}
+
+		{
+			Logger.setInstance(new TestLoggerHandler());
+			System.out.println("testSoutOverride");
+			assertEquals(1, ((TestLoggerHandler) Logger.getInstance()).getBuffer().size());
+		}
 	}
 
 }
