@@ -1,7 +1,6 @@
 package com.raduvoinea.utils.logger;
 
 import com.raduvoinea.utils.logger.dto.ConsoleColor;
-import com.raduvoinea.utils.logger.dto.Level;
 import com.raduvoinea.utils.logger.utils.StackTraceUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,7 +10,7 @@ public class Logger {
 
 	public static LoggerInstance ACTIVE_INSTANCE;
 
-	static{
+	static {
 		ACTIVE_INSTANCE = LoggerInstance.DEFAULT;
 	}
 
@@ -21,10 +20,6 @@ public class Logger {
 
 	public static void setInstance(LoggerInstance loggerInstance) {
 		Logger.ACTIVE_INSTANCE = loggerInstance;
-	}
-
-	public static void setLogLevel(Level level) {
-		Logger.ACTIVE_INSTANCE.setLogLevel(level);
 	}
 
 	public static void reset() {

@@ -37,7 +37,7 @@ public class GsonTests {
 	@BeforeAll
 	public static void init() {
 		ClassLoader classLoader = GsonTests.class.getClassLoader();
-		Logger.setLogLevel(Level.TRACE);
+		Logger.getInstance().setLogLevel(Level.TRACE);
 
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		new SerializableListGsonTypeAdapter(classLoader).register(gsonBuilder);

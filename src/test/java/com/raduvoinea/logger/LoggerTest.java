@@ -16,7 +16,7 @@ public class LoggerTest {
 	@Test
 	public void testDebugLogger() {
 		Logger.reset();
-		Logger.setLogLevel(Level.DEBUG);
+		Logger.getInstance().setLogLevel(Level.DEBUG);
 		Logger.setInstance(new TestLoggerHandler());
 
 		Logger.debug("testDebugLogger#debug");
@@ -32,7 +32,7 @@ public class LoggerTest {
 	public void testInfoLogger() {
 		Logger.reset();
 		Logger.setInstance(new TestLoggerHandler());
-		Logger.setLogLevel(Level.INFO);
+		Logger.getInstance().setLogLevel(Level.INFO);
 
 		Logger.debug("testInfoLogger#debug");
 		Logger.log("testInfoLogger#log");
@@ -47,7 +47,7 @@ public class LoggerTest {
 	public void testWarnLogger() {
 		Logger.reset();
 		Logger.setInstance(new TestLoggerHandler());
-		Logger.setLogLevel(Level.WARN);
+		Logger.getInstance().setLogLevel(Level.WARN);
 
 		Logger.debug("testWarnLogger#debug");
 		Logger.log("testWarnLogger#log");
@@ -62,7 +62,7 @@ public class LoggerTest {
 	public void testErrorLogger() {
 		Logger.reset();
 		Logger.setInstance(new TestLoggerHandler());
-		Logger.setLogLevel(Level.ERROR);
+		Logger.getInstance().setLogLevel(Level.ERROR);
 
 		Logger.debug("testErrorLogger#debug");
 		Logger.log("testErrorLogger#log");
