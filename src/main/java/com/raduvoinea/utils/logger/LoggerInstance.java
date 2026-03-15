@@ -62,7 +62,7 @@ public abstract class LoggerInstance {
 			}
 
 			@Override
-			protected @Nullable String packageParser(String packageName) {
+			protected @Nullable String parsePackage(String packageName) {
 				return null;
 			}
 		};
@@ -105,7 +105,7 @@ public abstract class LoggerInstance {
 
 		if (printSourceClass) {
 			Class<?> caller = getCallerClass();
-			id = this.packageParser(caller.getPackageName());
+			id = this.parsePackage(caller.getPackageName());
 			if (id == null || id.isEmpty()) {
 				id = caller.getSimpleName();
 			}
@@ -144,7 +144,7 @@ public abstract class LoggerInstance {
 		return log;
 	}
 
-	protected abstract @Nullable String packageParser(String packageName);
+	protected abstract @Nullable String parsePackage(String packageName);
 
 	private static @NotNull Class<?> getCallerClass() {
 		Class<?> clazz = STACK_WALKER.walk(stack -> stack.map(StackWalker.StackFrame::getDeclaringClass)

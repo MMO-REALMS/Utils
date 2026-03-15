@@ -48,7 +48,7 @@ public class TestLoggerHandler extends LoggerInstance {
 	}
 
 	@Override
-	protected @Nullable String packageParser(String packageName) {
+	protected @Nullable String parsePackage(String packageName) {
 		if(!parsePackage) {
 			return null;
 		}
