@@ -108,7 +108,6 @@ public class Logger {
 			id = "[" + id + "] ";
 		}
 
-
 		String log = switch (object) {
 			case null -> "null";
 			case MessageBuilder messageBuilder -> messageBuilder.parse();
@@ -125,7 +124,7 @@ public class Logger {
 		finalLog += String.join("\n" + color, log.split("\n"));
 		finalLog += ConsoleColor.RESET;
 
-		logger.run(log);
+		logger.run(finalLog);
 	}
 
 	public static void printStackTrace() {
