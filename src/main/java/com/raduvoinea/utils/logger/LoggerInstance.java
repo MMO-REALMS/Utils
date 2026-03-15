@@ -20,8 +20,17 @@ public abstract class LoggerInstance {
 
 	private static final StackWalker STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
-	private boolean printSourceClass = true;
-	private Level logLevel = Level.TRACE;
+	private Level logLevel;
+	private boolean printSourceClass;
+
+	public LoggerInstance() {
+		this(Level.TRACE, true);
+	}
+
+	public LoggerInstance(Level logLevel, boolean printSourceClass) {
+		this.logLevel = logLevel;
+		this.printSourceClass = printSourceClass;
+	}
 
 	static {
 		DEFAULT = new LoggerInstance() {
