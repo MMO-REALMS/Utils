@@ -21,19 +21,19 @@ public class ChildLoggerInstance extends LoggerInstance {
 	}
 
 	protected void handleInfo(@NotNull String log) {
-		this.parent.handleInfo(finalProcessor(log));
+		this.parent.handleInfo(log);
 	}
 
 	protected void handleError(@NotNull String log) {
-		this.parent.handleError(finalProcessor(log));
+		this.parent.handleError(log);
 	}
 
 	protected void handleWarn(@NotNull String log) {
-		this.parent.handleWarn(finalProcessor(log));
+		this.parent.handleWarn(log);
 	}
 
 	protected void handleDebug(@NotNull String log) {
-		this.parent.handleDebug(finalProcessor(log));
+		this.parent.handleDebug(log);
 	}
 
 	protected String finalProcessor(String log) {
