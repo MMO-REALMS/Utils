@@ -17,7 +17,7 @@ public class LoggerTest {
 	public void testDebugLogger() {
 		Logger.reset();
 		Logger.setLogLevel(Level.DEBUG);
-		Logger.setLogHandler(new TestLoggerHandler());
+		Logger.setInstance(new TestLoggerHandler());
 
 		Logger.debug("testDebugLogger#debug");
 		Logger.log("testDebugLogger#log");
@@ -25,14 +25,14 @@ public class LoggerTest {
 		Logger.warn("testDebugLogger#warn");
 		Logger.error("testDebugLogger#error");
 
-		assertEquals(5, ((TestLoggerHandler) Logger.getLogHandler()).getBuffer().size());
+		assertEquals(5, ((TestLoggerHandler) Logger.getInstance()).getBuffer().size());
 	}
 
 	@Test
 	public void testInfoLogger() {
 		Logger.reset();
+		Logger.setInstance(new TestLoggerHandler());
 		Logger.setLogLevel(Level.INFO);
-		Logger.setLogHandler(new TestLoggerHandler());
 
 		Logger.debug("testInfoLogger#debug");
 		Logger.log("testInfoLogger#log");
@@ -40,14 +40,14 @@ public class LoggerTest {
 		Logger.warn("testInfoLogger#warn");
 		Logger.error("testInfoLogger#error");
 
-		assertEquals(4, ((TestLoggerHandler) Logger.getLogHandler()).getBuffer().size());
+		assertEquals(4, ((TestLoggerHandler) Logger.getInstance()).getBuffer().size());
 	}
 
 	@Test
 	public void testWarnLogger() {
 		Logger.reset();
+		Logger.setInstance(new TestLoggerHandler());
 		Logger.setLogLevel(Level.WARN);
-		Logger.setLogHandler(new TestLoggerHandler());
 
 		Logger.debug("testWarnLogger#debug");
 		Logger.log("testWarnLogger#log");
@@ -55,14 +55,14 @@ public class LoggerTest {
 		Logger.warn("testWarnLogger#warn");
 		Logger.error("testWarnLogger#error");
 
-		assertEquals(2, ((TestLoggerHandler) Logger.getLogHandler()).getBuffer().size());
+		assertEquals(2, ((TestLoggerHandler) Logger.getInstance()).getBuffer().size());
 	}
 
 	@Test
 	public void testErrorLogger() {
 		Logger.reset();
+		Logger.setInstance(new TestLoggerHandler());
 		Logger.setLogLevel(Level.ERROR);
-		Logger.setLogHandler(new TestLoggerHandler());
 
 		Logger.debug("testErrorLogger#debug");
 		Logger.log("testErrorLogger#log");
@@ -70,30 +70,29 @@ public class LoggerTest {
 		Logger.warn("testErrorLogger#warn");
 		Logger.error("testErrorLogger#error");
 
-		assertEquals(1, ((TestLoggerHandler) Logger.getLogHandler()).getBuffer().size());
+		assertEquals(1, ((TestLoggerHandler) Logger.getInstance()).getBuffer().size());
 	}
 
 	@Test
 	public void testFormatClass() {
 		Logger.reset();
-		Logger.setLogHandler(new TestLoggerHandler());
+		Logger.setInstance(new TestLoggerHandler());
 
 		Logger.log("testErrorLogger#log");
 
-		assertEquals(1, ((TestLoggerHandler) Logger.getLogHandler()).getBuffer().size());
-		assertEquals(ConsoleColor.RESET + "[LoggerTest] testErrorLogger#log" + ConsoleColor.RESET, ((TestLoggerHandler) Logger.getLogHandler()).getBuffer().getFirst());
+		assertEquals(1, ((TestLoggerHandler) Logger.getInstance()).getBuffer().size());
+		assertEquals(ConsoleColor.RESET + "[LoggerTest] testErrorLogger#log" + ConsoleColor.RESET, ((TestLoggerHandler) Logger.getInstance()).getBuffer().getFirst());
 	}
 
 	@Test
 	public void testFormatPackage() {
 		Logger.reset();
-		Logger.setLogHandler(new TestLoggerHandler());
-		Logger.setPackageParser((packageName) -> "LoggerTestPackage");
+		Logger.setInstance(new TestLoggerHandler(true));
 
 		Logger.log("testErrorLogger#log");
 
-		assertEquals(1, ((TestLoggerHandler) Logger.getLogHandler()).getBuffer().size());
-		assertEquals(ConsoleColor.RESET + "[LoggerTestPackage] testErrorLogger#log" + ConsoleColor.RESET, ((TestLoggerHandler) Logger.getLogHandler()).getBuffer().getFirst());
+		assertEquals(1, ((TestLoggerHandler) Logger.getInstance()).getBuffer().size());
+		assertEquals(ConsoleColor.RESET + "[LoggerTestPackage] testErrorLogger#log" + ConsoleColor.RESET, ((TestLoggerHandler) Logger.getInstance()).getBuffer().getFirst());
 	}
 
 }

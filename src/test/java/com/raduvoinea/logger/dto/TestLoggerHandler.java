@@ -1,38 +1,57 @@
 package com.raduvoinea.logger.dto;
 
-import com.raduvoinea.utils.logger.Logger;
+import com.raduvoinea.utils.logger.LoggerInstance;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class TestLoggerHandler implements Logger.Handler {
+public class TestLoggerHandler extends LoggerInstance {
 
 	private final List<String> buffer;
+	private final boolean parsePackage;
 
 	public TestLoggerHandler() {
+		this(false);
+	}
+
+	public TestLoggerHandler(boolean parsePackage) {
 		this.buffer = new ArrayList<>();
+		this.parsePackage = parsePackage;
 	}
 
 	@Override
-	public void info(@NotNull String log) {
+	protected void handleInfo(@NotNull String log) {
 		buffer.add(log);
+		LoggerInstance.DEFAULT.info(log);
 	}
 
 	@Override
-	public void error(@NotNull String log) {
+	protected void handleError(@NotNull String log) {
 		buffer.add(log);
+		LoggerInstance.DEFAULT.error(log);
 	}
 
 	@Override
-	public void warn(@NotNull String log) {
+	protected void handleWarn(@NotNull String log) {
 		buffer.add(log);
+		LoggerInstance.DEFAULT.warn(log);
 	}
 
 	@Override
-	public void debug(@NotNull String log) {
+	protected void handleDebug(@NotNull String log) {
 		buffer.add(log);
+		LoggerInstance.DEFAULT.debug(log);
+	}
+
+	@Override
+	protected @Nullable String packageParser(String packageName) {
+		if(!parsePackage) {
+			return null;
+		}
+		return "LoggerTestPackage";
 	}
 }
