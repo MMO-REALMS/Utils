@@ -10,12 +10,13 @@ import org.jetbrains.annotations.Nullable;
 @Setter
 public class ChildLoggerInstance extends LoggerInstance {
 
-	private final LoggerInstance parent;
+	private final @Nullable LoggerInstance parent;
 
-	public ChildLoggerInstance(LoggerInstance parent) {
+	public ChildLoggerInstance(@Nullable LoggerInstance parent) {
+		//noinspection SimplifiableConditionalExpression
 		super(
-			parent.getLogLevel(),
-			parent.isPrintSourceClass()
+			parent == null ? Level.TRACE : parent.getLogLevel(),
+			parent == null ? true : parent.isPrintSourceClass()
 		);
 		this.parent = parent;
 	}
