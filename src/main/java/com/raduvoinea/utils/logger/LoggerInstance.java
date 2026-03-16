@@ -128,7 +128,13 @@ public abstract class LoggerInstance {
 		finalLog += String.join("\n" + color, log.split("\n"));
 		finalLog += ConsoleColor.RESET;
 
-		logger.run(finalProcessor(finalLog));
+		finalLog = finalProcessor(finalLog);
+
+		if (finalLog == null) {
+			return;
+		}
+
+		logger.run(finalLog);
 	}
 
 	protected abstract void handleInfo(@NotNull String log);
@@ -139,7 +145,7 @@ public abstract class LoggerInstance {
 
 	protected abstract void handleDebug(@NotNull String log);
 
-	protected String finalProcessor(String log) {
+	protected @Nullable String finalProcessor(String log) {
 		return log;
 	}
 
