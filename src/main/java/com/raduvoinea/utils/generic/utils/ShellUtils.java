@@ -20,9 +20,9 @@ public class ShellUtils {
 	}
 
 	public static void executeGeneric(String command, ArgLambda<String> lineExecutor) throws IOException, InterruptedException {
-		Process process = new ProcessBuilder(command)
-			.redirectErrorStream(true)
-			.start();
+		Process process = new ProcessBuilder(command.split("\\s+"))
+				.redirectErrorStream(true)
+				.start();
 
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
 			String line;
