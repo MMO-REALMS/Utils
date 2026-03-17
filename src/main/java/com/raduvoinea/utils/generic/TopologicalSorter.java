@@ -56,7 +56,6 @@ public class TopologicalSorter {
 		return sorted;
 	}
 
-
 	private static <ID> void dfs(ID node, Map<ID, List<ID>> adjacencyList, Map<ID, Integer> state, List<ID> sorted, List<ID> path) throws CircularDependencyException {
 		path.add(node);
 		state.put(node, 1);
