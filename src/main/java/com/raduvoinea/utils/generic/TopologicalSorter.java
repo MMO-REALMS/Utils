@@ -7,7 +7,7 @@ import java.util.*;
 
 public class TopologicalSorter {
 
-	public static <ID> List<ITopologicalSortable<ID>> internalTopologicalSort(List<ITopologicalSortable<ID>> items) throws CircularDependencyException {
+	public static <ID> List<ITopologicalSortable<ID>> topologicalSort(List<ITopologicalSortable<ID>> items) throws CircularDependencyException {
 		Map<ID, ITopologicalSortable<ID>> idToModule = new HashMap<>();
 		for (ITopologicalSortable<ID> item : items) {
 			idToModule.put(item.getID(), item);
