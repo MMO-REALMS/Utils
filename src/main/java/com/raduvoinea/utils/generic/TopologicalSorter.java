@@ -7,18 +7,18 @@ import java.util.*;
 
 public class TopologicalSorter {
 
-	public static <ID> List<ITopologicalSortable<ID>> topologicalSort(List<ITopologicalSortable<ID>> items) throws CircularDependencyException {
-		Map<ID, ITopologicalSortable<ID>> idToModule = new HashMap<>();
-		for (ITopologicalSortable<ID> item : items) {
+	public static <ID, Element extends ITopologicalSortable<ID>> List<Element> topologicalSort(List<Element> items) throws CircularDependencyException {
+		Map<ID, Element> idToModule = new HashMap<>();
+		for (Element item : items) {
 			idToModule.put(item.getID(), item);
 		}
 
 		Map<ID, List<ID>> adjacencyList = new HashMap<>();
-		for (ITopologicalSortable<ID> module : items) {
+		for (Element module : items) {
 			adjacencyList.computeIfAbsent(module.getID(), ignored -> new ArrayList<>());
 		}
 
-		for (ITopologicalSortable<ID> module : items) {
+		for (Element module : items) {
 			for (ID dependencyID : module.getDependencies()) {
 				if (!idToModule.containsKey(dependencyID)) {
 					continue;
@@ -28,7 +28,7 @@ public class TopologicalSorter {
 		}
 
 		List<ID> sortedIDs = internalTopologicalSort(adjacencyList);
-		List<ITopologicalSortable<ID>> sortedModules = new ArrayList<>();
+		List<Element> sortedModules = new ArrayList<>();
 
 		for (ID id : sortedIDs) {
 			sortedModules.add(idToModule.get(id));
