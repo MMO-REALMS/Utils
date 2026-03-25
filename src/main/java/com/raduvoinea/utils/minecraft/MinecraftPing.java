@@ -15,11 +15,11 @@ import java.util.List;
 
 public class MinecraftPing {
 
-	private static byte PACKET_HANDSHAKE = 0x00;
-	private static byte PACKET_STATUSREQUEST = 0x00;
-	private static byte PACKET_PING = 0x01;
-	private static int PROTOCOL_VERSION = 4;
-	private static int STATUS_HANDSHAKE = 1;
+	private static final byte PACKET_HANDSHAKE = 0x00;
+	private static final byte PACKET_STATUSREQUEST = 0x00;
+	private static final byte PACKET_PING = 0x01;
+	private static final int PROTOCOL_VERSION = 4;
+	private static final int STATUS_HANDSHAKE = 1;
 
 	private final Options options;
 
@@ -36,82 +36,76 @@ public class MinecraftPing {
 			throw new RuntimeException("Hostname cannot be null");
 		}
 
-		Socket socket = new Socket();
-		socket.connect(new InetSocketAddress(options.hostname, options.port), options.timeout);
+		try (
+			Socket socket = new Socket();
+			ByteArrayOutputStream handshake_bytes = new ByteArrayOutputStream();
+			DataOutputStream handshake = new DataOutputStream(handshake_bytes)
+		) {
+			socket.connect(new InetSocketAddress(options.hostname, options.port), options.timeout);
 
-		DataInputStream in = new DataInputStream(socket.getInputStream());
-		DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+			DataInputStream in = new DataInputStream(socket.getInputStream());
+			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
-		//> Handshake
+			//> Handshake
 
-		ByteArrayOutputStream handshake_bytes = new ByteArrayOutputStream();
-		DataOutputStream handshake = new DataOutputStream(handshake_bytes);
+			handshake.writeByte(PACKET_HANDSHAKE);
+			writeVarInt(handshake, PROTOCOL_VERSION);
+			writeVarInt(handshake, options.hostname.length());
+			handshake.writeBytes(options.hostname);
+			handshake.writeShort(options.port);
+			writeVarInt(handshake, STATUS_HANDSHAKE);
 
-		handshake.writeByte(PACKET_HANDSHAKE);
-		writeVarInt(handshake, PROTOCOL_VERSION);
-		writeVarInt(handshake, options.hostname.length());
-		handshake.writeBytes(options.hostname);
-		handshake.writeShort(options.port);
-		writeVarInt(handshake, STATUS_HANDSHAKE);
+			writeVarInt(out, handshake_bytes.size());
+			out.write(handshake_bytes.toByteArray());
 
-		writeVarInt(out, handshake_bytes.size());
-		out.write(handshake_bytes.toByteArray());
+			//> Status request
 
-		//> Status request
+			out.writeByte(0x01); // Size of packet
+			out.writeByte(PACKET_STATUSREQUEST);
 
-		out.writeByte(0x01); // Size of packet
-		out.writeByte(PACKET_STATUSREQUEST);
+			//< Status response
 
-		//< Status response
+			readVarInt(in); // Size
+			int id = readVarInt(in);
 
-		readVarInt(in); // Size
-		int id = readVarInt(in);
+			if (id == -1) {
+				throw new IOException("Server prematurely ended stream.");
+			}
+			if (id != PACKET_STATUSREQUEST) {
+				throw new IOException("Server returned invalid packet.");
+			}
 
-		if (id == -1) {
-			throw new IOException("Server prematurely ended stream.");
+			int length = readVarInt(in);
+			if (length < -1) {
+				throw new IOException("Server returned invalid length: " + length);
+			}
+			if (length == 0) {
+				throw new IOException("Server returned unexpected value.");
+			}
+
+			byte[] data = new byte[length];
+			in.readFully(data);
+			String json = new String(data, options.charset());
+
+			//> Ping
+
+			out.writeByte(0x09); // Size of packet
+			out.writeByte(PACKET_PING);
+			out.writeLong(System.currentTimeMillis());
+
+			//< Ping
+
+			readVarInt(in); // Size
+			id = readVarInt(in);
+			if (id == -1) {
+				throw new IOException("Server prematurely ended stream.");
+			}
+			if (id != PACKET_PING) {
+				throw new IOException("Server returned invalid packet.");
+			}
+
+			return new Gson().fromJson(json, Reply.class);
 		}
-		if (id != PACKET_STATUSREQUEST) {
-			throw new IOException("Server returned invalid packet.");
-		}
-
-		int length = readVarInt(in);
-		if (length < -1) {
-			throw new IOException("Server returned invalid length: " + length);
-		}
-		if (length == 0) {
-			throw new IOException("Server returned unexpected value.");
-		}
-
-		byte[] data = new byte[length];
-		in.readFully(data);
-		String json = new String(data, options.charset());
-
-		//> Ping
-
-		out.writeByte(0x09); // Size of packet
-		out.writeByte(PACKET_PING);
-		out.writeLong(System.currentTimeMillis());
-
-		//< Ping
-
-		readVarInt(in); // Size
-		id = readVarInt(in);
-		if (id == -1) {
-			throw new IOException("Server prematurely ended stream.");
-		}
-		if (id != PACKET_PING) {
-			throw new IOException("Server returned invalid packet.");
-		}
-
-		// Close
-
-		handshake.close();
-		handshake_bytes.close();
-		out.close();
-		in.close();
-		socket.close();
-
-		return new Gson().fromJson(json, Reply.class);
 	}
 
 	@Getter
@@ -180,11 +174,13 @@ public class MinecraftPing {
 
 			i |= (k & 0x7F) << j++ * 7;
 
-			if (j > 5)
+			if (j > 5) {
 				throw new RuntimeException("VarInt too big");
+			}
 
-			if ((k & 0x80) != 128)
+			if ((k & 0x80) != 128) {
 				break;
+			}
 		}
 
 		return i;
