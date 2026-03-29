@@ -51,6 +51,7 @@ public class EventManager {
 		 * @param object     The parent object where the event method is located
 		 * @param method     The actual event method
 		 * @param eventClass The event class
+		 *
 		 * @return true if the method was registered successfully, false otherwise
 		 */
 		boolean register(Object object, Method method, Class<?> eventClass);
@@ -58,6 +59,7 @@ public class EventManager {
 		/**
 		 * @param method     The actual event method
 		 * @param eventClass The event class
+		 *
 		 * @return true if the method was unregistered successfully, false otherwise
 		 */
 		boolean unregister(Method method, Class<?> eventClass);
@@ -110,7 +112,7 @@ public class EventManager {
 
 	public void register(@NotNull Object object) {
 		Logger.debug(new MessageBuilder("Registering object {object}")
-				.parse("object", object.getClass().getName())
+			.parse("object", object.getClass().getName())
 		);
 
 		if (!injectorHolder.isEmpty()) {
@@ -139,15 +141,19 @@ public class EventManager {
 		List<EventMethod> eventMethods = getUnsafeEventMethods(event, logIfNoListeners);
 
 		for (EventMethod method : eventMethods) {
-			method.fire(event, suppressExceptions);
+			method.fire(event, suppressExceptions, false);
 		}
 	}
 
 	public <T> T fireSync(@NotNull IEvent<T> event, boolean suppressExceptions) {
+		return this.fireSync(event, suppressExceptions, false);
+	}
+
+	public <T> T fireSync(@NotNull IEvent<T> event, boolean suppressExceptions, boolean isOffThread) {
 		List<EventMethod> eventMethods = getEventMethods(event, true);
 
 		for (EventMethod method : eventMethods) {
-			CompletableFuture<Void> fire = method.fire(event, suppressExceptions);
+			method.fire(event, suppressExceptions, isOffThread);
 		}
 
 		return event.getResult();
@@ -155,8 +161,8 @@ public class EventManager {
 
 	public <T> CompletableFuture<T> fireAsync(@NotNull IEvent<T> event, boolean suppressExceptions, long timeoutMilliseconds) {
 		return ScheduleUtils
-				.runTaskAsync(() -> this.fireSync(event, suppressExceptions))
-				.orTimeout(timeoutMilliseconds, TimeUnit.MILLISECONDS);
+			.runTaskAsync(() -> this.fireSync(event, suppressExceptions, true))
+			.orTimeout(timeoutMilliseconds, TimeUnit.MILLISECONDS);
 	}
 
 	private @NotNull <T> List<EventMethod> getEventMethods(@NotNull IEvent<T> event, boolean logIfNoListeners) {
@@ -174,8 +180,8 @@ public class EventManager {
 		if (eventMethods == null || eventMethods.isEmpty()) {
 			if (logIfNoListeners) {
 				Logger.warn(
-						new MessageBuilder("No listeners found for event {event}")
-								.parse("event", eventClass.getSimpleName())
+					new MessageBuilder("No listeners found for event {event}")
+						.parse("event", eventClass.getSimpleName())
 				);
 			}
 
@@ -189,8 +195,8 @@ public class EventManager {
 		if (!method.isAnnotationPresent(EventHandler.class)) {
 			if (verbose) {
 				Logger.debug(new MessageBuilder("Method {class}#{method} does not have the EventHandler annotation")
-						.parse("class", method.getDeclaringClass())
-						.parse("method", method.getName())
+					.parse("class", method.getDeclaringClass())
+					.parse("method", method.getName())
 				);
 			}
 			return null;
@@ -200,17 +206,17 @@ public class EventManager {
 
 		if (annotation.ignore()) {
 			Logger.debug(new MessageBuilder("Ignoring method {class}#{method}")
-					.parse("class", method.getDeclaringClass())
-					.parse("method", method.getName())
+				.parse("class", method.getDeclaringClass())
+				.parse("method", method.getName())
 			);
 			return null;
 		}
 
 		if (method.getParameterCount() != 1) {
 			Logger.error(new MessageBuilder("Method {method} from class {class} has {count} parameters, expected 1")
-					.parse("method", method.getName())
-					.parse("class", method.getDeclaringClass())
-					.parse("count", method.getParameterCount())
+				.parse("method", method.getName())
+				.parse("class", method.getDeclaringClass())
+				.parse("count", method.getParameterCount())
 			);
 			return null;
 		}
@@ -237,9 +243,9 @@ public class EventManager {
 		boolean result = externalRegistrar.register(parentObject, method, eventClass);
 		if (!result) {
 			Logger.error(new MessageBuilder("Failed to register method {class}#{method} ({eventClass})")
-					.parse("method", method.getName())
-					.parse("class", method.getDeclaringClass())
-					.parse("eventClass", eventClass.getName())
+				.parse("method", method.getName())
+				.parse("class", method.getDeclaringClass())
+				.parse("eventClass", eventClass.getName())
 			);
 			Logger.debug(this);
 		}
@@ -261,9 +267,9 @@ public class EventManager {
 			boolean result = externalRegistrar.unregister(method, eventClass);
 			if (!result) {
 				Logger.error(new MessageBuilder("Failed to unregister method {class}#{method} ({eventClass})")
-						.parse("method", method.getName())
-						.parse("class", method.getDeclaringClass())
-						.parse("eventClass", eventClass.getName())
+					.parse("method", method.getName())
+					.parse("class", method.getDeclaringClass())
+					.parse("eventClass", eventClass.getName())
 				);
 			}
 			return;
@@ -274,8 +280,8 @@ public class EventManager {
 
 	private void registerGeneric(Object parentObject, Method method, Class<?> eventClass, HashMap<Class<?>, List<EventMethod>> map) {
 		Logger.debug(new MessageBuilder("Registering method {class}#{method}...")
-				.parse("method", method.getName())
-				.parse("class", method.getDeclaringClass())
+			.parse("method", method.getName())
+			.parse("class", method.getDeclaringClass())
 		);
 
 		List<EventMethod> eventMethods = map.getOrDefault(eventClass, new ArrayList<>());
@@ -285,8 +291,8 @@ public class EventManager {
 
 	private void unregisterGeneric(Method method, Class<?> eventClass, HashMap<Class<?>, List<EventMethod>> map) {
 		Logger.warn(new MessageBuilder("Unregistering unsafe method {class}#{method}...")
-				.parse("method", method.getName())
-				.parse("class", method.getDeclaringClass())
+			.parse("method", method.getName())
+			.parse("class", method.getDeclaringClass())
 		);
 
 		List<EventMethod> eventMethods = map.getOrDefault(eventClass, new ArrayList<>());
@@ -294,9 +300,9 @@ public class EventManager {
 
 		if (!result) {
 			Logger.error(new MessageBuilder("Failed to unregister method {class}#{method} ({eventClass})")
-					.parse("method", method.getName())
-					.parse("class", method.getDeclaringClass())
-					.parse("eventClass", eventClass.getName())
+				.parse("method", method.getName())
+				.parse("class", method.getDeclaringClass())
+				.parse("eventClass", eventClass.getName())
 			);
 			return;
 		}

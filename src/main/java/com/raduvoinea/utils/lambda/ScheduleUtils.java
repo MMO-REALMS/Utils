@@ -6,14 +6,17 @@ import com.raduvoinea.utils.lambda.lambda.non_throwing.ReturnLambda;
 import com.raduvoinea.utils.logger.Logger;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Timer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class ScheduleUtils {
 
 	private static final Executor EXECUTOR_POOL = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().factory());
+	private static final ScheduledExecutorService SCHEDULED_POOL = Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().factory());
 
 	public static @NotNull CancelableTimeTask runTaskLater(@NotNull Lambda executor, Time delay) {
 		CancelableTimeTask task = new CancelableTimeTask() {
@@ -27,12 +30,8 @@ public class ScheduleUtils {
 			}
 		};
 
-		Thread thread = Thread.ofVirtual().start(() -> {
-			Timer timer = new Timer();
-			timer.schedule(task, delay.toMilliseconds());
-		});
-
-		task.setThread(thread);
+		ScheduledFuture<?> future = SCHEDULED_POOL.schedule(() -> EXECUTOR_POOL.execute(task::run), delay.toMilliseconds(), TimeUnit.MILLISECONDS);
+		task.setFuture(future);
 		return task;
 	}
 
@@ -48,12 +47,8 @@ public class ScheduleUtils {
 			}
 		};
 
-		Thread thread = Thread.ofVirtual().start(() -> {
-			Timer timer = new Timer();
-			timer.schedule(task, 0, period.toMilliseconds());
-		});
-
-		task.setThread(thread);
+		ScheduledFuture<?> future = SCHEDULED_POOL.scheduleAtFixedRate(() -> EXECUTOR_POOL.execute(task::run), 0, period.toMilliseconds(), TimeUnit.MILLISECONDS);
+		task.setFuture(future);
 		return task;
 	}
 

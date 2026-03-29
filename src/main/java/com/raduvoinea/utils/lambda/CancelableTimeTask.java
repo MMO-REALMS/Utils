@@ -4,36 +4,31 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.TimerTask;
+import java.util.concurrent.ScheduledFuture;
 
 @Getter
-public abstract class CancelableTimeTask extends TimerTask {
+public abstract class CancelableTimeTask {
 
 	@Setter
-	private @Nullable Thread thread;
+	private @Nullable ScheduledFuture<?> future;
 	private boolean canceled;
 
 	public abstract void execute();
 
-	@Override
 	public void run() {
 		if (canceled) {
-			if (thread != null) {
-				thread.interrupt();
-			}
+			cancel();
 			return;
 		}
 		execute();
 	}
 
-	@Override
 	public boolean cancel() {
 		this.canceled = true;
-		boolean result = super.cancel();
-		if (thread != null) {
-			thread.interrupt();
+		if (future != null) {
+			future.cancel(true);
 		}
 
-		return result;
+		return true;
 	}
 }
