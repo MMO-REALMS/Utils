@@ -4,13 +4,13 @@ import com.raduvoinea.utils.logger.ChildLoggerInstance;
 import lombok.Getter;
 
 @Getter
-public class ChildTestLogger extends ChildLoggerInstance {
+public class TestChildLogger extends ChildLoggerInstance {
 
-	public ChildTestLogger() {
+	public TestChildLogger() {
 		this(new TestLogger());
 	}
 
-	public ChildTestLogger(TestLogger testLogger) {
+	public TestChildLogger(TestLogger testLogger) {
 		super(testLogger);
 	}
 

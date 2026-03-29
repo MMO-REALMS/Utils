@@ -147,7 +147,7 @@ public class EventManager {
 		List<EventMethod> eventMethods = getEventMethods(event, true);
 
 		for (EventMethod method : eventMethods) {
-			method.fire(event, suppressExceptions);
+			CompletableFuture<Void> fire = method.fire(event, suppressExceptions);
 		}
 
 		return event.getResult();

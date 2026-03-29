@@ -1,6 +1,6 @@
 package com.raduvoinea.logger;
 
-import com.raduvoinea.logger.dto.ChildTestLogger;
+import com.raduvoinea.logger.dto.TestChildLogger;
 import com.raduvoinea.logger.dto.TestLogger;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.logger.dto.ConsoleColor;
@@ -20,12 +20,12 @@ public class ChildLoggerTest {
 	@BeforeEach
 	public void beforeEach() {
 		Logger.reset();
-		Logger.setInstance(new ChildTestLogger());
+		Logger.setInstance(new TestChildLogger());
 	}
 
-	private @NotNull ChildTestLogger getInstance() {
-		if (Logger.getInstance() instanceof ChildTestLogger childTestLogger) {
-			return childTestLogger;
+	private @NotNull TestChildLogger getInstance() {
+		if (Logger.getInstance() instanceof TestChildLogger testChildLogger) {
+			return testChildLogger;
 		}
 
 		fail();
@@ -33,9 +33,9 @@ public class ChildLoggerTest {
 	}
 
 	private @NotNull TestLogger getParent(){
-		ChildTestLogger  childTestLogger = getInstance();
+		TestChildLogger testChildLogger = getInstance();
 
-		if(childTestLogger.getParent() instanceof TestLogger testLogger) {
+		if(testChildLogger.getParent() instanceof TestLogger testLogger) {
 			return testLogger;
 		}
 
@@ -105,7 +105,7 @@ public class ChildLoggerTest {
 
 	@Test
 	public void testFormatPackage() {
-		Logger.setInstance(new ChildTestLogger(new TestLogger(true)));
+		Logger.setInstance(new TestChildLogger(new TestLogger(true)));
 		Logger.log("testErrorLogger#log");
 
 		assertEquals(1, this.getParent().getBuffer().size());
@@ -128,7 +128,7 @@ public class ChildLoggerTest {
 		}
 
 		{
-			Logger.setInstance(new ChildTestLogger());
+			Logger.setInstance(new TestChildLogger());
 			System.out.println("testSoutOverride");
 			assertEquals(1, this.getParent().getBuffer().size());
 		}
