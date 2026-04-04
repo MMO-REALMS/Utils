@@ -34,6 +34,12 @@ public class EventMethod {
 	}
 
 	public void fire(Object event, boolean suppressExceptions, boolean isOffThread) {
+		if (this.annotation.skipCancelled() &&
+			event instanceof IEvent<?> iEvent &&
+			iEvent.isCancelled()) {
+			return;
+		}
+
 		if (!isOffThread && this.annotation.async()) {
 			ScheduleUtils.runTaskAsync(() -> this.fireSync(event, suppressExceptions));
 			return;

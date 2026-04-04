@@ -22,4 +22,6 @@ public @interface EventHandler {
 	 */
 	boolean async() default false;
 
+	boolean skipCancelled() default true;
+
 }

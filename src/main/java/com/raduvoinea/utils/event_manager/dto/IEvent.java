@@ -33,6 +33,10 @@ public interface IEvent<Result> {
 		return this.fireAsync(DEFAULT_SUPRESS_EXCEPTIONS, DEFAULT_TIMEOUT_MILLISECONDS);
 	}
 
+	default boolean isCancelled() {
+		return false;
+	}
+
 	EventManager getEventManager();
 
 	Result getResult();
