@@ -28,7 +28,7 @@ public abstract class GenericMessageBuilder<T> {
 	public GenericMessageBuilder<T> parse(Map<?, ?> placeholders) {
 		GenericMessageBuilder<T> working = this;
 		for (Object placeholder : placeholders.keySet()) {
-			String value = placeholders.get(placeholder).toString();
+			Object value = placeholders.get(placeholder);
 			working = working.parse(placeholder, value);
 		}
 		return working;

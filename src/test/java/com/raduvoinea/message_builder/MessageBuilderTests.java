@@ -6,7 +6,9 @@ import com.raduvoinea.utils.message_builder.MessageBuilderList;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -97,6 +99,34 @@ public class MessageBuilderTests {
 		assertEquals("test2", resultMessage);
 		assertEquals("test3", resultList.get(0));
 		assertEquals("test4", resultList.get(1));
+	}
+
+	@Test
+	public void testSimpleNullParse() {
+		MessageBuilder builder = new MessageBuilder("This is a {placeholder-1} {placeholder-2}");
+
+		String result1 = builder
+				.parse("placeholder-1", null)
+				.parse("placeholder-2", "banana")
+				.parse();
+
+		assertEquals("This is a null banana", result1);
+	}
+
+	@Test
+	public void testMapNullParse() {
+		MessageBuilder builder = new MessageBuilder("This is a {placeholder-1} {placeholder-2}");
+
+		Map<String, String> placeholders = new HashMap<>() {{
+			put("placeholder-1", "null");
+			put("placeholder-2", "banana");
+		}};
+
+		String result1 = builder
+				.parse(placeholders)
+				.parse();
+
+		assertEquals("This is a null banana", result1);
 	}
 
 }
