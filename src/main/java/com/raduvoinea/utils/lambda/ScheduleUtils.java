@@ -6,17 +6,18 @@ import com.raduvoinea.utils.lambda.lambda.non_throwing.ReturnLambda;
 import com.raduvoinea.utils.logger.Logger;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class ScheduleUtils {
 
-	private static final Executor EXECUTOR_POOL = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().factory());
-	private static final ScheduledExecutorService SCHEDULED_POOL = Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().factory());
+	//	private static final Executor EXECUTOR_POOL = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().factory());
+	private static final Executor EXECUTOR_POOL = new ThreadPoolExecutor(
+			4, 64,
+			60, TimeUnit.SECONDS,
+			new LinkedBlockingDeque<>()
+	);
+
+	private static final ScheduledExecutorService SCHEDULED_POOL = Executors.newSingleThreadScheduledExecutor();
 
 	public static @NotNull CancelableTimeTask runTaskLater(@NotNull Lambda executor, Time delay) {
 		CancelableTimeTask task = new CancelableTimeTask() {
