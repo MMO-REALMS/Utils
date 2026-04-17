@@ -60,22 +60,12 @@ public class ScheduleUtils {
 
 	public static @NotNull <R> CompletableFuture<R> runTaskAsync(@NotNull ReturnLambda<R> executor) {
 		return CompletableFuture.supplyAsync(() -> {
-			long startTime = System.currentTimeMillis();
-			R result;
 			try {
-				result = executor.run();
+				return executor.run();
 			} catch (Throwable throwable) {
 				Logger.error(throwable);
-				result = null;
+				return null;
 			}
-			long endTime = System.currentTimeMillis();
-			long deltaTime = endTime - startTime;
-			try {
-				throw new Exception();
-			} catch (Exception e) {
-				Logger.debug("[" + deltaTime + "] " + StackTraceUtils.toString(e));
-			}
-			return result;
 		}, EXECUTOR_POOL);
 	}
 }
