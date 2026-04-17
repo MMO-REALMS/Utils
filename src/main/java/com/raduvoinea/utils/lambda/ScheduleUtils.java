@@ -4,19 +4,14 @@ import com.raduvoinea.utils.generic.Time;
 import com.raduvoinea.utils.lambda.lambda.non_throwing.Lambda;
 import com.raduvoinea.utils.lambda.lambda.non_throwing.ReturnLambda;
 import com.raduvoinea.utils.logger.Logger;
+import com.raduvoinea.utils.logger.utils.StackTraceUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.*;
 
 public class ScheduleUtils {
 
-	//	private static final Executor EXECUTOR_POOL = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().factory());
-	private static final Executor EXECUTOR_POOL = new ThreadPoolExecutor(
-			4, 64,
-			60, TimeUnit.SECONDS,
-			new LinkedBlockingDeque<>()
-	);
-
+	private static final Executor EXECUTOR_POOL = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().factory());
 	private static final ScheduledExecutorService SCHEDULED_POOL = Executors.newSingleThreadScheduledExecutor();
 
 	public static @NotNull CancelableTimeTask runTaskLater(@NotNull Lambda executor, Time delay) {
@@ -65,12 +60,22 @@ public class ScheduleUtils {
 
 	public static @NotNull <R> CompletableFuture<R> runTaskAsync(@NotNull ReturnLambda<R> executor) {
 		return CompletableFuture.supplyAsync(() -> {
+			long startTime = System.currentTimeMillis();
+			R result;
 			try {
-				return executor.run();
+				result = executor.run();
 			} catch (Throwable throwable) {
 				Logger.error(throwable);
-				return null;
+				result = null;
 			}
+			long endTime = System.currentTimeMillis();
+			long deltaTime = endTime - startTime;
+			try {
+				throw new Exception();
+			} catch (Exception e) {
+				Logger.debug("[" + deltaTime + "] " + StackTraceUtils.toString(e));
+			}
+			return result;
 		}, EXECUTOR_POOL);
 	}
 }
