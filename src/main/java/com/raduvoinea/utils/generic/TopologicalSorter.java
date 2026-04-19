@@ -7,34 +7,30 @@ import java.util.*;
 
 public class TopologicalSorter {
 
-	public static <ID, Element extends ITopologicalSortable<ID>> List<Element> topologicalSort(List<Element> items) throws CircularDependencyException {
-		Map<ID, Element> idToModule = new HashMap<>();
+	public static <ID, Element extends ITopologicalSortable<ID>> void topologicalSort(List<Element> items) throws CircularDependencyException {
+		Map<ID, Element> idToElement = new HashMap<>();
 		for (Element item : items) {
-			idToModule.put(item.getID(), item);
+			idToElement.put(item.getID(), item);
 		}
 
 		Map<ID, List<ID>> adjacencyList = new HashMap<>();
-		for (Element module : items) {
-			adjacencyList.computeIfAbsent(module.getID(), ignored -> new ArrayList<>());
+		for (Element item : items) {
+			adjacencyList.computeIfAbsent(item.getID(), ignored -> new ArrayList<>());
 		}
 
-		for (Element module : items) {
-			for (ID dependencyID : module.getDependencies()) {
-				if (!idToModule.containsKey(dependencyID)) {
-					continue;
-				}
-				adjacencyList.get(dependencyID).add(module.getID());
+		for (Element item : items) {
+			for (ID dependencyID : item.getDependencies()) {
+				if (!idToElement.containsKey(dependencyID)) continue;
+				adjacencyList.get(dependencyID).add(item.getID());
 			}
 		}
 
 		List<ID> sortedIDs = internalTopologicalSort(adjacencyList);
-		List<Element> sortedModules = new ArrayList<>();
 
-		for (ID id : sortedIDs) {
-			sortedModules.add(idToModule.get(id));
+		// In-place overwrite
+		for (int i = 0; i < sortedIDs.size(); i++) {
+			items.set(i, idToElement.get(sortedIDs.get(i)));
 		}
-
-		return sortedModules;
 	}
 
 	private static <ID> List<ID> internalTopologicalSort(Map<ID, List<ID>> adjacencyList) throws CircularDependencyException {

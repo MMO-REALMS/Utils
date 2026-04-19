@@ -120,12 +120,12 @@ public class Time {
 		long remaining = milliseconds;
 		int parts = 0; // Limit to 3 parts
 
-		for (Unit unit : new Unit[]{Unit.YEARS, Unit.MONTHS, Unit.WEEKS, Unit.DAYS, Unit.HOURS, Unit.MINUTES, Unit.SECONDS}) {
+		for (Unit unit : Unit.values()) {
 			if (parts >= 3) break;
 
 			long unitAmount = remaining / unit.toMilliseconds();
 			if (unitAmount > 0) {
-				if (sb.length() > 0) {
+				if (!sb.isEmpty()) {
 					sb.append(" ");
 				}
 				sb.append(unitAmount).append(unit.shortName);
@@ -134,7 +134,7 @@ public class Time {
 			}
 		}
 
-		return sb.length() == 0 ? "0s" : sb.toString();
+		return sb.isEmpty() ? "0s" : sb.toString();
 	}
 
 
