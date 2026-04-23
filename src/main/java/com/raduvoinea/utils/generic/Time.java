@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @AllArgsConstructor
 @Getter
 @NoArgsConstructor
@@ -69,6 +72,8 @@ public class Time {
 		MONTHS(30 * DAYS.ms, "months", "M"),
 		YEARS(365 * DAYS.ms, "years", "y");
 
+		private static final List<Unit> REVERSED_VALUES = new ArrayList<>();
+
 		private final long ms;
 		private final String name;
 		private final String shortName;
@@ -85,6 +90,16 @@ public class Time {
 
 		public long toMilliseconds() {
 			return ms;
+		}
+
+		public static List<Unit> getReversedValues(){
+			if (REVERSED_VALUES.isEmpty()) {
+				for (int i = values().length - 1; i >= 0; i--) {
+					REVERSED_VALUES.add(values()[i]);
+				}
+			}
+
+			return REVERSED_VALUES;
 		}
 	}
 
@@ -120,8 +135,10 @@ public class Time {
 		long remaining = milliseconds;
 		int parts = 0; // Limit to 3 parts
 
-		for (Unit unit : Unit.values()) {
-			if (parts >= 3) break;
+		for (Unit unit : Unit.getReversedValues()) {
+			if (parts >= 3) {
+				break;
+			}
 
 			long unitAmount = remaining / unit.toMilliseconds();
 			if (unitAmount > 0) {
