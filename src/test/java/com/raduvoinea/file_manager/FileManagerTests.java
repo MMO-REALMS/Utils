@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.raduvoinea.file_manager.dto.files.DefaultFileObject;
 import com.raduvoinea.file_manager.dto.files.FileObject;
+import com.raduvoinea.file_manager.dto.files.PrefixedResourceFileObject;
 import com.raduvoinea.file_manager.dto.files.ResourceFileObject;
 import com.raduvoinea.utils.file_manager.FileManager;
 import com.raduvoinea.utils.generic.dto.Holder;
@@ -12,9 +13,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SuppressWarnings("FieldCanBeLocal")
 public class FileManagerTests {
 
 	private static final String TEST_1 = "test1";
@@ -26,7 +29,7 @@ public class FileManagerTests {
 	public static void init() {
 		Gson gson = new GsonBuilder().create();
 		gsonHolder = Holder.of(gson);
-		fileManager = new FileManager(gsonHolder, "tmp");
+		fileManager = new FileManager(gsonHolder, "tmp", List.of("prefix", ""));
 	}
 
 	@AfterAll
@@ -62,15 +65,23 @@ public class FileManagerTests {
 	public void testDefaultObject(){
 		DefaultFileObject object = fileManager.load(DefaultFileObject.class);
 
-		assertEquals(object.data1, 123);
-		assertEquals(object.data2, "123");
+		assertEquals(123, object.data1);
+		assertEquals("123", object.data2);
 	}
 
 	@Test
 	public void testResourceObject(){
 		ResourceFileObject object = fileManager.load(ResourceFileObject.class);
 
-		assertEquals(object.data1, 12345);
-		assertEquals(object.data2, "12345");
+		assertEquals(12345, object.data1);
+		assertEquals("12345", object.data2);
+	}
+
+	@Test
+	public void testPrefixResourceObject(){
+		PrefixedResourceFileObject object = fileManager.load(PrefixedResourceFileObject.class);
+
+		assertEquals(54321, object.data1);
+		assertEquals("54321", object.data2);
 	}
 }

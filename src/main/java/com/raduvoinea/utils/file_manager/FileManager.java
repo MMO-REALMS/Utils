@@ -6,6 +6,7 @@ import com.raduvoinea.utils.file_manager.utils.PathUtils;
 import com.raduvoinea.utils.generic.dto.Holder;
 import com.raduvoinea.utils.logger.Logger;
 import com.raduvoinea.utils.message_builder.MessageBuilder;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,15 +15,45 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
-public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String basePath) {
+@Getter
+public class FileManager {
+
+	private final @NotNull Holder<Gson> gsonHolder;
+	private final @NotNull String basePath;
+	private final @NotNull List<String> resourcePathPrefixes;
+
+	public FileManager(Holder<Gson> gsonHolder, String basePath) {
+		this(gsonHolder, basePath, new ArrayList<>());
+	}
+
+	public FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String basePath, @NotNull List<String> resourcePathPrefixes) {
+		this.gsonHolder = gsonHolder;
+		this.basePath = basePath;
+		this.resourcePathPrefixes = resourcePathPrefixes;
+
+		if (this.resourcePathPrefixes.isEmpty()) {
+			this.resourcePathPrefixes.add("");
+		}
+	}
+
+
+	@Deprecated(forRemoval = true)
+	public Holder<Gson> gsonHolder() {
+		return gsonHolder;
+	}
+
+	@Deprecated(forRemoval = true)
+	public String basePath() {
+		return basePath;
+	}
 
 	public synchronized @NotNull String readFile(@NotNull String directory, @NotNull String fileName) {
 		Path filePath = Paths.get(getDataFolder().getPath(), directory, fileName);
@@ -80,6 +111,7 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 	private synchronized void writeFileAndBackup(@NotNull String directory, @NotNull String fileName, @NotNull String newContent) {
 		Path path = Paths.get(getDataFolder().getPath(), directory, fileName);
 		File file = path.toFile();
+		//noinspection ResultOfMethodCallIgnored
 		file.getParentFile().mkdirs();
 
 		String oldContent = readFile(directory, fileName);
@@ -138,7 +170,7 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 
 		for (StackTraceElement stackTraceElement : stackTrace) {
-			if(IGNORED_CALLER_CLASSES.contains(stackTraceElement.getClassName())) {
+			if (IGNORED_CALLER_CLASSES.contains(stackTraceElement.getClassName())) {
 				continue;
 			}
 
@@ -153,19 +185,24 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 		return null;
 	}
 
-	private String readFromDisk(@NotNull String directory, @NotNull String fileName) throws IOException, URISyntaxException {
-		String fileContents = readFile(directory, fileName);
-		String fullPath = directory.isEmpty() ?
-				String.join("/", List.of(basePath, fileName)) :
-				String.join("/", List.of(basePath, directory, fileName));
+	private @NotNull String readFromResources(@NotNull String directory, @NotNull String fileName) {
+		for (String resourcePathPrefix : this.resourcePathPrefixes) {
+			String content = readFromResources(resourcePathPrefix, directory, fileName);
 
-		if (!fileContents.isEmpty()) {
-			return fileContents;
+			if (!content.isEmpty()) {
+				return content;
+			}
 		}
 
-		Logger.log(new MessageBuilder("The file {path} is empty. Checking for default in resources...")
-				.parse("path", fullPath)
-		);
+		return "";
+	}
+
+	private @NotNull String readFromResources(@NotNull String prefix, @NotNull String directory, @NotNull String fileName) {
+		if (!prefix.isEmpty()) {
+			directory = prefix + "/" + directory;
+		}
+		String fullPath = this.getFullPath(directory, fileName);
+
 
 		fullPath = "/" + fullPath;
 
@@ -207,6 +244,22 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 		}
 	}
 
+	private String readFromDisk(@NotNull String directory, @NotNull String fileName) {
+		String fileContents = readFile(directory, fileName);
+		Path filePath = Paths.get(getDataFolder().getPath(), directory, fileName);
+
+		if (!fileContents.isEmpty()) {
+			return fileContents;
+		}
+
+		Logger.log(
+				new MessageBuilder("The file {path} is empty. Checking for default in resources...")
+						.parse("path", filePath)
+		);
+
+		return readFromResources(directory, fileName);
+	}
+
 	@SneakyThrows
 	public synchronized <T> @NotNull T load(@NotNull Class<T> clazz, @NotNull String directory, @NotNull String fileName) {
 		if (!fileName.endsWith(".json")) {
@@ -214,9 +267,7 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 		}
 
 		String oldJson = readFromDisk(directory, fileName);
-		String fullPath = directory.isEmpty() ?
-				String.join("/", List.of(basePath, fileName)) :
-				String.join("/", List.of(basePath, directory, fileName));
+		String fullPath = this.getFullPath(directory, fileName);
 
 		T output;
 
@@ -243,6 +294,14 @@ public record FileManager(@NotNull Holder<Gson> gsonHolder, @NotNull String base
 		}
 
 		return new File(System.getProperty("user.dir") + path);
+	}
+
+	private String getFullPath(String directory, String fileName) {
+		if (!directory.isEmpty()) {
+			return String.join("/", List.of(basePath, directory, fileName));
+		}
+
+		return String.join("/", List.of(basePath, fileName));
 	}
 
 }
