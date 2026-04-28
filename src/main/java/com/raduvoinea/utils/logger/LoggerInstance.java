@@ -75,10 +75,6 @@ public abstract class LoggerInstance {
 		this.log(Level.DEBUG, object, color, this::handleDebug);
 	}
 
-	public void log(@Nullable Object object) {
-		this.info(object);
-	}
-
 	public void info(@Nullable Object object) {
 		this.log(Level.INFO, object, ConsoleColor.RESET, this::handleInfo);
 	}
