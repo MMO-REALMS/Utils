@@ -2,7 +2,7 @@ package com.raduvoinea.message_builder;
 
 
 import com.raduvoinea.utils.logger.KvLog;
-import com.raduvoinea.utils.message_builder.KVMessageBuilder;
+import com.raduvoinea.utils.message_builder.KvMessageBuilder;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -10,12 +10,12 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class KVMessageBuilderTests {
+public class KvMessageBuilderTests {
 
 	@Test
 	void replacesPlaceholderInType() {
 		KvLog base = new KvLog("{event}.triggered");
-		KVMessageBuilder builder = new KVMessageBuilder(base);
+		KvMessageBuilder builder = new KvMessageBuilder(base);
 
 		KvLog result = builder.parse("{event}", "player_join").parse();
 
@@ -25,7 +25,7 @@ public class KVMessageBuilderTests {
 	@Test
 	void replacesPlaceholderInType2() {
 		KvLog base = new KvLog("{event}.triggered");
-		KVMessageBuilder builder = new KVMessageBuilder(base);
+		KvMessageBuilder builder = new KvMessageBuilder(base);
 
 		KvLog result = builder.parse("{event}", "player_join").parse();
 
@@ -35,7 +35,7 @@ public class KVMessageBuilderTests {
 	@Test
 	void replacesMultiplePlaceholdersInType() {
 		KvLog base = new KvLog("{module}.{action}");
-		KVMessageBuilder builder = new KVMessageBuilder(base);
+		KvMessageBuilder builder = new KvMessageBuilder(base);
 
 		KvLog result = builder
 				.parse("{module}", "auth")
@@ -48,7 +48,7 @@ public class KVMessageBuilderTests {
 	@Test
 	void noMatchingPlaceholderLeavesTypeUnchanged() {
 		KvLog base = new KvLog("static.event");
-		KVMessageBuilder builder = new KVMessageBuilder(base);
+		KvMessageBuilder builder = new KvMessageBuilder(base);
 
 		KvLog result = builder.parse("{irrelevant}", "value").parse();
 
@@ -62,7 +62,7 @@ public class KVMessageBuilderTests {
 		base.add("player", "{name}");
 		base.add("world", "{world}");
 
-		KVMessageBuilder builder = new KVMessageBuilder(base);
+		KvMessageBuilder builder = new KvMessageBuilder(base);
 
 		KvLog result = builder
 				.parse("{name}", "Steve")
@@ -80,7 +80,7 @@ public class KVMessageBuilderTests {
 		base.add("ratio", 3.14);
 		base.add("flag", true);
 
-		KVMessageBuilder builder = new KVMessageBuilder(base);
+		KvMessageBuilder builder = new KvMessageBuilder(base);
 		KvLog result = builder.parse("{unused}", "x").parse();
 
 		assertEquals(42, result.getValues().get("count"));
@@ -94,7 +94,7 @@ public class KVMessageBuilderTests {
 		base.add("label", "user={name}");
 		base.add("id", 99);
 
-		KvLog result = new KVMessageBuilder(base).parse("{name}", "Alex").parse();
+		KvLog result = new KvMessageBuilder(base).parse("{name}", "Alex").parse();
 
 		assertEquals("user=Alex", result.getValues().get("label"));
 		assertEquals(99, result.getValues().get("id"));
@@ -102,7 +102,7 @@ public class KVMessageBuilderTests {
 
 	@Test
 	void nullBaseReturnsNull() {
-		KVMessageBuilder builder = new KVMessageBuilder(null);
+		KvMessageBuilder builder = new KvMessageBuilder(null);
 
 		assertNull(builder.parse("{x}", "y").parse());
 	}
@@ -112,7 +112,7 @@ public class KVMessageBuilderTests {
 		KvLog base = new KvLog("{module}.{action}");
 		base.add("target", "{player}");
 
-		KvLog result = new KVMessageBuilder(base)
+		KvLog result = new KvMessageBuilder(base)
 				.parse(Map.of("{module}", "combat", "{action}", "kill", "{player}", "Notch"))
 				.parse();
 
@@ -125,8 +125,8 @@ public class KVMessageBuilderTests {
 		KvLog base = new KvLog("{event}");
 		base.add("key", "val");
 
-		KVMessageBuilder original = new KVMessageBuilder(base);
-		KVMessageBuilder cloned = (KVMessageBuilder) original.clone();
+		KvMessageBuilder original = new KvMessageBuilder(base);
+		KvMessageBuilder cloned = (KvMessageBuilder) original.clone();
 
 		KvLog origResult = original.parse("{event}", "click").parse();
 		KvLog cloneResult = cloned.parse("{event}", "click").parse();
@@ -137,8 +137,8 @@ public class KVMessageBuilderTests {
 	void cloneIsIndependentFromOriginalPlaceholders() {
 		KvLog base = new KvLog("{event}");
 
-		KVMessageBuilder original = new KVMessageBuilder(base);
-		KVMessageBuilder cloned = (KVMessageBuilder) original.clone();
+		KvMessageBuilder original = new KvMessageBuilder(base);
+		KvMessageBuilder cloned = (KvMessageBuilder) original.clone();
 
 		KvLog cloneResult = cloned.parse("{event}", "hover").parse();
 		KvLog origResult = original.parse("{event}", "click").parse();
@@ -151,10 +151,10 @@ public class KVMessageBuilderTests {
 	void clonePreservesAlreadyBoundPlaceholders() {
 		KvLog base = new KvLog("{module}.{action}");
 
-		KVMessageBuilder withModuleBound = new KVMessageBuilder(base)
+		KvMessageBuilder withModuleBound = new KvMessageBuilder(base)
 				.parse("{module}", "auth");
 
-		KVMessageBuilder cloned = (KVMessageBuilder) withModuleBound.clone();
+		KvMessageBuilder cloned = (KvMessageBuilder) withModuleBound.clone();
 		KvLog result = cloned.parse("{action}", "logout").parse();
 
 		assertEquals("auth.logout", result.getType());

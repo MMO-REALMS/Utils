@@ -3,7 +3,7 @@ package com.raduvoinea.logger;
 import com.raduvoinea.logger.dto.TestLogger;
 import com.raduvoinea.utils.logger.KvLog;
 import com.raduvoinea.utils.logger.Logger;
-import com.raduvoinea.utils.message_builder.KVMessageBuilder;
+import com.raduvoinea.utils.message_builder.KvMessageBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class KVMessageBuilderLoggerIntegrationTests {
+public class KvMessageBuilderLoggerIntegrationTests {
 
     @BeforeEach
     void beforeEach() {
@@ -34,7 +34,7 @@ public class KVMessageBuilderLoggerIntegrationTests {
     void resolvedBuilderCommitsCorrectType() {
         KvLog template = new KvLog("{module}.{action}");
 
-        new KVMessageBuilder(template)
+        new KvMessageBuilder(template)
                 .parse("{module}", "auth")
                 .parse("{action}", "login")
                 .parse()
@@ -50,7 +50,7 @@ public class KVMessageBuilderLoggerIntegrationTests {
         template.add("username", "{name}");
         template.add("world", "{world}");
 
-        new KVMessageBuilder(template)
+        new KvMessageBuilder(template)
                 .parse("{name}", "Radu")
                 .parse("{world}", "overworld")
                 .parse()
@@ -68,7 +68,7 @@ public class KVMessageBuilderLoggerIntegrationTests {
         template.add("ratio", 3.14);
         template.add("active", true);
 
-        new KVMessageBuilder(template)
+        new KvMessageBuilder(template)
                 .parse("{event}", "tick")
                 .parse()
                 .commit();
@@ -85,7 +85,7 @@ public class KVMessageBuilderLoggerIntegrationTests {
         template.add("username", "{name}");
         template.add("ip", "{ip}");
 
-        KVMessageBuilder templateBuilder = new KVMessageBuilder(template);
+        KvMessageBuilder templateBuilder = new KvMessageBuilder(template);
 
         templateBuilder.clone()
                 .parse("{action}", "join")
@@ -118,7 +118,7 @@ public class KVMessageBuilderLoggerIntegrationTests {
         KvLog template = new KvLog("{service}.{action}");
         template.add("status", "{status}");
 
-        KVMessageBuilder serviceTemplate = new KVMessageBuilder(template)
+        KvMessageBuilder serviceTemplate = new KvMessageBuilder(template)
                 .parse("{service}", "payment");
 
         serviceTemplate.clone()
@@ -155,7 +155,7 @@ public class KVMessageBuilderLoggerIntegrationTests {
         template.add("target", "{player}");
         template.add("score", 100);
 
-        new KVMessageBuilder(template)
+        new KvMessageBuilder(template)
                 .parse(Map.of("{module}", "combat", "{action}", "kill", "{player}", "Notch"))
                 .parse()
                 .commit();
@@ -174,7 +174,7 @@ public class KVMessageBuilderLoggerIntegrationTests {
         template.add("seller", "{seller}");
         template.add("amount", 500);
 
-        KVMessageBuilder tradeTemplate = new KVMessageBuilder(template);
+        KvMessageBuilder tradeTemplate = new KvMessageBuilder(template);
 
         tradeTemplate.clone()
                 .parse("{outcome}", "completed")
@@ -210,7 +210,7 @@ public class KVMessageBuilderLoggerIntegrationTests {
         KvLog template = new KvLog("{module}.{action}");
         template.add("info", "{unbound}");
 
-        new KVMessageBuilder(template)
+        new KvMessageBuilder(template)
                 .parse("{module}", "auth")
                 .parse()
                 .commit();
@@ -225,7 +225,7 @@ public class KVMessageBuilderLoggerIntegrationTests {
     void buildingBuilderDoesNotLogUntilCommit() {
         KvLog template = new KvLog("{event}");
 
-        KVMessageBuilder builder = new KVMessageBuilder(template)
+        KvMessageBuilder builder = new KvMessageBuilder(template)
                 .parse("{event}", "something");
 
         builder.parse();

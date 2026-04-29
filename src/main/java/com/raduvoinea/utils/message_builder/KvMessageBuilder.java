@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.Map;
 
 
-public class KVMessageBuilder extends GenericMessageBuilder<KvLog> {
+public class KvMessageBuilder extends GenericMessageBuilder<KvLog> {
 
-	public KVMessageBuilder(KvLog base) {
+	public KvMessageBuilder(KvLog base) {
 		super(base);
 	}
 
-	protected KVMessageBuilder(KvLog base, List<Object> placeholders, List<Object> values) {
+	protected KvMessageBuilder(KvLog base, List<Object> placeholders, List<Object> values) {
 		super(base, placeholders, values);
 	}
 
@@ -56,18 +56,18 @@ public class KVMessageBuilder extends GenericMessageBuilder<KvLog> {
 
 	@Override
 	public GenericMessageBuilder<KvLog> clone() {
-		return new KVMessageBuilder(
+		return new KvMessageBuilder(
 				base == null ? null : new KvLog(base),
 				new ArrayList<>(placeholders),
 				new ArrayList<>(values)
 		);
 	}
 
-	public KVMessageBuilder parse(Map<?, ?> placeholders) {
-		return (KVMessageBuilder) super.parse(placeholders);
+	public KvMessageBuilder parse(Map<?, ?> placeholders) {
+		return (KvMessageBuilder) super.parse(placeholders);
 	}
 
-	public KVMessageBuilder parse(Object placeholder, Object value) {
-		return (KVMessageBuilder) super.parse(placeholder, value);
+	public KvMessageBuilder parse(Object placeholder, Object value) {
+		return (KvMessageBuilder) super.parse(placeholder, value);
 	}
 }
