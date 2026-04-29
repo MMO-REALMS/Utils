@@ -6,7 +6,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class SerializationUtils {
 
@@ -65,23 +64,48 @@ public class SerializationUtils {
 			case Optional<?> optional -> serializeObject(optional.orElse(null), quoteStrings);
 			case GenericMessageBuilder<?> mb -> serializeObject(mb.toString(), quoteStrings);
 			case Object[] array -> serializeList(Arrays.asList(array), quoteStrings);
-			case int[] array -> serializeList(Arrays.stream(array).boxed().collect(Collectors.toList()), quoteStrings);
-			case long[] array -> serializeList(Arrays.stream(array).boxed().collect(Collectors.toList()), quoteStrings);
-			case double[] array -> serializeList(Arrays.stream(array).boxed().collect(Collectors.toList()), quoteStrings);
+			case int[] array -> {
+				StringBuilder sb = new StringBuilder("[");
+				for (int i = 0; i < array.length; i++) {
+					if (i > 0) sb.append(",");
+					sb.append(array[i]);
+				}
+				yield sb.append("]").toString();
+			}
+			case long[] array -> {
+				StringBuilder sb = new StringBuilder("[");
+				for (int i = 0; i < array.length; i++) {
+					if (i > 0) sb.append(",");
+					sb.append(array[i]);
+				}
+				yield sb.append("]").toString();
+			}
+			case double[] array -> {
+				StringBuilder sb = new StringBuilder("[");
+				for (int i = 0; i < array.length; i++) {
+					if (i > 0) sb.append(",");
+					sb.append(array[i]);
+				}
+				yield sb.append("]").toString();
+			}
 			case Map<?, ?> map -> serializeMap((Map<Object, Object>) map, quoteStrings);
 			case boolean[] array -> {
-				List<Object> bools = new ArrayList<>();
-
-				for (boolean bool : array) {
-					bools.add(bool);
+				StringBuilder sb = new StringBuilder("[");
+				for (int i = 0; i < array.length; i++) {
+					if (i > 0) sb.append(",");
+					sb.append(array[i]);
 				}
-
-				yield serializeList(bools, quoteStrings);
+				yield sb.append("]").toString();
 			}
 			case Iterable<?> iterable -> {
-				List<Object> items = new ArrayList<>();
-				iterable.forEach(items::add);
-				yield serializeList(items, quoteStrings);
+				StringBuilder sb = new StringBuilder("[");
+				boolean first = true;
+				for (Object item : iterable) {
+					if (!first) sb.append(",");
+					sb.append(serializeObject(item, quoteStrings));
+					first = false;
+				}
+				yield sb.append("]").toString();
 			}
 			default -> value.toString();
 		};
@@ -99,11 +123,33 @@ public class SerializationUtils {
 			return "";
 		}
 
-		return str.replace("\\", "\\\\")
-				.replace("\"", "\\\"")
-				.replace("\n", "\\n")
-				.replace("\r", "\\r")
-				.replace("\t", "\\t");
+		// Fast path: check if escaping is needed
+		boolean needsEscape = false;
+		for (int i = 0; i < str.length(); i++) {
+			char c = str.charAt(i);
+			if (c == '\\' || c == '"' || c == '\n' || c == '\r' || c == '\t') {
+				needsEscape = true;
+				break;
+			}
+		}
+
+		if (!needsEscape) {
+			return str;
+		}
+
+		StringBuilder sb = new StringBuilder(str.length() + 8);
+		for (int i = 0; i < str.length(); i++) {
+			char c = str.charAt(i);
+			switch (c) {
+				case '\\' -> sb.append("\\\\");
+				case '"' -> sb.append("\\\"");
+				case '\n' -> sb.append("\\n");
+				case '\r' -> sb.append("\\r");
+				case '\t' -> sb.append("\\t");
+				default -> sb.append(c);
+			}
+		}
+		return sb.toString();
 	}
 
 }

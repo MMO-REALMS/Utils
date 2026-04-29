@@ -11,13 +11,20 @@ public class ExpirableCount {
 
 	private final List<Long> datas = Collections.synchronizedList(new ArrayList<>());
 	private final Time cooldownTime;
+	private volatile long lastClear = 0;
 
 	public ExpirableCount(Time cooldownTime) {
 		this.cooldownTime = cooldownTime;
 	}
 
 	public void clearExpired() {
-		datas.removeIf(data -> System.currentTimeMillis() - data > cooldownTime.toMilliseconds());
+		long now = System.currentTimeMillis();
+		long threshold = cooldownTime.toMilliseconds();
+		if (now - lastClear < Math.max(threshold / 10, 100)) {
+			return;
+		}
+		lastClear = now;
+		datas.removeIf(data -> now - data > threshold);
 	}
 
 	public void add() {

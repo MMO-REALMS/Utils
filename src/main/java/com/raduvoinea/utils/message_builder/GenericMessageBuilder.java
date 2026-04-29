@@ -49,20 +49,21 @@ public abstract class GenericMessageBuilder<T> {
 		T parsed = base;
 		T before = base;
 
-		for (int i = 0; i < Math.min(placeholders.size(), values.size()); i++) {
-			String placeholder;
+		MessageBuilderManager manager = MessageBuilderManager.instance();
+		boolean legacyMode = manager.isLegacyMode();
+		boolean chatColor = manager.isChatColor();
+
+		int limit = Math.min(placeholders.size(), values.size());
+		for (int i = 0; i < limit; i++) {
 			Object placeholderObj = placeholders.get(i);
-
-			Object value = values.get(i);
-
 			if (placeholderObj == null) {
 				continue;
 			}
 
-			placeholder = placeholderObj.toString();
+			String placeholder = placeholderObj.toString();
 
 			// TODO Remove at some point
-			if (MessageBuilderManager.instance().isLegacyMode()) {
+			if (legacyMode) {
 				if (placeholder.startsWith("%") && placeholder.endsWith("%")) {
 					placeholder = placeholder.substring(1, placeholder.length() - 1);
 				}
@@ -72,29 +73,31 @@ public abstract class GenericMessageBuilder<T> {
 				placeholder = placeholder.substring(1, placeholder.length() - 1);
 			}
 
+			Object value = values.get(i);
 			String valueString;
-
 			if (value instanceof List<?> list) {
-				List<String> valueList = new ArrayList<>();
-
-				for (Object obj : list) {
-					valueList.add(obj == null ? "null" : obj.toString());
+				StringBuilder sb = new StringBuilder(list.size() * 8);
+				sb.append('[');
+				for (int j = 0; j < list.size(); j++) {
+					Object obj = list.get(j);
+					if (j > 0) sb.append(", ");
+					sb.append(obj == null ? "null" : obj.toString());
 				}
-
-				valueString = convertListToString(valueList);
+				sb.append(']');
+				valueString = sb.toString();
 			} else {
 				valueString = value == null ? "null" : value.toString();
 			}
 
 			// TODO Remove at some point
-			if (MessageBuilderManager.instance().isLegacyMode()) {
+			if (legacyMode) {
 				parsed = parsePlaceholder(parsed, "%" + placeholder + "%", valueString);
 			}
 
 			parsed = parsePlaceholder(parsed, "{" + placeholder + "}", valueString);
 		}
 
-		if (MessageBuilderManager.instance().isChatColor()) {
+		if (chatColor) {
 			parsed = parsePlaceholder(parsed, "&", "§");
 		}
 

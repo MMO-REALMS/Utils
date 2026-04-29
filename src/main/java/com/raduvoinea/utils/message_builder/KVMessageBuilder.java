@@ -38,9 +38,10 @@ public class KVMessageBuilder extends GenericMessageBuilder<KvLog> {
 		}
 
 		String newType = base.getType().replace(placeholder, value);
-		HashMap<String, Object> resultValues = new HashMap<>();
+		Map<String, Object> originalValues = base.getValues();
+		HashMap<String, Object> resultValues = new HashMap<>(originalValues.size());
 
-		for (Map.Entry<String, Object> entry : base.getValues().entrySet()) {
+		for (Map.Entry<String, Object> entry : originalValues.entrySet()) {
 			Object entryValue = entry.getValue();
 
 			if (entryValue instanceof String stringValue) {

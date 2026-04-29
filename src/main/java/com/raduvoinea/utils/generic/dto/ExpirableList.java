@@ -12,13 +12,20 @@ public class ExpirableList<Data> {
 
 	private final List<ExpirableData<Data>> datas = Collections.synchronizedList(new ArrayList<>());
 	private final Time cooldownTime;
+	private volatile long lastClear = 0;
 
 	public ExpirableList(Time cooldownTime) {
 		this.cooldownTime = cooldownTime;
 	}
 
 	public void clearExpired() {
-		datas.removeIf(data -> System.currentTimeMillis() - data.timestamp > cooldownTime.toMilliseconds());
+		long now = System.currentTimeMillis();
+		long threshold = cooldownTime.toMilliseconds();
+		if (now - lastClear < Math.max(threshold / 10, 100)) {
+			return; // Don't clear too frequently
+		}
+		lastClear = now;
+		datas.removeIf(data -> now - data.timestamp > threshold);
 	}
 
 	public void add(Data data) {
@@ -27,13 +34,11 @@ public class ExpirableList<Data> {
 
 	public List<Data> getData() {
 		clearExpired();
-		List<Data> data = new ArrayList<>();
-
+		List<Data> result = new ArrayList<>(datas.size());
 		for (ExpirableData<Data> expirableData : datas) {
-			data.add(expirableData.data);
+			result.add(expirableData.data);
 		}
-
-		return data;
+		return result;
 	}
 
 	public void removeIf(Predicate<? super Data> filter) {
@@ -46,7 +51,12 @@ public class ExpirableList<Data> {
 
 	public boolean contains(Data data) {
 		clearExpired();
-		return datas.stream().anyMatch(expirableData -> expirableData.data.equals(data));
+		for (ExpirableData<Data> expirableData : datas) {
+			if (expirableData.data.equals(data)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Getter

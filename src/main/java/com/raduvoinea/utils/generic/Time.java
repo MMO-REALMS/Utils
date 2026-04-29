@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @AllArgsConstructor
@@ -72,7 +73,24 @@ public class Time {
 		MONTHS(30 * DAYS.ms, "months", "M"),
 		YEARS(365 * DAYS.ms, "years", "y");
 
-		private static final List<Unit> REVERSED_VALUES = new ArrayList<>();
+		private static final List<Unit> REVERSED_VALUES;
+		private static final java.util.Map<String, Unit> PARSE_MAP;
+
+		static {
+			Unit[] values = values();
+			List<Unit> reversed = new ArrayList<>(values.length);
+			for (int i = values.length - 1; i >= 0; i--) {
+				reversed.add(values[i]);
+			}
+			REVERSED_VALUES = Collections.unmodifiableList(reversed);
+
+			java.util.Map<String, Unit> parseMap = new java.util.HashMap<>(values.length * 2);
+			for (Unit unit : values) {
+				parseMap.put(unit.shortName, unit);
+				parseMap.put(unit.name, unit);
+			}
+			PARSE_MAP = Collections.unmodifiableMap(parseMap);
+		}
 
 		private final long ms;
 		private final String name;
@@ -92,14 +110,12 @@ public class Time {
 			return ms;
 		}
 
-		public static List<Unit> getReversedValues(){
-			if (REVERSED_VALUES.isEmpty()) {
-				for (int i = values().length - 1; i >= 0; i--) {
-					REVERSED_VALUES.add(values()[i]);
-				}
-			}
-
+		public static List<Unit> getReversedValues() {
 			return REVERSED_VALUES;
+		}
+
+		public static Unit parseUnit(String suffix) {
+			return PARSE_MAP.get(suffix);
 		}
 	}
 
@@ -113,16 +129,24 @@ public class Time {
 			}
 		}
 
-		long amount;
+		if (timeString.length() < 2) {
+			return null;
+		}
 
+		long amount;
 		try {
 			amount = Long.parseLong(timeString.substring(0, timeString.length() - 1));
 		} catch (NumberFormatException e) {
 			return null;
 		}
 
+		Unit unit = Unit.parseUnit(timeString.substring(timeString.length() - 1));
+		if (unit != null) {
+			return unit.of(amount);
+		}
+
 		for (Unit value : Unit.values()) {
-			if (timeString.endsWith(value.shortName) || timeString.endsWith(value.name)) {
+			if (timeString.endsWith(value.name)) {
 				return value.of(amount);
 			}
 		}
@@ -156,10 +180,8 @@ public class Time {
 
 
 	public static String millisecondsToString(long milliseconds) {
-		for (int i = Unit.values().length - 1; i >= 0; i--) {
-			Unit value = Unit.values()[i];
-
-			if (value.toMilliseconds() < milliseconds) {
+		for (Unit value : Unit.getReversedValues()) {
+			if (value.toMilliseconds() <= milliseconds) {
 				long amount = milliseconds / value.toMilliseconds();
 				return amount + " " + value.name;
 			}

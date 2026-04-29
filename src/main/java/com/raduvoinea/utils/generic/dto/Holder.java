@@ -1,12 +1,10 @@
 package com.raduvoinea.utils.generic.dto;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 public class Holder<T> {
-	private final AtomicReference<T> value;
+	private volatile T value;
 
 	private Holder(T value) {
-		this.value = new AtomicReference<>(value);
+		this.value = value;
 	}
 
 	public static <T> Holder<T> of(T value) {
@@ -18,16 +16,16 @@ public class Holder<T> {
 	}
 
 	public T value() {
-		return value.get();
+		return value;
 	}
 
 	public Holder<T> set(T newValue) {
-		value.set(newValue);
+		this.value = newValue;
 		return this;
 	}
 
 	public boolean isEmpty() {
-		return value.get() == null;
+		return value == null;
 	}
 
 }

@@ -6,12 +6,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.file.Files;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -22,8 +25,29 @@ import java.util.zip.ZipFile;
 @Getter
 public class Reflections {
 
+	private static final ClassValue<Set<Field>> FIELDS_CACHE = new ClassValue<>() {
+		@Override
+		protected Set<Field> computeValue(@NotNull Class<?> clazz) {
+			return computeFields(clazz);
+		}
+	};
+
+	private static final ClassValue<Set<Method>> METHODS_CACHE = new ClassValue<>() {
+		@Override
+		protected Set<Method> computeValue(@NotNull Class<?> clazz) {
+			return computeMethods(clazz);
+		}
+	};
+
+	private static final ClassValue<Field> FIELD_CACHE_MISS = new ClassValue<>() {
+		@Override
+		protected Field computeValue(@NotNull Class<?> clazz) {
+			return null;
+		}
+	};
+
 	private final ClassLoader classLoader;
-	private final Set<Class<?>> classes = new HashSet<>();
+	private final Set<Class<?>> classes = ConcurrentHashMap.newKeySet();
 	private final boolean debug;
 
 	public Reflections(@NotNull ClassLoader classLoader) {
@@ -101,36 +125,24 @@ public class Reflections {
 			return this;
 		}
 
-		File[] files = directory.listFiles();
+		String dirAbsPath = directory.getAbsolutePath();
+		int dirPrefixLen = dirAbsPath.length() + 1; // +1 for File.separator
 
-		if (files == null) {
-			return this;
-		}
-
-		Queue<File> toExplore = new LinkedList<>(Arrays.asList(files));
-
-		while (!toExplore.isEmpty()) {
-			File file = toExplore.poll();
-
-			if (file.isDirectory()) {
-				File[] subFiles = file.listFiles();
-
-				if (subFiles != null) {
-					toExplore.addAll(Arrays.asList(subFiles));
-				}
-
-				continue;
-			}
-
-			if (!file.getName().endsWith(".class")) {
-				continue;
-			}
-
-			try {
-				processFile(file.getAbsolutePath().replace(directory.getAbsolutePath() + File.separator, ""));
-			} catch (Throwable exception) {
-				Logger.warn(exception);
-			}
+		try {
+			//noinspection resource
+			Files.walk(directory.toPath())
+					.filter(p -> p.toString().endsWith(".class"))
+					.forEach(p -> {
+						try {
+							String abs = p.toAbsolutePath().toString();
+							String relative = abs.substring(dirPrefixLen);
+							processFile(relative);
+						} catch (Throwable exception) {
+							Logger.warn(exception);
+						}
+					});
+		} catch (IOException exception) {
+			Logger.warn(exception);
 		}
 
 		return this;
@@ -163,62 +175,52 @@ public class Reflections {
 			return;
 		}
 
-		fileName = fileName.replace("/", ".");
-		fileName = fileName.replace("\\", ".");
-		fileName = fileName.replace(".class", "");
+		// Replace path separators and strip .class in one pass
+		String className = fileName.replace('/', '.').replace('\\', '.');
+		if (className.endsWith(".class")) {
+			className = className.substring(0, className.length() - 6);
+		}
 
-		String simpleClassName = fileName.substring(fileName.lastIndexOf('.') + 1);
+		int lastDot = className.lastIndexOf('.');
+		String simpleClassName = lastDot >= 0 ? className.substring(lastDot + 1) : className;
 
 		// Skip Mixin classes
 		if (simpleClassName.contains("Mixin") || simpleClassName.contains("module-info")) {
 			return;
 		}
 
-		registerClass(classLoader.loadClass(fileName));
+		registerClass(classLoader.loadClass(className));
 	}
 
 	public static @Nullable Field getField(@NotNull Class<?> clazz, String fieldName) {
-		Field field = null;
-
-		try {
-			field = clazz.getField(fieldName);
-		} catch (NoSuchFieldException ignored) {
-		}
-
-		if (field == null) {
-			try {
-				field = clazz.getDeclaredField(fieldName);
-			} catch (NoSuchFieldException ignored) {
+		// Fast path: search cached fields
+		for (Field field : getFields(clazz)) {
+			if (field.getName().equals(fieldName)) {
+				return field;
 			}
 		}
-
-		if (field != null) {
-			field.setAccessible(true);
-		}
-
-		return field;
+		return null;
 	}
 
 	public static @NotNull Set<Field> getFields(@NotNull Class<?> clazz) {
-		Set<Field> output = new HashSet<>();
+		return FIELDS_CACHE.get(clazz);
+	}
 
-		Queue<Class<?>> classesToSearch = new LinkedList<>();
-		classesToSearch.add(clazz);
+	public static @NotNull Set<Method> getMethods(@NotNull Class<?> clazz) {
+		return METHODS_CACHE.get(clazz);
+	}
 
-		while (!classesToSearch.isEmpty()) {
-			Class<?> searchClass = classesToSearch.poll();
+	private static @NotNull Set<Field> computeFields(@NotNull Class<?> clazz) {
+		Set<Field> output = HashSet.newHashSet(16);
 
-			if (searchClass == null || searchClass == Object.class) {
+		Class<?> current = clazz;
+		while (current != null && current != Object.class) {
+			if (current == Enum.class) {
+				current = current.getSuperclass();
 				continue;
 			}
 
-			classesToSearch.add(searchClass.getSuperclass());
-
-			if (searchClass == Enum.class) {
-				continue;
-			}
-
-			for (Field field : searchClass.getDeclaredFields()) {
+			for (Field field : current.getDeclaredFields()) {
 				try {
 					field.setAccessible(true);
 					output.add(field);
@@ -226,51 +228,36 @@ public class Reflections {
 					Logger.error(exception);
 				}
 			}
+			current = current.getSuperclass();
 		}
 
 		return output;
 	}
 
+	private static @NotNull Set<Method> computeMethods(@NotNull Class<?> clazz) {
+		Set<Method> output = HashSet.newHashSet(16);
 
-	public static @NotNull Set<Method> getMethods(@NotNull Class<?> clazz) {
-		Set<Method> output = new HashSet<>();
-
-		Queue<Class<?>> classesToSearch = new LinkedList<>();
-		classesToSearch.add(clazz);
-
-		while (!classesToSearch.isEmpty()) {
-			Class<?> searchClass = classesToSearch.poll();
-
-			if (searchClass == null) {
-				continue;
-			}
-
-			Class<?> superclass = searchClass.getSuperclass();
-
-			if (!superclass.equals(Object.class)) {
-				classesToSearch.add(searchClass.getSuperclass());
-			}
-
-			for (Method method : searchClass.getDeclaredMethods()) {
+		Class<?> current = clazz;
+		while (current != null && current != Object.class) {
+			for (Method method : current.getDeclaredMethods()) {
 				method.setAccessible(true);
 				output.add(method);
 			}
+			current = current.getSuperclass();
 		}
 
 		return output;
 	}
 
 	public static Method getCallingMethod(int depth) {
-		StackWalker.StackFrame stackFrame = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
+		//noinspection DataFlowIssue
+		StackWalker.StackFrame stackFrame = StackWalker
+				.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
 				.walk(stream -> stream
 						.skip(depth)
 						.findFirst()
 						.orElse(null)
 				);
-
-		if (stackFrame == null) {
-			throw new RuntimeException("StackFrame is null");
-		}
 
 		Class<?>[] parameterTypes = stackFrame.getMethodType().parameterArray();
 		Class<?> clazz = stackFrame.getDeclaringClass();

@@ -25,10 +25,30 @@ public class LoggerOutputStream extends OutputStream {
 		}
 	}
 
+	@SuppressWarnings("StatementWithEmptyBody")
 	@Override
 	public void write(byte @NotNull [] b, int off, int len) {
+		int start = off;
 		for (int i = off; i < off + len; i++) {
-			write(b[i]);
+			byte ch = b[i];
+			if (ch == '\n') {
+				if (i > start) {
+					buffer.append(new String(b, start, i - start, java.nio.charset.StandardCharsets.UTF_8));
+				}
+				flush();
+				start = i + 1;
+			} else if (ch != '\r') {
+				// continue
+			} else {
+				// skip \r - need to append segment before it
+				if (i > start) {
+					buffer.append(new String(b, start, i - start, java.nio.charset.StandardCharsets.UTF_8));
+				}
+				start = i + 1;
+			}
+		}
+		if (start < off + len) {
+			buffer.append(new String(b, start, off + len - start, java.nio.charset.StandardCharsets.UTF_8));
 		}
 	}
 

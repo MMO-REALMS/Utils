@@ -97,50 +97,55 @@ public abstract class LoggerInstance {
 			return;
 		}
 
-		String id = null;
+		String log = formatObject(object);
+
+		StringBuilder finalLog = new StringBuilder(log.length() + 32);
+		finalLog.append(color);
 
 		if (printSourceClass) {
 			Class<?> caller = getCallerClass();
-			id = this.parsePackage(caller.getPackageName());
+			String id = this.parsePackage(caller.getPackageName());
 			if (id == null || id.isEmpty()) {
 				id = caller.getSimpleName();
 			}
-
-			id = "[" + id + "] ";
+			finalLog.append('[').append(id).append("] ");
 		}
 
-		String log;
-
-		if (object == null) {
-			log = "null";
-		} else {
-			if (object.getClass().isAnnotationPresent(LogAsJson.class)) {
-				log = Logger.getGsonHolder().value().toJson(object);
+		// Inline multi-line coloring without split/join
+		for (int i = 0; i < log.length(); i++) {
+			char c = log.charAt(i);
+			if (c == '\n') {
+				finalLog.append('\n').append(color);
 			} else {
-				log = switch (object) {
-					case GenericMessageBuilder<?> messageBuilder -> messageBuilder.toString();
-					case Throwable throwable -> StackTraceUtils.toString(throwable);
-					case StackTraceElement[] stackTraceElements -> StackTraceUtils.toString(stackTraceElements);
-					default -> object.toString();
-				};
+				finalLog.append(c);
 			}
 		}
+		finalLog.append(ConsoleColor.RESET);
 
-		String finalLog = "";
-		finalLog += color;
-		if (id != null) {
-			finalLog += id;
-		}
-		finalLog += String.join("\n" + color, log.split("\n"));
-		finalLog += ConsoleColor.RESET;
+		String processed = finalProcessor(finalLog.toString());
 
-		finalLog = finalProcessor(finalLog);
-
-		if (finalLog == null) {
+		if (processed == null) {
 			return;
 		}
 
-		logger.run(finalLog);
+		logger.run(processed);
+	}
+
+	private static String formatObject(@Nullable Object object) {
+		if (object == null) {
+			return "null";
+		}
+
+		if (object.getClass().isAnnotationPresent(LogAsJson.class)) {
+			return Logger.getGsonHolder().value().toJson(object);
+		}
+
+		return switch (object) {
+			case GenericMessageBuilder<?> messageBuilder -> messageBuilder.toString();
+			case Throwable throwable -> StackTraceUtils.toString(throwable);
+			case StackTraceElement[] stackTraceElements -> StackTraceUtils.toString(stackTraceElements);
+			default -> object.toString();
+		};
 	}
 
 	protected abstract void handleInfo(@NotNull String log);

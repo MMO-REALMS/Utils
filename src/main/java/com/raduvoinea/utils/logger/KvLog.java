@@ -38,7 +38,8 @@ public class KvLog {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
+		int estimatedSize = (type == null ? 4 : type.length()) + values.size() * 24 + 32;
+		StringBuilder builder = new StringBuilder(estimatedSize);
 
 		builder.append("{");
 		builder.append("\"__type\": \"").append(SerializationUtils.escapeString(type)).append("\"");

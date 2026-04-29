@@ -3,15 +3,18 @@ package com.raduvoinea.utils.file_manager.utils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DateUtils {
 
+	private static final ConcurrentHashMap<String, DateTimeFormatter> FORMATTERS = new ConcurrentHashMap<>();
+
 	public static @NotNull String getDate(String format) {
-		return new SimpleDateFormat(format).format(Calendar.getInstance().getTime());
+		DateTimeFormatter formatter = FORMATTERS.computeIfAbsent(format, DateTimeFormatter::ofPattern);
+		return formatter.format(java.time.ZonedDateTime.now());
 	}
 
 	@SuppressWarnings("unused")
@@ -36,12 +39,9 @@ public class DateUtils {
 
 	@SuppressWarnings("unused")
 	public static @NotNull String convertUnixTimeToDate(long unixTimestamp, String timezone) {
-		Date date = new Date(unixTimestamp);
-
-		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss z");
-		sdf.setTimeZone(TimeZone.getTimeZone(timezone));
-
-		return sdf.format(date);
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss z")
+				.withZone(ZoneId.of(timezone));
+		return formatter.format(Instant.ofEpochMilli(unixTimestamp));
 	}
 
 	@Contract(pure = true)
@@ -56,41 +56,24 @@ public class DateUtils {
 		long hours = minutes / 60;
 		long days = hours / 24;
 
-		milliseconds = milliseconds % 60;
 		seconds = seconds % 60;
 		minutes = minutes % 60;
 		hours = hours % 24;
 
-		String output = "";
-
 		if (days > 0) {
-			output += days + "d ";
-			output += hours + "h ";
-			output += minutes + "m ";
-			output += seconds + "s ";
-
-			return output;
+			return days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
 		}
 
 		if (hours > 0) {
-			output += hours + "h ";
-			output += minutes + "m ";
-			output += seconds + "s ";
-
-			return output;
+			return hours + "h " + minutes + "m " + seconds + "s ";
 		}
 
 		if (minutes > 0) {
-			output += minutes + "m ";
-			output += seconds + "s ";
-
-			return output;
+			return minutes + "m " + seconds + "s ";
 		}
 
 		if (seconds > 0) {
-			output += seconds + "s ";
-
-			return output;
+			return seconds + "s ";
 		}
 
 		return milliseconds + "ms ";

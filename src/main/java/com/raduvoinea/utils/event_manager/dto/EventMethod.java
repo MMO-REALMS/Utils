@@ -91,18 +91,16 @@ public class EventMethod {
 
 	public static class Comparator implements java.util.Comparator<EventMethod> {
 
-		private static Comparator instance;
+		public static final Comparator INSTANCE = new Comparator();
 
+		@Deprecated
 		public static Comparator getInstance() {
-			if (instance == null) {
-				instance = new Comparator();
-			}
-			return instance;
+			return INSTANCE;
 		}
 
 		@Override
 		public int compare(@NotNull EventMethod object1, @NotNull EventMethod object2) {
-			return object1.annotation.order() - object2.annotation.order();
+			return Integer.compare(object1.annotation.order(), object2.annotation.order());
 		}
 	}
 

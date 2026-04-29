@@ -1,21 +1,27 @@
 package com.raduvoinea.utils.logger.utils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-
 public class StackTraceUtils {
 
 	public static String toString(Throwable throwable) {
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		PrintStream printStream = new PrintStream(outputStream);
+		StringBuilder builder = new StringBuilder(512);
+		appendThrowable(builder, throwable);
+		return builder.toString();
+	}
 
-		throwable.printStackTrace(printStream);
-
-		return outputStream.toString();
+	private static void appendThrowable(StringBuilder builder, Throwable throwable) {
+		builder.append(throwable).append('\n');
+		for (StackTraceElement element : throwable.getStackTrace()) {
+			builder.append("\tat ").append(element).append('\n');
+		}
+		Throwable cause = throwable.getCause();
+		if (cause != null) {
+			builder.append("Caused by: ");
+			appendThrowable(builder, cause);
+		}
 	}
 
 	public static String toString(StackTraceElement[] stackTrace) {
-		StringBuilder builder = new StringBuilder();
+		StringBuilder builder = new StringBuilder(stackTrace.length * 48);
 
 		for (StackTraceElement element : stackTrace) {
 			builder.append(element.toString()).append('\n');

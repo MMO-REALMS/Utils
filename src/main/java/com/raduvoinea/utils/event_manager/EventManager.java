@@ -18,6 +18,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,6 +111,8 @@ public class EventManager {
 		register(object);
 	}
 
+	private boolean needsSort = false;
+
 	public void register(@NotNull Object object) {
 		Logger.debug(new MessageBuilder("Registering object {object}")
 			.parse("object", object.getClass().getName())
@@ -127,8 +130,6 @@ public class EventManager {
 		for (Method method : Reflections.getMethods(object.getClass())) {
 			register(object, method);
 		}
-
-		sortMethods();
 	}
 
 	public void unregister(@NotNull Class<?> clazz) {
@@ -165,6 +166,7 @@ public class EventManager {
 			.orTimeout(timeoutMilliseconds, TimeUnit.MILLISECONDS);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private @NotNull <T> List<EventMethod> getEventMethods(@NotNull IEvent<T> event, boolean logIfNoListeners) {
 		return getEventMethodsGeneric(event, methods, logIfNoListeners);
 	}
@@ -173,7 +175,14 @@ public class EventManager {
 		return getEventMethodsGeneric(event, unsafeMethods, logIfNoListeners);
 	}
 
+	private static final List<EventMethod> EMPTY_METHODS = Collections.emptyList();
+
 	private @NotNull List<EventMethod> getEventMethodsGeneric(@NotNull Object event, Map<Class<?>, List<EventMethod>> map, boolean logIfNoListeners) {
+		if (needsSort) {
+			sortMethods();
+			needsSort = false;
+		}
+
 		Class<?> eventClass = event.getClass();
 		List<EventMethod> eventMethods = map.get(eventClass);
 
@@ -185,7 +194,7 @@ public class EventManager {
 				);
 			}
 
-			return new ArrayList<>();
+			return EMPTY_METHODS;
 		}
 
 		return eventMethods;
@@ -284,9 +293,9 @@ public class EventManager {
 			.parse("class", method.getDeclaringClass())
 		);
 
-		List<EventMethod> eventMethods = map.getOrDefault(eventClass, new ArrayList<>());
+		List<EventMethod> eventMethods = map.computeIfAbsent(eventClass, k -> new ArrayList<>(4));
 		eventMethods.add(new EventMethod(parentObject, method));
-		map.put(eventClass, eventMethods);
+		needsSort = true;
 	}
 
 	private void unregisterGeneric(Method method, Class<?> eventClass, HashMap<Class<?>, List<EventMethod>> map) {
@@ -295,10 +304,8 @@ public class EventManager {
 			.parse("class", method.getDeclaringClass())
 		);
 
-		List<EventMethod> eventMethods = map.getOrDefault(eventClass, new ArrayList<>());
-		boolean result = eventMethods.removeIf(eventMethod -> eventMethod.getMethod().equals(method));
-
-		if (!result) {
+		List<EventMethod> eventMethods = map.get(eventClass);
+		if (eventMethods == null) {
 			Logger.error(new MessageBuilder("Failed to unregister method {class}#{method} ({eventClass})")
 				.parse("method", method.getName())
 				.parse("class", method.getDeclaringClass())
@@ -307,20 +314,24 @@ public class EventManager {
 			return;
 		}
 
-		map.put(eventClass, eventMethods);
+		boolean result = eventMethods.removeIf(eventMethod -> eventMethod.getMethod().equals(method));
+
+		if (!result) {
+			Logger.error(new MessageBuilder("Failed to unregister method {class}#{method} ({eventClass})")
+				.parse("method", method.getName())
+				.parse("class", method.getDeclaringClass())
+				.parse("eventClass", eventClass.getName())
+			);
+		}
 	}
 
 	private void sortMethods() {
-		for (Class<?> eventClass : methods.keySet()) {
-			List<EventMethod> eventMethods = methods.getOrDefault(eventClass, new ArrayList<>());
-			eventMethods.sort(EventMethod.Comparator.getInstance());
-			methods.put(eventClass, eventMethods);
+		for (List<EventMethod> eventMethods : methods.values()) {
+			eventMethods.sort(EventMethod.Comparator.INSTANCE);
 		}
 
-		for (Class<?> eventClass : unsafeMethods.keySet()) {
-			List<EventMethod> eventMethods = unsafeMethods.getOrDefault(eventClass, new ArrayList<>());
-			eventMethods.sort(EventMethod.Comparator.getInstance());
-			unsafeMethods.put(eventClass, eventMethods);
+		for (List<EventMethod> eventMethods : unsafeMethods.values()) {
+			eventMethods.sort(EventMethod.Comparator.INSTANCE);
 		}
 	}
 
