@@ -102,7 +102,7 @@ public class KvMessageBuilderTests {
 
 	@Test
 	void nullBaseReturnsNull() {
-		KvMessageBuilder builder = new KvMessageBuilder(null);
+		KvMessageBuilder builder = new KvMessageBuilder((KvLog)null);
 
 		assertNull(builder.parse("{x}", "y").parse());
 	}

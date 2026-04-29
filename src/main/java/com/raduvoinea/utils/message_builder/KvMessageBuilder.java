@@ -10,6 +10,10 @@ import java.util.Map;
 
 public class KvMessageBuilder extends GenericMessageBuilder<KvLog> {
 
+	public KvMessageBuilder(String type) {
+		super(new KvLog(type));
+	}
+
 	public KvMessageBuilder(KvLog base) {
 		super(base);
 	}
@@ -69,5 +73,10 @@ public class KvMessageBuilder extends GenericMessageBuilder<KvLog> {
 
 	public KvMessageBuilder parse(Object placeholder, Object value) {
 		return (KvMessageBuilder) super.parse(placeholder, value);
+	}
+
+	public KvMessageBuilder add(String key, Object value) {
+		this.base.add(key, value);
+		return this;
 	}
 }

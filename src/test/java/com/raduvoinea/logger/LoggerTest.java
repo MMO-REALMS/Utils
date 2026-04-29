@@ -155,7 +155,7 @@ public class LoggerTest {
 		Logger.kv("simple")
 				.add("a", "b")
 				.add("c", 1)
-				.commit();
+				.print();
 
 		String expectedJson = "{"
 				+ "\"__type\": \"simple\","
@@ -199,7 +199,7 @@ public class LoggerTest {
 				.add("optional_present", Optional.of("value"))
 				.add("optional_empty", Optional.empty())
 				.add("set", new LinkedHashSet<>(List.of("x", "y", "z")))
-				.commit();
+				.print();
 
 		String expectedJson = "{"
 				+ "\"__type\": \"simple_with_objects\","
@@ -243,7 +243,7 @@ public class LoggerTest {
 						.add("username", "Steve")
 				)
 				.add("amount", 500)
-				.commit();
+				.print();
 
 		String expectedJson = "{"
 				+ "\"__type\": \"trade_event\","
@@ -294,7 +294,7 @@ public class LoggerTest {
 								.add("items", List.of("Blackrock Sword", "Shield of Dawn"))
 				)
 				.add("completed", true)
-				.commit();
+				.print();
 
 		String expectedJson = "{"
 				+ "\"__type\": \"dungeon_run\","

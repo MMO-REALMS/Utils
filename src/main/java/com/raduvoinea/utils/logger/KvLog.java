@@ -32,7 +32,7 @@ public class KvLog {
 		return this;
 	}
 
-	public void commit() {
+	public void print() {
 		Logger.log(this);
 	}
 
@@ -42,11 +42,11 @@ public class KvLog {
 		StringBuilder builder = new StringBuilder(estimatedSize);
 
 		builder.append("{");
-		builder.append("\"__type\": \"").append(SerializationUtils.escapeString(type)).append("\"");
+		builder.append("\"__type\":\"").append(SerializationUtils.escapeString(type)).append("\"");
 
 		for (Map.Entry<String, Object> entry : values.entrySet()) {
-			builder.append(", ");
-			builder.append("\"").append(SerializationUtils.escapeString(entry.getKey())).append("\": ");
+			builder.append(",");
+			builder.append("\"").append(SerializationUtils.escapeString(entry.getKey())).append("\":");
 			builder.append(SerializationUtils.serializeObject(entry.getValue(), true));
 		}
 

@@ -38,10 +38,10 @@ public class KvMessageBuilderLoggerIntegrationTests {
                 .parse("{module}", "auth")
                 .parse("{action}", "login")
                 .parse()
-                .commit();
+                .print();
 
         assertEquals(1, logger().getBuffer().size());
-        assertTrue(logger().getBuffer().getFirst().contains("\"__type\": \"auth.login\""));
+        assertTrue(logger().getBuffer().getFirst().contains("\"__type\":\"auth.login\""));
     }
 
     @Test
@@ -54,11 +54,11 @@ public class KvMessageBuilderLoggerIntegrationTests {
                 .parse("{name}", "Radu")
                 .parse("{world}", "overworld")
                 .parse()
-                .commit();
+                .print();
 
         String logged = logger().getBuffer().getFirst();
-        assertTrue(logged.contains("\"username\": \"Radu\""));
-        assertTrue(logged.contains("\"world\": \"overworld\""));
+        assertTrue(logged.contains("\"username\":\"Radu\""));
+        assertTrue(logged.contains("\"world\":\"overworld\""));
     }
 
     @Test
@@ -71,12 +71,12 @@ public class KvMessageBuilderLoggerIntegrationTests {
         new KvMessageBuilder(template)
                 .parse("{event}", "tick")
                 .parse()
-                .commit();
+                .print();
 
         String logged = logger().getBuffer().getFirst();
-        assertTrue(logged.contains("\"count\": 42"));
-        assertTrue(logged.contains("\"ratio\": 3.14"));
-        assertTrue(logged.contains("\"active\": true"));
+        assertTrue(logged.contains("\"count\":42"));
+        assertTrue(logged.contains("\"ratio\":3.14"));
+        assertTrue(logged.contains("\"active\":true"));
     }
 
     @Test
@@ -92,25 +92,25 @@ public class KvMessageBuilderLoggerIntegrationTests {
                 .parse("{name}", "Radu")
                 .parse("{ip}", "192.168.1.1")
                 .parse()
-                .commit();
+                .print();
 
         templateBuilder.clone()
                 .parse("{action}", "quit")
                 .parse("{name}", "Steve")
                 .parse("{ip}", "10.0.0.5")
                 .parse()
-                .commit();
+                .print();
 
         List<String> buffer = logger().getBuffer();
         assertEquals(2, buffer.size());
 
-        assertTrue(buffer.getFirst().contains("\"__type\": \"player.join\""));
-        assertTrue(buffer.getFirst().contains("\"username\": \"Radu\""));
-        assertTrue(buffer.getFirst().contains("\"ip\": \"192.168.1.1\""));
+        assertTrue(buffer.getFirst().contains("\"__type\":\"player.join\""));
+        assertTrue(buffer.getFirst().contains("\"username\":\"Radu\""));
+        assertTrue(buffer.getFirst().contains("\"ip\":\"192.168.1.1\""));
 
-        assertTrue(buffer.get(1).contains("\"__type\": \"player.quit\""));
-        assertTrue(buffer.get(1).contains("\"username\": \"Steve\""));
-        assertTrue(buffer.get(1).contains("\"ip\": \"10.0.0.5\""));
+        assertTrue(buffer.get(1).contains("\"__type\":\"player.quit\""));
+        assertTrue(buffer.get(1).contains("\"username\":\"Steve\""));
+        assertTrue(buffer.get(1).contains("\"ip\":\"10.0.0.5\""));
     }
 
     @Test
@@ -125,28 +125,28 @@ public class KvMessageBuilderLoggerIntegrationTests {
                 .parse("{action}", "initiated")
                 .parse("{status}", "pending")
                 .parse()
-                .commit();
+                .print();
 
         serviceTemplate.clone()
                 .parse("{action}", "completed")
                 .parse("{status}", "ok")
                 .parse()
-                .commit();
+                .print();
 
         serviceTemplate.clone()
                 .parse("{action}", "failed")
                 .parse("{status}", "error")
                 .parse()
-                .commit();
+                .print();
 
         List<String> buffer = logger().getBuffer();
         assertEquals(3, buffer.size());
-        assertTrue(buffer.get(0).contains("\"__type\": \"payment.initiated\""));
-        assertTrue(buffer.get(0).contains("\"status\": \"pending\""));
-        assertTrue(buffer.get(1).contains("\"__type\": \"payment.completed\""));
-        assertTrue(buffer.get(1).contains("\"status\": \"ok\""));
-        assertTrue(buffer.get(2).contains("\"__type\": \"payment.failed\""));
-        assertTrue(buffer.get(2).contains("\"status\": \"error\""));
+        assertTrue(buffer.get(0).contains("\"__type\":\"payment.initiated\""));
+        assertTrue(buffer.get(0).contains("\"status\":\"pending\""));
+        assertTrue(buffer.get(1).contains("\"__type\":\"payment.completed\""));
+        assertTrue(buffer.get(1).contains("\"status\":\"ok\""));
+        assertTrue(buffer.get(2).contains("\"__type\":\"payment.failed\""));
+        assertTrue(buffer.get(2).contains("\"status\":\"error\""));
     }
 
     @Test
@@ -158,12 +158,12 @@ public class KvMessageBuilderLoggerIntegrationTests {
         new KvMessageBuilder(template)
                 .parse(Map.of("{module}", "combat", "{action}", "kill", "{player}", "Notch"))
                 .parse()
-                .commit();
+                .print();
 
         String logged = logger().getBuffer().getFirst();
-        assertTrue(logged.contains("\"__type\": \"combat.kill\""));
-        assertTrue(logged.contains("\"target\": \"Notch\""));
-        assertTrue(logged.contains("\"score\": 100"));
+        assertTrue(logged.contains("\"__type\":\"combat.kill\""));
+        assertTrue(logged.contains("\"target\":\"Notch\""));
+        assertTrue(logged.contains("\"score\":100"));
     }
 
     @Test
@@ -182,7 +182,7 @@ public class KvMessageBuilderLoggerIntegrationTests {
                 .parse("{buyer}", "Radu")
                 .parse("{seller}", "Steve")
                 .parse()
-                .commit();
+                .print();
 
         tradeTemplate.clone()
                 .parse("{outcome}", "cancelled")
@@ -190,19 +190,19 @@ public class KvMessageBuilderLoggerIntegrationTests {
                 .parse("{buyer}", "Alex")
                 .parse("{seller}", "Notch")
                 .parse()
-                .commit();
+                .print();
 
         List<String> buffer = logger().getBuffer();
         assertEquals(2, buffer.size());
 
-        assertTrue(buffer.getFirst().contains("\"__type\": \"trade.completed\""));
-        assertTrue(buffer.getFirst().contains("\"trade_id\": \"TRD-001\""));
-        assertTrue(buffer.getFirst().contains("\"buyer\": \"Radu\""));
-        assertTrue(buffer.getFirst().contains("\"seller\": \"Steve\""));
-        assertTrue(buffer.getFirst().contains("\"amount\": 500"));
+        assertTrue(buffer.getFirst().contains("\"__type\":\"trade.completed\""));
+        assertTrue(buffer.getFirst().contains("\"trade_id\":\"TRD-001\""));
+        assertTrue(buffer.getFirst().contains("\"buyer\":\"Radu\""));
+        assertTrue(buffer.getFirst().contains("\"seller\":\"Steve\""));
+        assertTrue(buffer.getFirst().contains("\"amount\":500"));
 
-        assertTrue(buffer.get(1).contains("\"__type\": \"trade.cancelled\""));
-        assertTrue(buffer.get(1).contains("\"trade_id\": \"TRD-002\""));
+        assertTrue(buffer.get(1).contains("\"__type\":\"trade.cancelled\""));
+        assertTrue(buffer.get(1).contains("\"trade_id\":\"TRD-002\""));
     }
 
     @Test
@@ -213,10 +213,10 @@ public class KvMessageBuilderLoggerIntegrationTests {
         new KvMessageBuilder(template)
                 .parse("{module}", "auth")
                 .parse()
-                .commit();
+                .print();
 
         String logged = logger().getBuffer().getFirst();
-        assertTrue(logged.contains("\"__type\": \"auth.{action}\""));
+        assertTrue(logged.contains("\"__type\":\"auth.{action}\""));
         assertTrue(logged.contains("\"{unbound}\""));
     }
 
@@ -232,7 +232,7 @@ public class KvMessageBuilderLoggerIntegrationTests {
 
         assertEquals(0, logger().getBuffer().size());
 
-        builder.parse().commit();
+        builder.parse().print();
 
         assertEquals(1, logger().getBuffer().size());
     }
