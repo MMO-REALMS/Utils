@@ -1,10 +1,11 @@
 package com.raduvoinea.utils.logger;
 
 import com.raduvoinea.utils.lambda.lambda.non_throwing.ArgLambda;
+import com.raduvoinea.utils.logger.annotations.LogAsJson;
 import com.raduvoinea.utils.logger.dto.ConsoleColor;
 import com.raduvoinea.utils.logger.dto.Level;
 import com.raduvoinea.utils.logger.utils.StackTraceUtils;
-import com.raduvoinea.utils.message_builder.MessageBuilder;
+import com.raduvoinea.utils.message_builder.GenericMessageBuilder;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -108,13 +109,22 @@ public abstract class LoggerInstance {
 			id = "[" + id + "] ";
 		}
 
-		String log = switch (object) {
-			case null -> "null";
-			case MessageBuilder messageBuilder -> messageBuilder.parse();
-			case Throwable throwable -> StackTraceUtils.toString(throwable);
-			case StackTraceElement[] stackTraceElements -> StackTraceUtils.toString(stackTraceElements);
-			default -> object.toString();
-		};
+		String log;
+
+		if (object == null) {
+			log = "null";
+		} else {
+			if (object.getClass().isAnnotationPresent(LogAsJson.class)) {
+				log = Logger.getGsonHolder().value().toJson(object);
+			} else {
+				log = switch (object) {
+					case GenericMessageBuilder<?> messageBuilder -> messageBuilder.toString();
+					case Throwable throwable -> StackTraceUtils.toString(throwable);
+					case StackTraceElement[] stackTraceElements -> StackTraceUtils.toString(stackTraceElements);
+					default -> object.toString();
+				};
+			}
+		}
 
 		String finalLog = "";
 		finalLog += color;
@@ -149,8 +159,8 @@ public abstract class LoggerInstance {
 
 	private static @NotNull Class<?> getCallerClass() {
 		Class<?> clazz = STACK_WALKER.walk(stack -> stack.map(StackWalker.StackFrame::getDeclaringClass)
-			.filter(c -> !Logger.class.isAssignableFrom(c) && !LoggerInstance.class.isAssignableFrom(c))
-			.findFirst()
+				.filter(c -> !Logger.class.isAssignableFrom(c) && !LoggerInstance.class.isAssignableFrom(c))
+				.findFirst()
 		).orElse(null);
 
 		if (clazz == null) {

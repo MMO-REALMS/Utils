@@ -3,6 +3,7 @@ package com.raduvoinea.message_builder;
 
 import com.raduvoinea.utils.message_builder.MessageBuilder;
 import com.raduvoinea.utils.message_builder.MessageBuilderList;
+import com.raduvoinea.utils.message_builder.MessageBuilderManager;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -17,6 +18,7 @@ public class MessageBuilderTests {
 
 	@Test
 	public void testMessageBuilder() {
+		MessageBuilderManager.instance().setLegacyMode(true);
 		MessageBuilder builder1 = new MessageBuilder("This is a %placeholder%");
 		MessageBuilder builder2 = new MessageBuilder("This is a %placeholder-1% with %placeholder-2%");
 
@@ -29,12 +31,14 @@ public class MessageBuilderTests {
 				.parse("%placeholder-2%", "1000 calories")
 				.parse();
 
+		MessageBuilderManager.instance().setLegacyMode(false);
 		assertEquals("This is a banana", result1);
 		assertEquals("This is a banana with 1000 calories", result2);
 	}
 
 	@Test
 	public void testMessageBuilderList() {
+		MessageBuilderManager.instance().setLegacyMode(true);
 		MessageBuilderList builder = new MessageBuilderList(Arrays.asList(
 				"This is a %placeholder-1%",
 				"This %placeholder-1% has %placeholder-2%"
@@ -49,6 +53,7 @@ public class MessageBuilderTests {
 				"This is a banana",
 				"This banana has 1000 calories"
 		);
+		MessageBuilderManager.instance().setLegacyMode(false);
 		assertArrayEquals(expected.toArray(), result.toArray());
 	}
 

@@ -71,28 +71,6 @@ public class MessageBuilderList extends GenericMessageBuilder<List<String>> {
 	}
 
 	@Override
-	protected List<String> parsePlaceholder(List<String> base, String placeholder, List<String> values) {
-		if (base == null) {
-			return new ArrayList<>();
-		}
-
-		String value = convertListToString(values);
-
-		List<String> output = new ArrayList<>();
-
-		for (String line : base) {
-			if (line.equals(placeholder)) {
-				output.addAll(values);
-				continue;
-			}
-
-			output.add(line.replace(placeholder, value));
-		}
-
-		return output;
-	}
-
-	@Override
 	public MessageBuilderList clone() {
 		return new MessageBuilderList(base, new ArrayList<>(placeholders), new ArrayList<>(values));
 	}

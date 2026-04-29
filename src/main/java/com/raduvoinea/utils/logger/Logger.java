@@ -1,29 +1,47 @@
 package com.raduvoinea.utils.logger;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.raduvoinea.utils.generic.dto.Holder;
 import com.raduvoinea.utils.logger.dto.ConsoleColor;
 import com.raduvoinea.utils.logger.utils.StackTraceUtils;
+import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.PrintStream;
 
 public class Logger {
 
-	private static PrintStream ORIGINAL_PRINT_STREAM_OUT;
-	private static PrintStream ORIGINAL_PRINT_STREAM_ERR;
+	private static LoggerInstance activeInstance;
 
-	public static LoggerInstance ACTIVE_INSTANCE;
+	private static PrintStream originalPrintStreamOut;
+	private static PrintStream originalPrintStreamErr;
+
 	private static boolean installedPrintStream = false;
+	@Getter
+	private static Holder<Gson> gsonHolder;
 
 	static {
-		ACTIVE_INSTANCE = LoggerInstance.DEFAULT;
+		activeInstance = LoggerInstance.DEFAULT;
+
+		gsonHolder = Holder.of(
+				new GsonBuilder()
+						.disableHtmlEscaping()
+						.create()
+		);
+	}
+
+	public static void setGsonHolder(Holder<Gson> gsonHolder) {
+		Logger.gsonHolder = gsonHolder;
 	}
 
 	public static LoggerInstance getInstance() {
-		return ACTIVE_INSTANCE;
+		return activeInstance;
 	}
 
 	public static void setInstance(LoggerInstance loggerInstance) {
-		Logger.ACTIVE_INSTANCE = loggerInstance;
+		Logger.activeInstance = loggerInstance;
 
 		if (installedPrintStream) {
 			installPrintStream();
@@ -31,35 +49,39 @@ public class Logger {
 	}
 
 	public static void reset() {
-		Logger.ACTIVE_INSTANCE = LoggerInstance.DEFAULT;
+		Logger.activeInstance = LoggerInstance.DEFAULT;
 	}
 
 	public static void debug(@Nullable Object object) {
-		ACTIVE_INSTANCE.debug(object);
+		activeInstance.debug(object);
 	}
 
 	public static void debug(@Nullable Object object, ConsoleColor color) {
-		ACTIVE_INSTANCE.debug(object, color);
+		activeInstance.debug(object, color);
 	}
 
 	public static void log(@Nullable Object object) {
-		ACTIVE_INSTANCE.info(object);
+		activeInstance.info(object);
 	}
 
 	public static void info(@Nullable Object object) {
-		ACTIVE_INSTANCE.info(object);
+		activeInstance.info(object);
 	}
 
 	public static void good(@Nullable Object object) {
-		ACTIVE_INSTANCE.good(object);
+		activeInstance.good(object);
 	}
 
 	public static void warn(@Nullable Object object) {
-		ACTIVE_INSTANCE.warn(object);
+		activeInstance.warn(object);
 	}
 
 	public static void error(@Nullable Object object) {
-		ACTIVE_INSTANCE.error(object);
+		activeInstance.error(object);
+	}
+
+	public static KvLog kv(@NotNull String type) {
+		return new KvLog(type);
 	}
 
 	public static void goodOrWarn(@Nullable Object object, boolean goodCheck) {
@@ -79,24 +101,24 @@ public class Logger {
 	}
 
 	public static void installPrintStream() {
-		if (ORIGINAL_PRINT_STREAM_OUT == null) {
-			ORIGINAL_PRINT_STREAM_OUT = System.out;
+		if (originalPrintStreamOut == null) {
+			originalPrintStreamOut = System.out;
 		}
-		if (ORIGINAL_PRINT_STREAM_ERR == null) {
-			ORIGINAL_PRINT_STREAM_ERR = System.err;
+		if (originalPrintStreamErr == null) {
+			originalPrintStreamErr = System.err;
 		}
 
-		System.setOut(new PrintStream(new LoggerOutputStream(ACTIVE_INSTANCE::info, true)));
-		System.setErr(new PrintStream(new LoggerOutputStream(ACTIVE_INSTANCE::error, false)));
+		System.setOut(new PrintStream(new LoggerOutputStream(activeInstance::info, true)));
+		System.setErr(new PrintStream(new LoggerOutputStream(activeInstance::error, false)));
 		installedPrintStream = true;
 	}
 
 	public static void uninstallPrintStream() {
-		if (ORIGINAL_PRINT_STREAM_OUT != null) {
-			System.setOut(ORIGINAL_PRINT_STREAM_OUT);
+		if (originalPrintStreamOut != null) {
+			System.setOut(originalPrintStreamOut);
 		}
-		if (ORIGINAL_PRINT_STREAM_ERR != null) {
-			System.setErr(ORIGINAL_PRINT_STREAM_ERR);
+		if (originalPrintStreamErr != null) {
+			System.setErr(originalPrintStreamErr);
 		}
 		installedPrintStream = false;
 	}

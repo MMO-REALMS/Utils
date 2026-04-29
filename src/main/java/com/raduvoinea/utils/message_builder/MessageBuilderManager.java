@@ -10,6 +10,12 @@ public class MessageBuilderManager {
 	private static MessageBuilderManager instance;
 	private boolean chatColor;
 
+	/**
+	 * Enables the replacement of %placeholder%
+	 */
+	// TODO Remove at some point
+	private boolean legacyMode;
+
 	public MessageBuilderManager(boolean chatColor) {
 		instance = this;
 

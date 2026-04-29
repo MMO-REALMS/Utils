@@ -105,7 +105,7 @@ public class ChildLoggerTest {
 
 	@Test
 	public void testFormatPackage() {
-		Logger.setInstance(new TestChildLogger(new TestLogger(true)));
+		Logger.setInstance(new TestChildLogger(new TestLogger(true, true)));
 		Logger.log("testErrorLogger#log");
 
 		assertEquals(1, this.getParent().getBuffer().size());

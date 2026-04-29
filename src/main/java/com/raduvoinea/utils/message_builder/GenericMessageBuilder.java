@@ -14,7 +14,6 @@ public abstract class GenericMessageBuilder<T> {
 	protected List<Object> placeholders = new ArrayList<>();
 	protected List<Object> values = new ArrayList<>();
 
-
 	public GenericMessageBuilder(T base) {
 		this.base = base;
 	}
@@ -62,9 +61,18 @@ public abstract class GenericMessageBuilder<T> {
 
 			placeholder = placeholderObj.toString();
 
-			if (placeholder.startsWith("%") && placeholder.endsWith("%")) {
+			// TODO Remove at some point
+			if (MessageBuilderManager.instance().isLegacyMode()) {
+				if (placeholder.startsWith("%") && placeholder.endsWith("%")) {
+					placeholder = placeholder.substring(1, placeholder.length() - 1);
+				}
+			}
+
+			if (placeholder.startsWith("{") && placeholder.endsWith("}")) {
 				placeholder = placeholder.substring(1, placeholder.length() - 1);
 			}
+
+			String valueString;
 
 			if (value instanceof List<?> list) {
 				List<String> valueList = new ArrayList<>();
@@ -73,14 +81,17 @@ public abstract class GenericMessageBuilder<T> {
 					valueList.add(obj == null ? "null" : obj.toString());
 				}
 
-				parsed = parsePlaceholder(parsed, "%" + placeholder + "%", valueList);
-				parsed = parsePlaceholder(parsed, "{" + placeholder + "}", valueList);
+				valueString = convertListToString(valueList);
 			} else {
-				String valueString = value == null ? "null" : value.toString();
-
-				parsed = parsePlaceholder(parsed, "%" + placeholder + "%", valueString);
-				parsed = parsePlaceholder(parsed, "{" + placeholder + "}", valueString);
+				valueString = value == null ? "null" : value.toString();
 			}
+
+			// TODO Remove at some point
+			if (MessageBuilderManager.instance().isLegacyMode()) {
+				parsed = parsePlaceholder(parsed, "%" + placeholder + "%", valueString);
+			}
+
+			parsed = parsePlaceholder(parsed, "{" + placeholder + "}", valueString);
 		}
 
 		if (MessageBuilderManager.instance().isChatColor()) {
@@ -116,12 +127,10 @@ public abstract class GenericMessageBuilder<T> {
 	/**
 	 * @param base        the base where to parse into
 	 * @param placeholder The placeholder to parse. Already has the identifier with % at beginning and end
-	 * @param value       The value to parse the placeholder with
+	 * @param value       The value to parse the placeholder with (already serialized)
 	 * @return The parsed value
 	 */
 	protected abstract T parsePlaceholder(T base, String placeholder, String value);
-
-	protected abstract T parsePlaceholder(T base, String placeholder, List<String> values);
 
 	/**
 	 * Clones the current object

@@ -33,16 +33,8 @@ public class MessageBuilder extends GenericMessageBuilder<String> {
 		if (base == null) {
 			return null;
 		}
+
 		return base.replace(placeholder, value);
-	}
-
-	@Override
-	protected String parsePlaceholder(String base, String placeholder, List<String> values) {
-		if (base == null) {
-			return null;
-		}
-
-		return base.replace(placeholder, convertListToString(values));
 	}
 
 	@Override
